@@ -6,6 +6,11 @@
 
 ---
 
+### 🛑 Limites e Restrições de Escopo (Out of Scope)
+* **Fluxos Financeiros:** O sistema não integrará gateways de pagamento reais (Stripe, Mercado Pago); o checkout será estritamente simulado.
+* **Logística Real:** O cálculo de frete e o rastreamento de entregas não farão chamadas a APIs de transportadoras reais (ex: Correios), utilizando apenas valores tabelados ou sintéticos.
+* **Plataformas:** O escopo restringe-se a uma aplicação Web Responsiva, estando o desenvolvimento de aplicativos Mobile nativos fora desta versão.
+
 ## 1. Requisitos Não Funcionais (RNF) — Especificação Completa
 
 Os RNFs são organizados conforme as dimensões de qualidade da norma **ISO/IEC 25010**, cada um com descrição formal, métrica mensurável objetiva e método de verificação.
@@ -63,7 +68,7 @@ Os RNFs são organizados conforme as dimensões de qualidade da norma **ISO/IEC 
 
 | Aspecto | Especificação |
 | :--- | :--- |
-| **Descrição** | Tarefas pesadas ou desacopladas (envio de notificações, geração de comprovantes, cálculo de métricas, enriquecimento por IA e análise de sentimento) devem ser executadas em workers assíncronos via fila de mensagens, sem bloquear a resposta HTTP principal. |
+| **Descrição** | Tarefas pesadas ou desacopladas (envio de notificações, geração de comprovantes, classificação automática de categorias por IA, processamento do motor de recomendação e análise de sentimento) devem ser executadas em workers assíncronos via fila de mensagens, sem bloquear a resposta HTTP principal. |
 | **Métrica** | • A resposta HTTP do checkout deve ser entregue ao cliente **sem aguardar** a conclusão dos workers.<br>• Taxa de processamento da fila: capacidade de processar ≥ **100 mensagens/minuto** em condições normais.<br>• Mensagens falhadas devem ser retentadas até **3 vezes** antes de serem movidas para Dead Letter Queue (DLQ). |
 | **Mecanismo Técnico** | Fila de mensagens (RabbitMQ, Redis Queue ou BullMQ) com padrão publish-subscribe, workers independentes e monitoramento de DLQ. |
 | **Verificação** | Teste de integração que confirma a publicação da mensagem na fila, consumo pelo worker e persistência do resultado (ex: notificação enviada, comprovante gerado). |
@@ -157,7 +162,7 @@ O projeto do sistema **Origem** aplica rigorosamente os princípios fundamentais
 flowchart TD
     subgraph "Clean Architecture / Camadas do Origem"
         Domain["<b>Domínio (Entidades Centrais)</b><br>• Produto, Artesão, Pedido, Técnica, Avaliação<br>• Carrinho, Pagamento, Notificação, LogAuditoria<br>• Regras de negócio puras (sem dependência externa)"]
-        UseCases["<b>Casos de Uso / Aplicação</b><br>• PublicarProdutoUseCase, FinalizarPedidoUseCase<br>• CancelarPedidoUseCase, ModerarPublicacaoUseCase<br>• Orquestração, transações e eventos de domínio"]
+        UseCases["<b>Casos de Uso / Aplicação</b><br>• PublicarProdutoUseCase, FinalizarPedidoUseCase<br>• CancelarPedidoUseCase, ModerarPublicacaoUseCase<br>• ClassificarProdutoIAUseCase, AtualizarRecomendacoesUseCase<br>• Orquestração, transações e eventos de domínio"]
         Adapters["<b>Adaptadores de Interface</b><br>• Controllers REST, Repositories (PostgreSQL)<br>• Consumers de Filas, Publishers de Eventos<br>• Modelos de IA e Integrações Externas"]
         Infrastructure["<b>Infraestrutura Externa</b><br>• PostgreSQL, Redis/RabbitMQ<br>• Express/Fastify ou FastAPI, React/Next.js<br>• Scikit-learn/Transformers para IA"]
     end
