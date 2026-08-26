@@ -283,3 +283,79 @@ graph TD
 | **RNF-10** | Confiabilidade | Integridade de dados | FKs, soft delete, backup diário, migrations |
 | **RNF-11** | Conformidade | LGPD e proteção de dados | Consentimento, minimização, exclusão |
 | **RNF-12** | Confiabilidade | Tolerância a falhas | Circuit breaker, graceful degradation, ≥ 99% uptime |
+
+
+# 📋 EXTRA Requisitos Funcionais
+
+### Projeto Integrador IV · Marketplace Origem
+**Disciplina:** Requisitos, Projeto de Software e Validação (ADS020) · **Semestre:** 2026.2  
+**Referência Metodológica:** Engenharia de Requisitos baseada no padrão IEEE 830 (adaptado para metodologias ágeis).
+
+---
+
+## 1. Visão Geral
+
+Os Requisitos Funcionais (RF) descrevem os comportamentos, as funções e as lógicas de negócio que o sistema deve prover. Eles foram derivados diretamente da Análise de Domínio e estão mapeados 1-para-1 ou N-para-1 com os Casos de Uso do sistema.
+
+Para facilitar a rastreabilidade e priorização, os requisitos foram classificados pela técnica **MoSCoW**:
+* **Must Have (M):** Crítico e obrigatório para o lançamento (MVP).
+* **Should Have (S):** Importante, mas pode contornar no curtíssimo prazo.
+* **Could Have (C):** Desejável, agrega valor, mas não é impeditivo.
+* **Won't Have (W):** Fora do escopo para esta versão.
+
+---
+
+## 2. Catálogo de Requisitos Funcionais
+
+### Módulo: Identidade e Acesso (IDT)
+| ID | Nome | Descrição | Ator | Prioridade |
+| :--- | :--- | :--- | :--- | :---: |
+| **RF-IDT-01** | Cadastro de Conta | O sistema deve permitir que um visitante crie uma conta fornecendo nome, e-mail, telefone e senha, selecionando o perfil de Comprador ou Artesão. | Visitante | M |
+| **RF-IDT-02** | Autenticação Segura | O sistema deve autenticar os usuários com e-mail e senha, gerando um token de acesso para controle de sessão (RBAC). | Visitante | M |
+| **RF-IDT-03** | Recuperação de Acesso | O sistema deve enviar um e-mail com link seguro e temporário para redefinição de senha caso o usuário a esqueça. | Visitante | S |
+| **RF-IDT-04** | Gestão de Perfil | O sistema deve permitir que usuários atualizem seus dados pessoais e gerenciem seus endereços (Compradores) ou sua biografia e dados do ateliê (Artesãos). | Comprador, Artesão | M |
+
+### Módulo: Vitrine e Descoberta (CAT)
+| ID | Nome | Descrição | Ator | Prioridade |
+| :--- | :--- | :--- | :--- | :---: |
+| **RF-CAT-01** | Busca Textual | O sistema deve fornecer uma barra de busca para encontrar produtos pelo título, descrição ou nome do artesão. | Todos | M |
+| **RF-CAT-02** | Filtragem Avançada | O sistema deve permitir filtrar o catálogo combinando técnica, região (polo cultural) e faixa de preço. | Todos | M |
+| **RF-CAT-03** | Ficha Técnica da Peça | O sistema deve exibir os detalhes completos do produto, incluindo preço, estoque disponível, dimensões, peso, mídias e biografia do criador. | Todos | M |
+
+### Módulo: Carrinho e Checkout (CHK)
+| ID | Nome | Descrição | Ator | Prioridade |
+| :--- | :--- | :--- | :--- | :---: |
+| **RF-CHK-01** | Gestão de Carrinho | O sistema deve permitir adicionar, remover e alterar a quantidade de itens no carrinho, calculando subtotal provisório. | Comprador | M |
+| **RF-CHK-02** | Fechamento de Pedido | O sistema deve permitir converter o carrinho em pedido, calculando frete e exigindo a escolha de um endereço de entrega. | Comprador | M |
+| **RF-CHK-03** | Reserva de Estoque | Ao finalizar o pedido, o sistema deve reservar o estoque dos produtos de forma atômica, evitando *overbooking* (venda dupla). | Sistema | M |
+| **RF-CHK-04** | Processamento de Pagamento | O sistema deve integrar com um serviço externo de pagamento (Cartão/PIX) e registrar a transação no pedido. | Serv. Pagamento | M |
+
+### Módulo: Gestão de Pedidos e Pós-venda (PED)
+| ID | Nome | Descrição | Ator | Prioridade |
+| :--- | :--- | :--- | :--- | :---: |
+| **RF-PED-01** | Status do Pedido | O sistema deve atualizar e exibir o status do pedido (*Pendente, Aprovado, Em Preparação, Enviado, Entregue*). | Comprador, Artesão | M |
+| **RF-PED-02** | Notificação Transacional | O sistema deve notificar o comprador e o artesão via e-mail a cada mudança relevante no status do pedido. | Sistema | S |
+| **RF-PED-03** | Cancelamento | O sistema deve permitir o cancelamento do pedido pelo comprador antes do status "Enviado", estornando o limite e o estoque. | Comprador | S |
+| **RF-PED-04** | Avaliação de Peças | O sistema deve permitir ao comprador avaliar a peça recebida (nota 1 a 5 e texto explicativo) após o status "Entregue". | Comprador | M |
+
+### Módulo: Ateliê do Artesão (ART)
+| ID | Nome | Descrição | Ator | Prioridade |
+| :--- | :--- | :--- | :--- | :---: |
+| **RF-ART-01** | Publicação de Produtos | O sistema deve permitir ao artesão cadastrar novas peças com título, preço, técnica, dimensões e upload de imagens/vídeos. | Artesão | M |
+| **RF-ART-02** | Controle de Estoque | O sistema deve permitir que o artesão adicione ou remova saldo de produtos cadastrados em seu ateliê. | Artesão | M |
+| **RF-ART-03** | Painel de Vendas | O sistema deve prover uma listagem dos pedidos recebidos, permitindo ao artesão atualizar o status logístico com código de rastreio. | Artesão | M |
+
+### Módulo: Administração e Moderação (ADM)
+| ID | Nome | Descrição | Ator | Prioridade |
+| :--- | :--- | :--- | :--- | :---: |
+| **RF-ADM-01** | Moderação de Cadastros | O sistema deve reter novos artesãos em status pendente até que um administrador valide seus documentos e polo cultural. | Admin | M |
+| **RF-ADM-02** | Moderação de Catálogo | O sistema deve permitir que administradores aprovem, reprovem ou inativem anúncios de produtos que infrinjam os termos. | Admin | S |
+| **RF-ADM-03** | Gestão de Taxonomia | O sistema deve permitir a criação, edição e inativação de técnicas artesanais e categorias do marketplace. | Admin | M |
+| **RF-ADM-04** | Dashboard Gerencial | O sistema deve exibir painéis consolidados de faturamento, volume de vendas por técnica e métricas de desempenho dos polos. | Admin | C |
+| **RF-ADM-05** | Trilha de Auditoria | O sistema deve registrar em log ações críticas como cancelamento de pedidos, edição de estoque manual e moderações. | Sistema | S |
+
+### Módulo: IA e Inteligência (IA)
+| ID | Nome | Descrição | Ator | Prioridade |
+| :--- | :--- | :--- | :--- | :---: |
+| **RF-IA-01** | Motor de Recomendação | O sistema deve exibir uma vitrine de peças sugeridas ao comprador baseando-se na técnica visualizada e compras passadas. | Sistema | C |
+| **RF-IA-02** | Classificação de Sentimento | O sistema deve ler os textos das avaliações e classificá-las em (Positivo, Neutro, Negativo) utilizando modelos de NLP. | Sistema | C |
