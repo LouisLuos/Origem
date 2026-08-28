@@ -14,14 +14,14 @@ Artesãos e mestres populares frequentemente enfrentam invisibilidade digital, d
 
 ## 📁 Estrutura da Documentação do Projeto
 
-A documentação completa de Engenharia de Software foi modularizada e organizada na pasta [`/docs`](file:///c:/Users/luizc/Documents/Origem/docs/README.md):
+A documentação completa de Engenharia de Software foi modularizada e organizada na pasta [`/docs`](./docs/README.md):
 
-* 🏛️ **[01. Análise de Domínio](file:///c:/Users/luizc/Documents/Origem/docs/01-analise-de-dominio.md):** Delimitação do domínio, as 4 informações-alvo (Atores, Processos, Restrições e Dores Reais), linguagem ubíqua e técnicas de obtenção de evidências.
-* 📐 **[02. Modelagem Conceitual (UML)](file:///c:/Users/luizc/Documents/Origem/docs/02-modelagem-conceitual.md):** Diagrama de Casos de Uso (comportamental), Diagrama de Classes Conceitual (estrutural) e matriz de coerência bidirecional.
-* 📝 **[03. Histórias de Usuário e BDD](file:///c:/Users/luizc/Documents/Origem/docs/03-historias-de-usuario-e-bdd.md):** Fatiamento vertical em Épicos, histórias no padrão INVEST e critérios de aceite formais em Gherkin / BDD (`Dado / Quando / Então`).
-* ⏱️ **[04. Tarefas SMART](file:///c:/Users/luizc/Documents/Origem/docs/04-tarefas-smart.md):** Decomposição técnica das histórias de usuário com análise das 5 dimensões SMART e definição de pronto.
-* ⚖️ **[05. Priorização de Requisitos](file:///c:/Users/luizc/Documents/Origem/docs/05-priorizacao-de-requisitos.md):** Matriz MoSCoW (U1 vs U2), Matriz Valor $\times$ Risco, Modelo Kano e priorização por precedência de dependências.
-* ⚙️ **[06. Requisitos Não Funcionais e Arquitetura](file:///c:/Users/luizc/Documents/Origem/docs/06-requisitos-nao-funcionais-e-arquitetura.md):** RNFs formais mensuráveis, princípios SOLID/GRASP, arquitetura em camadas e integração com as 5 disciplinas técnicas do semestre.
+* 🏛️ **[Requisitos e Arquitetura](./docs/01-requisitos-e-arquitetura/):** Análise de domínio, modelagem conceitual UML, histórias BDD, tarefas SMART, priorização e princípios SOLID.
+* 🗄️ **[Banco de Dados](./docs/02-banco-de-dados/):** Modelo ER, modelo lógico relacional, normalização 1FN–3FN, scripts DDL e seeds.
+* ⚡ **[Computação Concorrente e Distribuída (FCCPD)](./docs/03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md):** Controle de concorrência no checkout, fila assíncrona (Redis/BullMQ) e teste de consistência.
+* 🤖 **[Engenharia de Software e IA](./docs/04-engenharia-software-e-ia/):** Formulação do problema de recomendação, features do BD, baseline simples e métricas.
+* 🌐 **[Desenvolvimento Web](./docs/05-desenvolvimento-web/):** Frontend responsivo, backend inicial, contratos da API e deploy.
+* 🎯 **[Projeto Integrador IV](./docs/06-projeto-integrador-iv/):** Checkpoints quinzenais, matriz de riscos e acompanhamento da squad.
 
 ---
 

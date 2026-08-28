@@ -37,23 +37,23 @@ graph TD
 
 ---
 
-## 3. Decomposição Prática: HU-01 (Filtro por Região)
+## 3. Decomposição Prática: HU-06 (Filtro por Região de Origem)
 
-Partindo dos cinco critérios de aceite da **HU-01**, decompõe-se o trabalho nas tarefas técnicas abaixo:
+Partindo dos cinco critérios de aceite da **HU-06**, decompõe-se o trabalho nas tarefas técnicas abaixo:
 
 ```mermaid
 graph TD
-    HU01[HU-01: Filtro por Região de Origem]
+    HU06[HU-06: Filtro por Região de Origem]
     
-    HU01 --> T1[T1: Endpoint de Consulta com Filtro de Região e Técnica]
-    HU01 --> T2[T2: Componente de Interface dos Filtros da Vitrine]
-    HU01 --> T3[T3: Tratamento de Estado Vazio e Sugestões Regionais]
-    HU01 --> T4[T4: Badge de Peça Esgotada no Card da Vitrine]
-    HU01 --> T5[T5: Automação dos Testes de Aceite BDD]
-    HU01 --> T6[T6: Teste de Carga e Benchmark de Desempenho do Filtro]
+    HU06 --> T1[T1: Endpoint de Consulta com Filtro de Região e Técnica]
+    HU06 --> T2[T2: Componente de Interface dos Filtros da Vitrine]
+    HU06 --> T3[T3: Tratamento de Estado Vazio e Sugestões Regionais]
+    HU06 --> T4[T4: Badge de Peça Esgotada no Card da Vitrine]
+    HU06 --> T5[T5: Automação dos Testes de Aceite BDD]
+    HU06 --> T6[T6: Teste de Carga e Benchmark de Desempenho do Filtro]
 ```
 
-### Análise Detalhada das Tarefas SMART da HU-01
+### Análise Detalhada das Tarefas SMART da HU-06
 
 #### T1: Consulta backend com suporte a filtros combinados
 * **Enunciado:** *Implementar, em até 1 dia de trabalho, a consulta e endpoint backend que retorna as peças da região selecionada e permite combinação cumulativa com o filtro de técnica artesanal.*
@@ -105,10 +105,58 @@ graph TD
 
 ---
 
-## 4. Decomposição Prática: HU-05 (Checkout Concorrente - FCCPD)
+## 4. Decomposição Prática: HU-14 (Checkout com Baixa Concorrente - FCCPD)
 
 | ID | Tarefa Técnica SMART | Escopo e Responsabilidade | DoD (Critério de Pronto) | Timebox |
 | :--- | :--- | :--- | :--- | :--- |
 | **T-CHK-01** | Implementar a transação com *Lock Otimista* (ou *Pessimista com `SELECT FOR UPDATE`*) no banco de dados para débito atômico de estoque. | **Backend / BD:** Criação da query transacional com isolamento adequado para evitar *race conditions*. | Testes de integração concorrentes passando sem gerar estoque negativo. | 1 dia (8h) |
 | **T-CHK-02** | Desenvolver teste de estresse de concorrência com 50 requisições simultâneas disputando 1 única peça. | **QA / FCCPD:** Script de simulação paralela de checkout para comprovar que exatamente 1 compra obtém sucesso. | Relatório de consistência e logs transacionais auditados. | 1 dia (8h) |
 | **T-CHK-03** | Configurar fila assíncrona (RabbitMQ/Redis) para envio de notificações pós-venda após confirmação da transação. | **Backend / Distribuído:** Publicador de eventos na API e consumidor em worker desacoplado. | Evento publicado e consumido com sucesso sem bloquear a resposta HTTP do checkout. | 1 dia (8h) |
+
+---
+
+## 5. Decomposição Prática: Histórias Críticas da U1
+
+### 🔐 HU-02: Autenticação e Controle de Acesso (RBAC)
+
+| ID | Tarefa Técnica SMART | Escopo e Responsabilidade | DoD (Critério de Pronto) | Timebox |
+| :--- | :--- | :--- | :--- | :--- |
+| **T-AUTH-01** | Criar serviço de autenticação com hash de senha (bcrypt) e geração de token JWT assinado com refresh token. | **Backend:** Controller `/auth/login`, geração de claims (`role`, `userId`) e middleware de verificação de token. | Testes unitários com senhas válidas/inválidas e retorno de JWT verificado. | 1 dia (8h) |
+| **T-AUTH-02** | Implementar guards e middlewares de autorização RBAC para proteção de rotas restritas (*Comprador*, *Artesão*, *Admin*). | **Backend:** Interceptadores de rota com validação de permissão e retorno de HTTP 401/403. | Tentativa de acesso a rota de outro papel bloqueada com teste automatizado. | 4 horas |
+| **T-AUTH-03** | Desenvolver formulário de login com feedback de erro e persistência segura do token no cliente. | **Frontend:** Componente de formulário, validação de campos, armazenamento e redirecionamento pós-login. | Login funcional com feedback visual de validação e redirecionamento correto. | 6 horas |
+
+### 🏺 HU-09: Publicação de Nova Peça pelo Artesão
+
+| ID | Tarefa Técnica SMART | Escopo e Responsabilidade | DoD (Critério de Pronto) | Timebox |
+| :--- | :--- | :--- | :--- | :--- |
+| **T-PUB-01** | Desenvolver endpoint `POST /produtos` com validação de campos obrigatórios, vínculo de técnica/polo e isolamento por artesão. | **Backend:** Validação de payload (DTO), persistência no banco e vinculação com o usuário autenticado. | Teste de integração garantindo que apenas artesãos homologados criem peças. | 6 horas |
+| **T-PUB-02** | Implementar upload e armazenamento de fotos da peça com validação de formato e tamanho máximo. | **Backend / Infra:** Serviço de upload de arquivos (local/bucket S3 simulado) e associação com a entidade `Midia`. | Upload de imagens JPG/PNG com vínculo à peça persistido com sucesso. | 6 horas |
+| **T-PUB-03** | Construir formulário no painel do artesão com pré-visualização de imagens e seleção de polo e técnica regional. | **Frontend:** Interface com campos de dimensões, peso, técnica tradicional e galeria interativa de upload. | Formulário responsivo com preview de mídias e tratamento de erros de validação. | 1 dia (8h) |
+
+### 🤖 HU-24: Baseline do Módulo de Recomendação (Engenharia de Software & IA)
+
+| ID | Tarefa Técnica SMART | Escopo e Responsabilidade | DoD (Critério de Pronto) | Timebox |
+| :--- | :--- | :--- | :--- | :--- |
+| **T-IA-01** | Mapear e extrair features de produtos do banco de dados (técnica, polo de origem, categoria e preço) em formato tabular. | **IA / BD:** Pipeline/query de extração de dados estruturados para alimentar o serviço de recomendação. | Dataset estruturado gerado e validado com dados sintéticos do banco. | 4 horas |
+| **T-IA-02** | Implementar baseline funcional de recomendação baseado em similaridade de conteúdo (técnica + polo regional). | **IA / Backend:** Algoritmo heurístico de ranking e endpoint `/produtos/{id}/recomendados`. | Endpoint retornando top-N peças afins com teste unitário validando coerência. | 1 dia (8h) |
+| **T-IA-03** | Integrar o componente de recomendações na página de detalhes da peça na vitrine web. | **Frontend:** Seção "Você também pode gostar" consumindo o endpoint de recomendação. | Cards de peças recomendadas renderizados com links diretos na vitrine. | 4 horas |
+
+---
+
+## 6. Definição de Pronto (Definition of Done - DoD)
+
+Uma tarefa técnica é formalmente considerada **CONCLUÍDA** quando satisfaz integralmente os seguintes critérios de engenharia:
+
+```mermaid
+flowchart LR
+    A[Código Implementado] --> B[Testes Automatizados]
+    B --> C[Refatoração & Clean Code]
+    C --> D[Code Review & CI Verde]
+    D --> E((Pronto / Done))
+```
+
+1. **Funcionalidade Verificada:** Atende estritamente ao escopo da tarefa e aos critérios de aceite da história associada.
+2. **Cobertura de Testes:** Acompanhada de testes automatizados (unitários ou integração) cobrindo caminhos felizes e casos de borda.
+3. **Qualidade de Código (Refatoração):** Código limpo sem duplicações, aderente aos princípios SOLID/GRASP e sem avisos de linter.
+4. **Integração Contínua (CI):** Branch integrada com a branch principal sem quebrar a suíte de testes existente.
+

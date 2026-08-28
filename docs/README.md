@@ -11,27 +11,42 @@ Este diretório reúne todos os artefatos de Engenharia de Software e Modelagem 
 
 ```
 docs/
-├── README.md                                    # Este sumário geral
-├── 01-analise-de-dominio.md                     # Delimitação, 4 informações-alvo e linguagem ubíqua
-├── 02-modelagem-conceitual.md                   # Diagramas UML (Casos de Uso e Classes) e coerência
-├── 03-historias-de-usuario-e-bdd.md             # Épicos, HUs INVEST e Critérios de Aceite (Gherkin/BDD)
-├── 04-tarefas-smart.md                          # Decomposição das HUs em tarefas SMART
-├── 05-priorizacao-de-requisitos.md              # MoSCoW, Matriz Valor x Risco, Kano e Dependências
-└── 06-requisitos-nao-funcionais-e-arquitetura.md # RNFs mensuráveis, princípios SOLID e conexões técnicas
+├── README.md                                    # Sumário geral integrado
+├── 01-requisitos-e-arquitetura/                 # Requisitos, Projeto de Software e Validação (ADS020)
+│   ├── 01-analise-de-dominio.md
+│   ├── 02-modelagem-conceitual.md
+│   ├── 03-historias-de-usuario-e-bdd.md
+│   ├── 04-tarefas-smart.md
+│   ├── 05-priorizacao-de-requisitos.md
+│   └── 06-requisitos-nao-funcionais-e-arquitetura.md
+├── 02-banco-de-dados/                           # Modelagem e Projeto de Banco de Dados
+├── 03-computacao-concorrente-distribuida/       # Fundamentos de Computação Concorrente, Paralela e Distribuída
+│   └── 01-concorrencia-e-mensageria.md
+├── 04-engenharia-software-e-ia/                 # Engenharia de Software e IA (Eletiva)
+├── 05-desenvolvimento-web/                      # Desenvolvimento Web Full Stack
+└── 06-projeto-integrador-iv/                    # Projeto 4 (Acompanhamento e Integração)
 ```
 
 ---
 
-## 🧭 Sumário dos Documentos
+## 🧭 Sumário dos Documentos por Disciplina
 
-| Documento | Conteúdo Principal | Disciplinas / Foco |
-| :--- | :--- | :--- |
-| **[01. Análise de Domínio](file:///c:/Users/luizc/Documents/Origem/docs/01-analise-de-dominio.md)** | • As duas perspectivas do domínio<br>• As 4 informações-alvo (Atores, Processos, Restrições e Dores Reais)<br>• Glossário da Linguagem Ubíqua<br>• Técnicas de obtenção de evidências (Entrevista, Etnografia, Análise Documental) | *Requisitos e Validação* |
-| **[02. Modelagem Conceitual](file:///c:/Users/luizc/Documents/Origem/docs/02-modelagem-conceitual.md)** | • Diagrama de Casos de Uso UML (Borda do sistema)<br>• Especificação textual com `<<include>>`, `<<extend>>` e generalizações<br>• Diagrama de Classes Conceitual UML (3 partições, visibilidade, composição)<br>• Matriz de Coerência Bidirecional | *Requisitos, Projeto de Software & BD* |
-| **[03. Histórias de Usuário e BDD](file:///c:/Users/luizc/Documents/Origem/docs/03-historias-de-usuario-e-bdd.md)** | • Fatiamento vertical em Épicos e Histórias INVEST<br>• Os 3 C's: Cartão, Conversa e Confirmação<br>• Critérios de Aceite formais em Gherkin / BDD (`Dado / Quando / Então`) | *Requisitos & Qualidade* |
-| **[04. Tarefas SMART](file:///c:/Users/luizc/Documents/Origem/docs/04-tarefas-smart.md)** | • Conceito de tarefas SMART (Wake)<br>• Decomposição detalhada de HUs em tarefas com análise S-M-A-R-T<br>• Definição de Pronto (DoD) com testes e refatoração | *Gestão Ágil & Engenharia* |
-| **[05. Priorização de Requisitos](file:///c:/Users/luizc/Documents/Origem/docs/05-priorizacao-de-requisitos.md)** | • Matriz MoSCoW (Recorte de escopo U1 vs U2)<br>• Matriz Valor $\times$ Risco (Incerteza técnica)<br>• Modelo Kano e Pontuação Ponderada<br>• Matriz e Grafo de Priorização por Dependência | *Planejamento e Gestão de Backlog* |
-| **[06. RNFs e Arquitetura](file:///c:/Users/luizc/Documents/Origem/docs/06-requisitos-nao-funcionais-e-arquitetura.md)** | • Requisitos Não Funcionais (RNF01 a RNF07) mensuráveis<br>• Princípios SOLID e Padrões de Projeto (GRASP, Clean Architecture)<br>• Integração com Concorrência (FCCPD), IA e Banco de Dados | *FCCPD, Banco de Dados, Web e IA* |
+### 🏛️ 1. Requisitos, Projeto de Software e Validação (ADS020)
+* **[01. Análise de Domínio](./01-requisitos-e-arquitetura/01-analise-de-dominio.md):** Delimitação do domínio, as 4 informações-alvo (Atores, Processos, Restrições e Dores Reais), linguagem ubíqua e técnicas de obtenção de evidências.
+* **[02. Modelagem Conceitual](./01-requisitos-e-arquitetura/02-modelagem-conceitual.md):** Diagrama de Casos de Uso UML, Diagrama de Classes Conceitual e Matriz de Coerência Bidirecional.
+* **[03. Histórias de Usuário e BDD](./01-requisitos-e-arquitetura/03-historias-de-usuario-e-bdd.md):** 25 Histórias INVEST e critérios formais de aceite em Gherkin (`Dado / Quando / Então`).
+* **[04. Tarefas SMART](./01-requisitos-e-arquitetura/04-tarefas-smart.md):** Decomposição técnica das histórias essenciais da U1 e Definição de Pronto (DoD).
+* **[05. Priorização de Requisitos](./01-requisitos-e-arquitetura/05-priorizacao-de-requisitos.md):** Matriz MoSCoW (U1 vs U2), Matriz Valor $\times$ Risco, Modelo Kano e Grafo de Dependências.
+* **[06. RNFs e Arquitetura](./01-requisitos-e-arquitetura/06-requisitos-nao-funcionais-e-arquitetura.md):** Requisitos Não Funcionais (ISO/IEC 25010), princípios SOLID e Clean Architecture.
+
+### ⚡ 2. Computação Concorrente, Paralela e Distribuída (FCCPD)
+* **[01. Concorrência e Mensageria](./03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md):** Lock transacional no checkout/estoque, arquitetura de fila assíncrona (Redis/BullMQ) e protocolo de teste de consistência.
+
+### 📂 3. Demais Pastas de Disciplinas
+* **`02-banco-de-dados/`:** Estrutura reservada para DER, Modelo Lógico, DDL e carga sintética.
+* **`04-engenharia-software-e-ia/`:** Estrutura reservada para especificação de IA, baseline e features.
+* **`05-desenvolvimento-web/`:** Estrutura reservada para contratos de API REST e especificações frontend.
+* **`06-projeto-integrador-iv/`:** Estrutura reservada para atas de integração, matriz de riscos e checkpoints.
 
 ---
 
