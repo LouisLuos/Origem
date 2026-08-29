@@ -32,12 +32,16 @@ docs/
 ## 🧭 Sumário dos Documentos por Disciplina
 
 ### 🏛️ 1. Requisitos, Projeto de Software e Validação (ADS020)
+* **[📜 00. Backlog Priorizado Consolidado (Documento Oficial de Submissão)](./01-requisitos-e-arquitetura/00-backlog-priorizado-consolidado.md):** Consolidação oficial da atividade contendo as 25 Histórias de Usuário INVEST com critérios de aceite BDD, 104 tarefas SMART atômicas e ordenação prioritária de desenvolvimento para o Projeto Integrador.
+  * 📄 **[Versão em PDF para Entrega / Impressão](./01-requisitos-e-arquitetura/00-backlog-priorizado-consolidado.pdf)**
+  * 🌐 **[Versão HTML Estilizada com Diagramas](./01-requisitos-e-arquitetura/00-backlog-priorizado-consolidado.html)**
 * **[01. Análise de Domínio](./01-requisitos-e-arquitetura/01-analise-de-dominio.md):** Delimitação do domínio, as 4 informações-alvo (Atores, Processos, Restrições e Dores Reais), linguagem ubíqua e técnicas de obtenção de evidências.
 * **[02. Modelagem Conceitual](./01-requisitos-e-arquitetura/02-modelagem-conceitual.md):** Diagrama de Casos de Uso UML, Diagrama de Classes Conceitual e Matriz de Coerência Bidirecional.
 * **[03. Histórias de Usuário e BDD](./01-requisitos-e-arquitetura/03-historias-de-usuario-e-bdd.md):** 25 Histórias INVEST e critérios formais de aceite em Gherkin (`Dado / Quando / Então`).
 * **[04. Tarefas SMART](./01-requisitos-e-arquitetura/04-tarefas-smart.md):** Decomposição técnica das histórias essenciais da U1 e Definição de Pronto (DoD).
 * **[05. Priorização de Requisitos](./01-requisitos-e-arquitetura/05-priorizacao-de-requisitos.md):** Matriz MoSCoW (U1 vs U2), Matriz Valor $\times$ Risco, Modelo Kano e Grafo de Dependências.
 * **[06. RNFs e Arquitetura](./01-requisitos-e-arquitetura/06-requisitos-nao-funcionais-e-arquitetura.md):** Requisitos Não Funcionais (ISO/IEC 25010), princípios SOLID e Clean Architecture.
+* **[📋 Tarefas SMART para Trello](./01-requisitos-e-arquitetura/tarefas-smart-trello.md):** Versão formatada em cards e checklists pronta para importação no quadro Kanban.
 
 ### ⚡ 2. Computação Concorrente, Paralela e Distribuída (FCCPD)
 * **[01. Concorrência e Mensageria](./03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md):** Lock transacional no checkout/estoque, arquitetura de fila assíncrona (Redis/BullMQ) e protocolo de teste de consistência.
