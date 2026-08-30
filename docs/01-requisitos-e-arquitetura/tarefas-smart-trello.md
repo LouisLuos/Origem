@@ -15,14 +15,29 @@ Como visitante, quero criar uma conta escolhendo se sou comprador ou artesão, p
 
 **Checklist: Tarefas SMART**
 
-- [ ] **T-CAD-01 · Backend: Endpoint de criação de conta** (8h)
-  Implementar `POST /auth/register` com validação de campos obrigatórios (nome, e-mail, senha, telefone), verificação de unicidade de e-mail, seleção de perfil (Comprador/Artesão) e dados complementares para artesão (biografia, polo, foto). Hash bcrypt para senha. DoD: Testes de integração cobrindo cadastro de comprador, artesão com status "Pendente de Verificação", rejeição de e-mail duplicado e validação de força de senha.
+- [ ] **T-CAD-01a · Backend: Endpoint de cadastro de comprador** (4h)
+  Implementar `POST /auth/register` com validação de campos obrigatórios (nome, e-mail, senha, telefone), verificação de unicidade de e-mail, hash bcrypt e criação do perfil Comprador. DoD: Testes de integração cobrindo cadastro de comprador, rejeição de e-mail duplicado e validação de força de senha.
+
+- [ ] **T-CAD-01b · Backend: Extensão de cadastro para perfil Artesão** (4h)
+  Estender o endpoint `POST /auth/register` com seleção de perfil Artesão e campos complementares (biografia, polo, foto). Status inicial "Pendente de Verificação". DoD: Teste de cadastro de artesão com dados complementares e status correto.
 
 - [ ] **T-CAD-02 · Backend/Infra: E-mail de confirmação assíncrono** (4h)
   Configurar serviço de envio de e-mail de confirmação via fila (Redis/BullMQ) após criação da conta. DoD: E-mail enviado após cadastro sem impactar tempo de resposta da API.
 
 - [ ] **T-CAD-03 · Frontend: Formulário de cadastro responsivo** (8h)
   Construir formulário com seleção dinâmica de perfil, campos complementares para artesão, validação client-side de senha, indicador de força e upload de foto de ateliê. DoD: Formulário funcional em desktop e mobile com validações visuais.
+
+- [ ] **T-CAD-04a · BD: DDL de usuarios e estratégia de herança** (4h)
+  Criar tabela `usuarios` (PK UUID, email UNIQUE, senha_hash, telefone, tipo_perfil, ativo, data_cadastro) e definir estratégia de herança (Single Table Inheritance com coluna discriminadora ou Table Per Subclass). Documentar justificativa. DoD: DDL executável com estratégia documentada.
+
+- [ ] **T-CAD-04b · BD: DDL de artesaos, compradores e enderecos** (4h)
+  Criar tabelas `artesaos` (FK usuario_id, biografia, polo_origem, status_homologacao, foto_atelie), `compradores` (FK usuario_id, cpf) e `enderecos` (FK usuario_id, logradouro, numero, bairro, cidade, uf, cep, principal). Constraints NOT NULL, CHECK e DEFAULT. DoD: DDL executável com FKs e constraints validadas.
+
+- [ ] **T-CAD-05a · BD: Criação de ENUMs e migrations** (2h)
+  Criar tipos ENUM no banco: `tipo_perfil`, `status_homologacao`, `status_produto`, `situacao_pedido`, `status_pagamento`, `sentimento_avaliacao`. Estruturar migrations versionadas com rollback (up/down). DoD: ENUMs criados e migrations executáveis.
+
+- [ ] **T-CAD-05b · BD: Validação de normalização até 3FN** (2h)
+  Revisar todas as tabelas para conformidade com 1FN, 2FN e 3FN. Documentar dependências funcionais e justificar desnormalizações intencionais (ex: `nota_media`). DoD: Relatório de normalização com zero violações não justificadas.
 
 ---
 
@@ -100,6 +115,9 @@ Como visitante ou comprador, quero pesquisar peças por palavras-chave (nome, ar
 - [ ] **T-BUSCA-03 · Frontend: Tela de resultados** (6h)
   Listagem de peças com cards, contador de resultados e estado vazio com mensagem e sugestão de termos populares. DoD: Cenários com e sem resultados renderizados corretamente.
 
+- [ ] **T-BUSCA-04 · BD: Índice GIN/trgm para busca textual** (4h)
+  Habilitar extensão `pg_trgm` e criar índice GIN sobre `(titulo, descricao)` da tabela `produtos` e `(nome)` da tabela `usuarios` para busca textual performática com `ILIKE` ou `similarity()`. DoD: Busca respondendo em <100ms com 10.000 peças, `EXPLAIN ANALYZE` documentado.
+
 ---
 
 ### Card: HU-06 · Filtro por Região de Origem
@@ -121,11 +139,20 @@ Como comprador, quero filtrar peças por polo/região de origem de Pernambuco, p
 - [ ] **T4 · Frontend: Badge "Esgotado" no card** (4h)
   Badge visual e bloqueio do botão de compra em produtos com estoque = 0. DoD: Produtos esgotados não disparam adição ao carrinho.
 
-- [ ] **T5 · QA: Automação dos testes BDD** (16h)
-  Steps de teste executáveis em Cypress/Playwright/Jest para todos os cenários de filtro. DoD: Cenários automatizados passando na pipeline.
+- [ ] **T5a · QA: Automação dos cenários BDD de filtro por região** (8h)
+  Steps de teste executáveis em Cypress/Playwright/Jest para cenários de filtro por região isolado e combinação região + técnica. DoD: Cenários 1 a 3 automatizados passando na pipeline.
+
+- [ ] **T5b · QA: Automação dos cenários BDD de vitrine vazia e esgotado** (8h)
+  Steps de teste para cenários de vitrine sem resultados, badge "Esgotado" e bloqueio de compra. DoD: Cenários 4 a 6 automatizados passando na pipeline.
 
 - [ ] **T6 · Backend/BD: Benchmark de desempenho** (8h)
   Massa de 10.000 peças sintéticas + verificação de resposta < 250ms no P95. DoD: Relatório de tempo de resposta comprobatório.
+
+- [ ] **T7 · BD: Índices compostos para filtros de vitrine** (4h)
+  Criar índice B-Tree composto sobre `(tecnica_id, artesao_polo_origem)` na tabela `produtos` para filtros combinados. Criar índice parcial para produtos aprovados (`WHERE status_aprovacao = 'aprovado'`). DoD: `EXPLAIN ANALYZE` mostrando Index Scan ao invés de Seq Scan.
+
+- [ ] **T8 · BD: Benchmark P50/P95/P99 dos filtros** (4h)
+  Medir latência P50/P95/P99 das consultas de filtro por região, técnica, preço e busca textual com 50 requisições concorrentes sobre 10.000 peças. Gerar relatório com `EXPLAIN ANALYZE`. DoD: Todas as consultas ≤200ms P95 (RNF-02).
 
 ---
 
@@ -185,6 +212,21 @@ Como artesão homologado, quero cadastrar uma nova peça com título, descriçã
 - [ ] **T-PUB-03 · Frontend: Formulário de publicação** (8h)
   Formulário no painel do artesão com campos de dimensões, peso, técnica, pré-visualização de imagens e seleção de polo regional. DoD: Responsivo com preview de mídias e tratamento de erros.
 
+- [ ] **T-PUB-04a · BD: DDL de tecnicas e categorias** (2h)
+  Criar tabelas `tecnicas` (nome, regiao_tipica, descricao_historica, ativa) e `categorias` (nome, descricao, icone). DoD: DDL executável com constraints validadas.
+
+- [ ] **T-PUB-04b · BD: DDL de produtos e midias com constraints** (4h)
+  Criar tabelas `produtos` (título, descrição, preco_base, quantidade_em_estoque, status_aprovacao, peso, dimensoes, materia_prima, tempo_producao_dias, versao, FK artesao_id, FK tecnica_id, FK categoria_id) e `midias` (url, tipo, ordem, tamanho_bytes, alt_text, FK produto_id com ON DELETE CASCADE). Constraints CHECK (`preco > 0`, `quantidade >= 0`). DoD: DDL executável com FKs e constraints.
+
+- [ ] **T-PUB-05a · BD: Seed de técnicas, categorias e polos** (1h)
+  Popular tabelas de referência com dados reais de PE: técnicas artesanais (Cerâmica Figurativa, Renda Renascença, Xilogravura, etc.), categorias (Decoração, Utilitário, Vestuário) e polos (Alto do Moura, Tracunhaém, Bezerros). DoD: Dados de referência inseridos com integridade referencial.
+
+- [ ] **T-PUB-05b · BD: Seed de usuários, artesãos e compradores** (2h)
+  Gerar 20 artesãos homologados com biografias e polos, 50 compradores com endereços e 3 administradores. Senhas com hash bcrypt. DoD: Usuários inseridos com login funcional.
+
+- [ ] **T-PUB-05c · BD: Seed de 10.000 peças com mídias e avaliações** (4h)
+  Gerar massa de 10.000 produtos distribuídos entre artesãos, com variação de preços (R$10-R$5.000), estoque (0-50), 3 mídias por produto e 500+ avaliações. DoD: Massa inserida com distribuição estatística documentada.
+
 ---
 
 ### Card: HU-10 · Edição de Peça Já Publicada
@@ -221,6 +263,9 @@ Como artesão, quero ajustar a quantidade disponível das minhas peças, para si
 - [ ] **T-EST-03 · Frontend: Interface de gestão de estoque** (6h)
   Listagem de peças no painel com destaque de estoque crítico, input numérico de quantidade e botão salvar. DoD: Destaque visual de peças com estoque = 1 e atualização otimista.
 
+- [ ] **T-EST-04 · BD: Constraint e trigger de proteção de estoque** (2h)
+  Criar constraint `CHECK (quantidade_em_estoque >= 0)` na tabela `produtos`. Opcionalmente, trigger `BEFORE UPDATE` impedindo `NEW.quantidade < 0`. DoD: UPDATE para estoque negativo bloqueado pelo banco com erro, teste automatizado.
+
 ---
 
 ### Card: HU-12 · Painel de Vendas do Artesão
@@ -252,14 +297,20 @@ Como comprador, quero adicionar, remover e alterar quantidade de peças no carri
 
 **Checklist: Tarefas SMART**
 
-- [ ] **T-CART-01 · Backend: API do carrinho** (8h)
-  Endpoints `POST /carrinho/itens` (adição com validação de estoque e ajuste ao máximo), `PUT /carrinho/itens/:id` (alteração) e `DELETE /carrinho/itens/:id` (remoção). Bloqueio de peça esgotada. DoD: Testes de adição, bloqueio, ajuste e remoção com recálculo.
+- [ ] **T-CART-01a · Backend: Endpoint de adição ao carrinho** (4h)
+  Endpoint `POST /carrinho/itens` com validação de estoque disponível, ajuste automático ao máximo e bloqueio de peça esgotada. DoD: Testes de adição com estoque válido, ajuste ao máximo e bloqueio de esgotada.
+
+- [ ] **T-CART-01b · Backend: Endpoints de alteração e remoção do carrinho** (4h)
+  Endpoints `PUT /carrinho/itens/:id` (alteração de quantidade com revalidação) e `DELETE /carrinho/itens/:id` (remoção com recálculo de totais). DoD: Testes de alteração, remoção e recálculo de subtotais.
 
 - [ ] **T-CART-02 · Frontend: Página do carrinho** (8h)
   Listagem agrupada por artesão/ateliê, controle de quantidade, remoção, subtotais por artesão e valor total consolidado. DoD: Interface responsiva com agrupamento e totais corretos.
 
 - [ ] **T-CART-03 · Frontend: Contador do carrinho na navbar** (4h)
   Ícone/badge numérica de itens na barra superior, atualizada em tempo real ao adicionar/remover. DoD: Badge atualizada em todas as páginas após operações.
+
+- [ ] **T-CART-04 · BD: DDL das tabelas de carrinho** (3h)
+  Criar tabelas `carrinhos` (FK comprador_id UNIQUE, data_criacao, data_expiracao) e `itens_carrinho` (FK carrinho_id com ON DELETE CASCADE, FK produto_id, quantidade, preco_no_momento). DoD: DDL executável com constraints validadas.
 
 ---
 
@@ -273,11 +324,17 @@ Como comprador, quero finalizar o pedido com garantia de reserva segura, para re
 - [ ] **T-CHK-01 · Backend/BD: Transação com lock para débito atômico** (8h)
   Transação com Lock Otimista (ou Pessimista com `SELECT FOR UPDATE`) para débito atômico de estoque. Isolamento adequado contra race conditions. DoD: Testes de integração concorrentes sem estoque negativo.
 
-- [ ] **T-CHK-02 · QA/FCCPD: Teste de estresse de concorrência** (8h)
-  Script com 50 requisições simultâneas disputando 1 peça única. Exatamente 1 sucesso e 49 rejeições. DoD: Relatório de consistência e logs transacionais.
+- [ ] **T-CHK-02 · QA/FCCPD: Teste de estresse de concorrência (100 threads)** (8h)
+  Script com 100 requisições simultâneas disputando 1 peça com estoque = 1. Exatamente 1 HTTP 201 e 99 HTTP 409. Estoque final = 0 e 1 pedido criado. Gerar relatório formal com evidências e screenshot. DoD: Relatório de consistência com 100% de acerto e logs transacionais.
 
 - [ ] **T-CHK-03 · Backend/Distribuído: Fila assíncrona pós-venda** (8h)
   Fila (RabbitMQ/Redis) para notificações pós-venda após confirmação da transação. Publicador na API + consumidor em worker. DoD: Evento publicado e consumido sem bloquear resposta HTTP.
+
+- [ ] **T-CHK-04a · BD: DDL de pedidos e itens_pedido** (3h)
+  Criar tabelas `pedidos` (numero UNIQUE, data_criacao, situacao ENUM, valor_subtotal, valor_frete, valor_total, FK comprador_id, FK endereco_id) e `itens_pedido` (FK pedido_id com ON DELETE CASCADE, FK produto_id, quantidade, preco_unitario). DoD: DDL executável com ENUMs e constraints.
+
+- [ ] **T-CHK-04b · BD: DDL de pagamentos e historico_status_pedido** (3h)
+  Criar tabelas `pagamentos` (FK pedido_id, metodo, valor, status ENUM, codigo_transacao, data_processamento) e `historico_status_pedido` (FK pedido_id, status_anterior, status_novo, timestamp). DoD: DDL executável com ENUMs e constraints de FK.
 
 ---
 
@@ -355,6 +412,9 @@ Como comprador, quero registrar avaliação com nota (1-5) e comentário para pe
 
 - [ ] **T-AVAL-02 · Backend/BD: Recálculo de nota média** (4h)
   Recálculo automático de `notaMedia` na entidade `Produto` após inserção/edição de avaliação via trigger ou service hook. DoD: Nota média atualizada corretamente com teste de consistência numérica.
+
+- [ ] **T-AVAL-04 · BD: DDL da tabela de avaliações e function de nota média** (4h)
+  Criar tabela `avaliacoes` (FK comprador_id, FK produto_id, nota CHECK 1-5, comentario, sentimento ENUM, data, moderada, UNIQUE(comprador_id, produto_id)). Criar function `fn_recalcular_nota_media(produto_id)` com `AVG(nota)` + trigger `AFTER INSERT OR UPDATE ON avaliacoes`. DoD: Nota média recalculada automaticamente, constraint UNIQUE validada.
 
 - [ ] **T-AVAL-03 · Frontend: Formulário de avaliação** (6h)
   Formulário condicional (visível apenas para compradores com pedido "Entregue"), seleção de estrelas, textarea e mensagem "Deseja editar?" para avaliação existente. DoD: Formulário para elegíveis, edição disponível e avaliação publicada imediatamente.
@@ -435,6 +495,9 @@ Como administrador, quero visualizar métricas consolidadas de vendas, artesãos
 - [ ] **T-DASH-03 · Frontend: Filtro de período** (4h)
   Selector de período (7d, 30d, 90d, personalizado) com atualização dinâmica de indicadores e gráficos. DoD: Recálculo correto ao alterar período.
 
+- [ ] **T-DASH-04 · BD: Views materializadas de métricas** (4h)
+  Criar view `vw_dashboard_metricas` (artesãos ativos, peças aprovadas, volume de vendas, ticket médio, top 5 técnicas, top 5 polos por período) e view `vw_vendas_artesao` (pedidos recebidos, valor faturado, peças mais vendidas, nota média por artesão). DoD: Views consultáveis com dados corretos para 7, 30 e 90 dias.
+
 ---
 
 ### Card: HU-23 · Consulta aos Logs de Auditoria
@@ -452,6 +515,18 @@ Como administrador, quero consultar registros de auditoria de ações sensíveis
 
 - [ ] **T-AUDIT-03 · Frontend: Interface de auditoria** (8h)
   Tabela paginada de logs com filtros, acordeão de dados antes/depois e botão "Exportar CSV". DoD: Filtros aplicáveis, detalhes expandíveis e download funcional.
+
+- [ ] **T-AUDIT-04a · BD: DDL de logs_auditoria e notificacoes** (2h)
+  Criar tabela `logs_auditoria` (acao, entidade, entidade_id, dados_antes JSONB, dados_depois JSONB, ator_id FK, data_hora, ip_origem) e tabela `notificacoes` (FK usuario_id, tipo, titulo, mensagem, data_envio, lida, canal). DoD: DDL executável com constraints e FKs.
+
+- [ ] **T-AUDIT-04b · BD: Trigger genérico de auditoria nas tabelas sensíveis** (2h)
+  Criar trigger `AFTER INSERT/UPDATE/DELETE` nas tabelas `produtos`, `pedidos`, `pagamentos` e `usuarios` usando `row_to_json(OLD)` e `row_to_json(NEW)` para registro automático na `logs_auditoria`. DoD: Alterações registradas automaticamente sem intervenção do backend.
+
+- [ ] **T-AUDIT-05a · BD: Script de validação de integridade referencial** (2h)
+  Criar script SQL que verifica: FK órfãs, estoque negativo, pedidos sem itens, avaliações sem pedido entregue e inconsistências de nota média. DoD: Script executável com 0 violações nos dados de seed.
+
+- [ ] **T-AUDIT-05b · BD: Estratégia e script de backup com teste de restore** (2h)
+  Documentar estratégia de backup (pg_dump diário + WAL archiving) com script de rotação de 7 dias. Executar teste completo de restore. DoD: Backup/restore funcional documentado.
 
 ---
 
@@ -497,14 +572,15 @@ Como administrador, quero que o sistema classifique automaticamente o sentimento
 
 ## 📊 Resumo para Criação de Cards no Trello
 
-| Lista (Épico) | Cards (HUs) | Total de Itens de Checklist |
+| Lista (Épico) | Cards (HUs) | Tarefas (Backend + Frontend + BD) |
 | :--- | :--- | :--- |
-| 🔐 Identidade e Acesso | HU-01 a HU-04 (4 cards) | 12 tarefas |
-| 🎨 Descoberta e Vitrine | HU-05 a HU-08 (4 cards) | 15 tarefas |
-| 🪵 Gestão do Ateliê | HU-09 a HU-12 (4 cards) | 12 tarefas |
-| 🛒 Carrinho e Checkout | HU-13 a HU-14 (2 cards) | 6 tarefas |
+| 🔐 Identidade e Acesso | HU-01 a HU-04 (4 cards) | 18 tarefas (incl. 5 BD) |
+| 🎨 Descoberta e Vitrine | HU-05 a HU-08 (4 cards) | 19 tarefas (incl. 3 BD) |
+| 🪵 Gestão do Ateliê | HU-09 a HU-12 (4 cards) | 19 tarefas (incl. 6 BD) |
+| 🛒 Carrinho e Checkout | HU-13 a HU-14 (2 cards) | 9 tarefas (incl. 3 BD) |
 | 📦 Ciclo do Pedido | HU-15 a HU-17 (3 cards) | 9 tarefas |
-| ⭐ Avaliação e Pós-Venda | HU-18 a HU-19 (2 cards) | 6 tarefas |
-| 🛡️ Administração | HU-20 a HU-23 (4 cards) | 12 tarefas |
+| ⭐ Avaliação e Pós-Venda | HU-18 a HU-19 (2 cards) | 7 tarefas (incl. 1 BD) |
+| 🛡️ Administração | HU-20 a HU-23 (4 cards) | 17 tarefas (incl. 5 BD) |
 | 🧠 Inteligência Artificial | HU-24 a HU-25 (2 cards) | 6 tarefas |
-| **TOTAL** | **25 cards** | **78 tarefas** |
+| **TOTAL** | **25 cards** | **104 tarefas (incl. 23 BD)** |
+
