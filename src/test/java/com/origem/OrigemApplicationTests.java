@@ -24,6 +24,7 @@ class OrigemApplicationTests {
 		try {
 			long productCount = productRepository.count();
 			System.out.println(">>> Product table count: " + productCount);
+			productRepository.findAll().forEach(p -> System.out.println(">>> Found product: ID=" + p.getId() + ", Name=" + p.getName() + ", Stock=" + p.getStock()));
 		} catch (Exception e) {
 			System.err.println(">>> Notice on product table: " + e.getMessage());
 		}
