@@ -21,6 +21,7 @@ A documentação completa de Engenharia de Software foi modularizada e organizad
 * ⚡ **[Computação Concorrente e Distribuída (FCCPD)](./docs/03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md):** Controle de concorrência no checkout, fila assíncrona (Redis/BullMQ) e teste de consistência.
 * 🤖 **[Engenharia de Software e IA](./docs/04-engenharia-software-e-ia/):** Formulação do problema de recomendação, features do BD, baseline simples e métricas.
 * 🌐 **[Desenvolvimento Web](./docs/05-desenvolvimento-web/):** Frontend responsivo, backend inicial, contratos da API e deploy.
+  * 💻 Código do front-end (vitrine + Design System): [`/frontend`](./frontend/README.md)
 * 🎯 **[Projeto Integrador IV](./docs/06-projeto-integrador-iv/):** Checkpoints quinzenais, matriz de riscos e acompanhamento da squad.
 
 ---
