@@ -4,6 +4,7 @@ public class PurchaseRequest {
 
     private String productId;
     private int quantity;
+    private String orderId;
 
     public PurchaseRequest() {
     }
@@ -11,6 +12,12 @@ public class PurchaseRequest {
     public PurchaseRequest(String productId, int quantity) {
         this.productId = productId;
         this.quantity = quantity;
+    }
+
+    public PurchaseRequest(String productId, int quantity, String orderId) {
+        this.productId = productId;
+        this.quantity = quantity;
+        this.orderId = orderId;
     }
 
     public String getProductId() {
@@ -27,5 +34,13 @@ public class PurchaseRequest {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 }

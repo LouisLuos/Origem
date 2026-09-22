@@ -2,9 +2,12 @@ package com.origem.controller;
 
 import com.origem.dto.PurchaseRequest;
 import com.origem.dto.PurchaseResponse;
+import com.origem.dto.PurchaseResult;
 import com.origem.exception.InsufficientStockException;
 import com.origem.exception.ProductNotFoundException;
+import com.origem.model.Notification;
 import com.origem.model.Product;
+import com.origem.repository.NotificationRepository;
 import com.origem.repository.ProductRepository;
 import com.origem.service.OrderService;
 import org.springframework.http.HttpStatus;
@@ -17,23 +20,47 @@ public class OrderController {
 
     private final OrderService orderService;
     private final ProductRepository productRepository;
+    private final NotificationRepository notificationRepository;
 
-    public OrderController(OrderService orderService, ProductRepository productRepository) {
+    public OrderController(OrderService orderService,
+                           ProductRepository productRepository,
+                           NotificationRepository notificationRepository) {
         this.orderService = orderService;
         this.productRepository = productRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     /**
-     * Endpoint para simulação de compra com controle de concorrência.
+     * Endpoint para simulação de compra com controle de concorrência e desacoplamento assíncrono.
+     * Retorna HTTP 200 imediatamente com a notificação em status 'pending' antes da conclusão
+     * do envio em segundo plano (2000ms).
      */
     @PostMapping("/purchase")
     public ResponseEntity<PurchaseResponse> purchase(@RequestBody PurchaseRequest request) {
-        Product updatedProduct = orderService.purchaseProduct(request.getProductId(), request.getQuantity());
+        PurchaseResult result = orderService.purchaseProduct(
+                request.getProductId(),
+                request.getQuantity(),
+                request.getOrderId()
+        );
+
         return ResponseEntity.ok(PurchaseResponse.success(
-                updatedProduct.getId(),
-                updatedProduct.getName(),
-                updatedProduct.getStock()
+                result.getProduct().getId(),
+                result.getProduct().getName(),
+                result.getProduct().getStock(),
+                result.getNotification().getOrderId(),
+                result.getNotification().getId(),
+                result.getNotification().getStatus()
         ));
+    }
+
+    /**
+     * Endpoint utilitário para consultar o status de processamento da notificação assíncrona.
+     */
+    @GetMapping("/notifications/{id}")
+    public ResponseEntity<Notification> getNotification(@PathVariable String id) {
+        return notificationRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /**

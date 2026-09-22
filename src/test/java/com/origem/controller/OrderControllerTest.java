@@ -69,4 +69,23 @@ class OrderControllerTest {
         assertEquals(TEST_PRODUCT_ID, response.getBody().getId());
         assertEquals("Vaso Barro Maragogipinho", response.getBody().getName());
     }
+
+    @Test
+    @DisplayName("Endpoint de compra - Retorna ID e status inicial 'pending' da notificação")
+    void testPurchaseReturnsNotificationMetadata() {
+        PurchaseRequest request = new PurchaseRequest(TEST_PRODUCT_ID, 1, "test-order-ctrl-123");
+        ResponseEntity<PurchaseResponse> response = orderController.purchase(request);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertNotNull(response.getBody().getNotificationId());
+        assertEquals("pending", response.getBody().getNotificationStatus());
+        assertEquals("test-order-ctrl-123", response.getBody().getOrderId());
+
+        // Valida que o endpoint GET /api/orders/notifications/{id} funciona
+        ResponseEntity<com.origem.model.Notification> notifResponse =
+                orderController.getNotification(response.getBody().getNotificationId());
+        assertEquals(HttpStatus.OK, notifResponse.getStatusCode());
+        assertNotNull(notifResponse.getBody());
+    }
 }
