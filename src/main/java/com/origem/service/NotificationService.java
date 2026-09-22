@@ -20,6 +20,9 @@ public class NotificationService {
     @Value("${app.notification.delay-ms:2000}")
     private long simulatedDelayMs;
 
+    @Value("${app.notification.retry-interval-ms:500}")
+    private long retryIntervalMs;
+
     public NotificationService(NotificationRepository notificationRepository) {
         this.notificationRepository = notificationRepository;
     }
@@ -27,12 +30,12 @@ public class NotificationService {
     /**
      * Processa a notificação de forma 100% assíncrona, desacoplada da thread HTTP principal.
      *
-     * Regras:
+     * Regras (Requisitos 3 e 4):
      * 1. Executa no pool de threads dedicado ("notificationTaskExecutor").
-     * 2. Simula latência de rede/I/O (padrão 2000ms para envio de e-mail/push/SMS).
-     * 3. Possui política de até 3 retentativas automáticas em caso de falha transitória de comunicação.
+     * 2. Simula latência de processamento em segundo plano sem travar o checkout.
+     * 3. Política de resiliência: até 3 tentativas com INTERVALO FIXO entre elas (sem backoff progressivo).
      * 4. Transita o status de 'pending' -> 'sent' em caso de sucesso.
-     * 5. Transita o status para 'failed' se esgotar as 3 tentativas.
+     * 5. Transita o status para 'failed' caso todas as 3 tentativas falhem, mantendo o registro permanentemente salvo.
      *
      * @param notificationId ID do registro de notificação persistido previamente como 'pending'
      */
@@ -55,31 +58,30 @@ public class NotificationService {
 
         while (currentAttempt < maxRetries && !success) {
             currentAttempt++;
-            log.info("[ASYNC-NOTIF] [THREAD: {}] Tentativa {}/{} de envio da notificação (Order ID: {})",
+            log.info("[ASYNC-NOTIF] [THREAD: {}] Tentativa {}/{} de processamento da tarefa (Order ID: {})",
                     Thread.currentThread().getName(), currentAttempt, maxRetries, notification.getOrderId());
 
             try {
-                // Simulação de latência de rede (ex: gateway de envio de e-mail / Webhook)
+                // Simulação de processamento de background (ex: envio de e-mail/notificação)
                 if (simulatedDelayMs > 0) {
                     Thread.sleep(simulatedDelayMs);
                 }
 
-                // Simulação determinística de falha para testes de resiliência:
-                // Se o orderId contiver 'FAIL' ou 'simulate-failure', simula erro no gateway
+                // Simulação determinística de falha para cenários de resiliência:
                 if (notification.getOrderId() != null &&
                         (notification.getOrderId().toUpperCase().contains("FAIL") ||
                          notification.getOrderId().contains("simulate-failure"))) {
-                    throw new RuntimeException("Falha simulada no gateway de mensageria externa.");
+                    throw new RuntimeException("Falha simulada no processamento externo da tarefa.");
                 }
 
-                // Se chegou aqui, o envio foi bem-sucedido
+                // Tarefa executada com sucesso
                 success = true;
-                log.info("[ASYNC-NOTIF] [THREAD: {}] Mensagem despachada com sucesso pelo gateway na tentativa {}.",
+                log.info("[ASYNC-NOTIF] [THREAD: {}] Tarefa concluída com sucesso na tentativa {}.",
                         Thread.currentThread().getName(), currentAttempt);
 
             } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
-                log.error("[ASYNC-NOTIF] [THREAD: {}] Thread interrompida durante o envio da notificação ID: {}",
+                log.error("[ASYNC-NOTIF] [THREAD: {}] Thread interrompida durante o processamento da notificação ID: {}",
                         Thread.currentThread().getName(), notificationId);
                 break;
             } catch (Exception ex) {
@@ -88,9 +90,9 @@ public class NotificationService {
 
                 if (currentAttempt < maxRetries) {
                     try {
-                        log.info("[ASYNC-NOTIF] [THREAD: {}] Aguardando backoff antes da próxima tentativa...",
-                                Thread.currentThread().getName());
-                        Thread.sleep(500); // Intervalo de recuo (backoff)
+                        log.info("[ASYNC-NOTIF] [THREAD: {}] Aguardando intervalo fixo de {}ms antes da próxima tentativa (sem backoff progressivo)...",
+                                Thread.currentThread().getName(), retryIntervalMs);
+                        Thread.sleep(retryIntervalMs); // Intervalo estritamente fixo entre tentativas
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
                         break;
@@ -115,5 +117,9 @@ public class NotificationService {
 
     public void setSimulatedDelayMs(long simulatedDelayMs) {
         this.simulatedDelayMs = simulatedDelayMs;
+    }
+
+    public void setRetryIntervalMs(long retryIntervalMs) {
+        this.retryIntervalMs = retryIntervalMs;
     }
 }

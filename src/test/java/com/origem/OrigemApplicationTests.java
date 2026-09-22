@@ -32,6 +32,7 @@ class OrigemApplicationTests {
 		try {
 			long notificationCount = notificationRepository.count();
 			System.out.println(">>> Notification table count: " + notificationCount);
+			notificationRepository.findAll().forEach(n -> System.out.println(">>> Found notification: " + n));
 		} catch (Exception e) {
 			System.err.println(">>> Notice on notification table: " + e.getMessage());
 		}

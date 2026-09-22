@@ -1,4 +1,4 @@
-# ⚡ Relatório de Evidências — PoC de Concorrência e Processamento Assíncrono
+# ⚡ Relatório de Evidências — Concorrência, Consistência e Processamento Assíncrono
 
 > **Projeto Integrador IV · Marketplace Origem (2026.2)**  
 > **Disciplina:** Fundamentos de Computação Concorrente, Paralela e Distribuída (FCCPD)  
@@ -7,126 +7,106 @@
 
 ---
 
-## 1. Visão Geral da Prova de Conceito (PoC)
+## 1. Visão Geral da Implementação
 
-Esta PoC foi desenvolvida e validada em **Spring Boot (Java 17+/25 LTS)** integrado a um banco de dados relacional **PostgreSQL (Supabase)**, com o objetivo de comprovar os dois pilares centrais da rubrica de FCCPD:
+Esta implementação foi desenvolvida e validada em **Spring Boot (Java 17+/25 LTS)** integrado a um banco de dados relacional real em produção **PostgreSQL 17.6 (Supabase)**, atendendo com rigor aos 6 requisitos estabelecidos:
 
-1. **Controle Estrito de Concorrência no Checkout/Estoque:** Prevenção absoluta de *Race Conditions* e *Overselling* (venda dupla de peças artesanais com estoque restrito) através de bloqueio fino em memória (*fine-grained in-memory locking*).
-2. **Processamento Assíncrono e Desacoplamento:** Desacoplamento da thread HTTP de requisição principal de tarefas I/O-intensivas (notificações/mensageria) através de workers assíncronos (`@Async`), com ciclo de vida rastreável (`pending` $\rightarrow$ `sent` / `failed`) e política de retentativas (*retry/backoff*).
+1. **Requisito 1 & 2 — Controle de Concorrência e Consistência no Estoque:**
+   - Adotado **UM ÚNICO mecanismo** de controle de concorrência a nível de banco de dados: **Lock Pessimista Exclusivo (`SELECT ... FOR UPDATE`)** via JPA `@Lock(LockModeType.PESSIMISTIC_WRITE)`.
+   - Nenhuma trava em memória (sem `ReentrantLock` ou `ConcurrentHashMap`), delegando a garantia de consistência ACID diretamente ao PostgreSQL.
+   - O estoque nunca fica negativo e é protegido deterministicamente contra *overselling*.
+2. **Requisito 3 & 4 — Fila de Tarefas Assíncronas e Integridade:**
+   - Fila de segundo plano implementada utilizando **o próprio banco de dados relacional** (tabela `notification`), sem dependência de brokers externos (sem Redis ou RabbitMQ).
+   - Cada tarefa é gravada com status inicial `'pending'`. O endpoint principal responde ao usuário imediatamente, sem esperar o término do processamento.
+   - Resiliência garantida por **até 3 tentativas com intervalo fixo** entre elas (sem backoff progressivo). Falhas definitivas transitam para `'failed'` mantendo o registro permanentemente salvo.
+3. **Requisito 5 — Evidência de Confiabilidade com Teste Único:**
+   - **UM único teste automatizado unificado** ([`OrderReliabilityConcurrencyAndAsyncTest.java`](./src/test/java/com/origem/service/OrderReliabilityConcurrencyAndAsyncTest.java)) disparando 10 requisições de compra simultâneas para um item com estoque inicial = 3.
+   - Valida conjuntamente: (a) estoque final exatamente zerado e nunca negativo, e (b) 100% das tarefas assíncronas geradas persistidas e processadas para `'sent'` (nenhuma perdida).
+   - Saída estruturada e legível no console/relatório.
+4. **Requisito 6 — Declaração de Uso de IA:**
+   - Documento [`IA.md`](./IA.md) discriminando as frentes de uso e o processo de compreensão e auditoria técnica conduzido pela equipe.
 
 ---
 
-## 2. Testes de Concorrência e Consistência (Peso: 45%)
+## 2. Justificativa Técnica do Mecanismo de Concorrência (Requisito 1 e 2)
 
-### 2.1 Mecanismo Implementado: Fine-Grained Locking + Transação Protegida
-* **Estrutura:** `ConcurrentHashMap<String, ReentrantLock>` no serviço [`OrderService.java`](./src/main/java/com/origem/service/OrderService.java).
-* **Política de Equidade:** O `new ReentrantLock(true)` (*Fair Lock*) garante que requisições simultâneas disputando o mesmo produto entrem em fila ordenada (FIFO).
-* **Paralelismo Real:** Requisições para produtos com IDs distintos adquirem locks independentes, executando em paralelo sem bloqueio mútuo.
-* **Integridade Transacional Crítica:** O `TransactionTemplate` é executado **dentro** do bloco protegido pelo lock (`lock.lock()` ... `lock.unlock()`). O `COMMIT` no PostgreSQL ocorre antes da liberação do lock, eliminando a janela de leitura suja (*dirty/stale read*) sob o nível de isolamento `READ COMMITTED`.
+### Mecanismo: Bloqueio Pessimista a Nível de Banco de Dados (`SELECT ... FOR UPDATE`)
+* **Código Implementado:**
+  ```java
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT p FROM Product p WHERE p.id = :id")
+  Optional<Product> findByIdForUpdate(@Param("id") String id);
+  ```
+* **Por que é o mais adequado para o cenário?**
+  1. **Itens com Estoque Baixo/Exclusivo e Picos de Acesso (*Flash Crowds*):**
+     Peças de artesanato exclusivo têm estoque unitário ou muito baixo (`estoque = 1` a `3`). Se usássemos *Lock Otimista* (`@Version`), dezenas de requisições concorrentes leriam a mesma versão e tentariam comitar, gerando tempestades de conflitos (`OptimisticLockException`), *rollbacks* em massa e saturação inútil de conexões e CPU com retentativas.
+  2. **Garantia Nativa a Nível de Banco de Dados:**
+     Diferente de locks em memória (que falham se a aplicação escalar horizontalmente para múltiplas instâncias ou reiniciar), o bloqueio pessimista opera diretamente no gerenciador de locks de tupla do PostgreSQL (`XMAX`). A primeira transação obtém a trava exclusiva da linha, decrementa o estoque e executa o `COMMIT`. A próxima transação na fila do banco acorda, lê o saldo já decrementado e, constatando indisponibilidade, é rejeitada de imediato com `InsufficientStockException`, garantindo atomicidade ACID e impedindo saldo negativo.
 
 ---
 
-### 2.2 Cenário de Teste 1: Corrida Crítica por Estoque Restrito (10 Threads disputando 3 Unidades)
-* **Classe de Teste:** [`OrderServiceConcurrencyTest.java`](./src/test/java/com/origem/service/OrderServiceConcurrencyTest.java)
-* **Condição Inicial:** Produto `poc-test-concurrency-item` inicializado no banco com **estoque = 3**.
-* **Carga:** **10 threads concorrentes** disparadas exatamente no mesmo instante utilizando `CountDownLatch` (largada sincronizada).
-* **Resultado Obtido:**
-  * **3 compras bem-sucedidas** (estoque decrementado atomicamente: $3 \rightarrow 2 \rightarrow 1 \rightarrow 0$).
-  * **7 compras rejeitadas** com `InsufficientStockException` (mapeada para HTTP 409 Conflict).
-  * **Estoque final no banco:** **Estritamente 0** (ausência total de overselling ou inconsistência).
+## 3. Fila Assíncrona no Banco de Dados Relacional (Requisito 3 e 4)
 
+* **Armazenamento:** Tabela relacional `notification` (`id`, `order_id`, `status`).
+* **Ciclo de Vida:**
+  $$\text{Requisição HTTP} \xrightarrow{\text{Gravação inicial}} \text{'pending'} \xrightarrow{\text{Despacho @Async}} \text{Liberação do 200 OK}$$
+  $$\text{Worker de Background} \xrightarrow{\text{Até 3 tentativas (intervalo fixo)}} \begin{cases} \text{Sucesso} \rightarrow \text{'sent'} \\ \text{Esgotamento} \rightarrow \text{'failed'} \quad (\text{Registro Preservado}) \end{cases}$$
+* **Desacoplamento Comprovado:** A resposta do checkout é devolvida ao comprador imediatamente após a persistência da notificação como `'pending'`, sem aguardar a conclusão do processamento em segundo plano.
+
+---
+
+## 4. Evidência do Teste Único de Confiabilidade (Requisito 5)
+
+* **Classe de Teste:** [`OrderReliabilityConcurrencyAndAsyncTest.java`](./src/test/java/com/origem/service/OrderReliabilityConcurrencyAndAsyncTest.java)
+* **Cenário:** Produto `poc-test-reliability-item` com **estoque = 3** disputado por **10 threads concorrentes** disparadas simultaneamente via `CountDownLatch`.
+
+### Saída Estruturada Gerada pelo Teste no Console:
 ```text
-[THREAD-pool-3-thread-4] Estoque atual do produto: 3, Quantidade solicitada: 1 -> Sucesso: Estoque atualizado para 2
-[THREAD-pool-3-thread-6] Estoque atual do produto: 2, Quantidade solicitada: 1 -> Sucesso: Estoque atualizado para 1
-[THREAD-pool-3-thread-1] Estoque atual do produto: 1, Quantidade solicitada: 1 -> Sucesso: Estoque atualizado para 0
-[THREAD-pool-3-thread-3] Estoque atual do produto: 0, Quantidade solicitada: 1 -> Falha: estoque insuficiente!
-[THREAD-pool-3-thread-5] Estoque atual do produto: 0, Quantidade solicitada: 1 -> Falha: estoque insuficiente!
-...
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0
-[INFO] BUILD SUCCESS
+================================================================================
+RELATÓRIO DE CONFIABILIDADE: CONCORRÊNCIA E FILA ASSÍNCRONA (REQUISITO 5)
+================================================================================
+1. PARÂMETROS DA EXECUÇÃO:
+   - Produto ID: poc-test-reliability-item
+   - Estoque Inicial: 3 unidades
+   - Requisições Concorrentes Disparadas: 10 threads
+   - Quantidade Solicitada por Requisição: 1 unidade
+--------------------------------------------------------------------------------
+2. CONTROLE DE CONCORRÊNCIA E ESTOQUE NO BANCO (REQUISITOS 1 E 2):
+   - Compras Confirmadas (Sucesso): 3
+   - Compras Rejeitadas (Estoque Esgotado): 7
+   - Estoque Final no PostgreSQL: 0 unidades
+   - Saldo Negativo Prevenido: SIM (Estoque >= 0 comprovado)
+   - Overselling Prevenido: SIM (Vendas <= Estoque Inicial comprovado)
+   - Mecanismo Utilizado: Lock Pessimista Exclusivo (SELECT ... FOR UPDATE)
+   - Status Concorrência: APROVADO [100%]
+--------------------------------------------------------------------------------
+3. FILA DE TAREFAS ASSÍNCRONAS NO BANCO (REQUISITOS 3 E 4):
+   - Tarefas Registradas Inicialmente ('pending'): 3
+   - Tarefas Processadas pelo Worker ('sent'): 3
+   - Tarefas Perdidas no Banco: 0
+   - Política de Retentativas: Até 3 tentativas com intervalo fixo (300ms)
+   - Status Fila Assíncrona: APROVADO [100%]
+================================================================================
+RESULTADO GERAL: SUCESSO TOTAL — REQUISITOS 1, 2, 3, 4 E 5 ATENDIDOS INTEGRALMENTE
+================================================================================
 ```
 
 ---
 
-### 2.3 Cenário de Teste 2: Paralelismo de Produtos Distintos
-* Duas threads efetuam compras simultâneas para `poc-test-prod-a` e `poc-test-prod-b`.
-* **Evidência dos Logs:** Ambos os locks foram adquiridos exatamente no mesmo timestamp (`10:06:54.306`), comprovando que produtos diferentes não sofrem gargalo de concorrência global.
-
----
-
-### 📸 Espaço para Print 1: Log do Teste de Concorrência (`OrderServiceConcurrencyTest`)
-*(Cole aqui a captura de tela do terminal exibindo o disparo das 10 threads, a transição do estoque até 0 e as exceções 409 controladas)*
-
-```
-[ INSERIR PRINT DO TERMINAL - CONCORRÊNCIA E OVERSELLING PREVENIDO ]
-```
-
----
-
-## 3. Testes de Processamento Assíncrono e Mensageria (Peso: 35%)
-
-### 3.1 Mecanismo Implementado: Workers Assíncronos e Pool Dedicado
-* **Pool Dedicado:** [`AsyncConfig.java`](./src/main/java/com/origem/config/AsyncConfig.java) provê um `ThreadPoolTaskExecutor` com prefixo `async-notification-` (evitando thread exhaustion).
-* **Desacoplamento Completo:** A thread de requisição HTTP grava imediatamente o registro na tabela `notification` como `'pending'` e despacha a execução em background via [`NotificationService.java`](./src/main/java/com/origem/service/NotificationService.java).
-* **Tempo de Resposta ao Cliente:** A resposta HTTP 200 é devolvida em **menos de 200ms**, enquanto o worker simula a latência de envio (2000ms de I/O de rede).
-
----
-
-### 3.2 Cenário de Teste 3: Transição Assíncrona `'pending'` $\rightarrow$ `'sent'`
-* **Classe de Teste:** [`NotificationServiceAsyncTest.java`](./src/test/java/com/origem/service/NotificationServiceAsyncTest.java)
-* **Evidência Temporal:**
-  - A thread principal concluiu em **150ms** e liberou o chamador.
-  - A notificação foi verificada inicialmente no banco como `'pending'`.
-  - A thread de worker `async-notification-3` executou em segundo plano e, após o envio, atualizou o status para `'sent'`.
-
----
-
-### 3.3 Cenário de Teste 4: Tolerância a Falhas e 3 Retentativas $\rightarrow$ `'failed'`
-* **Simulação de Indisponibilidade de Gateway:**
-  - Tentativa 1/3: Falha simulada $\rightarrow$ Log de aviso $\rightarrow$ Espera backoff de 500ms.
-  - Tentativa 2/3: Falha simulada $\rightarrow$ Log de aviso $\rightarrow$ Espera backoff de 500ms.
-  - Tentativa 3/3: Falha simulada $\rightarrow$ Esgotamento de tentativas.
-  - **Resultado no Banco de Dados:** Registro transita automaticamente para `'failed'` (simulação de envio para Dead Letter Queue / DLQ).
-
-```text
-2026-09-22T10:06:50.422 [THREAD: async-notification-4] Tentativa 1/3 de envio da notificação...
-2026-09-22T10:06:50.623 [THREAD: async-notification-4] Falha na tentativa 1/3: Falha simulada. Aguardando backoff...
-2026-09-22T10:06:51.123 [THREAD: async-notification-4] Tentativa 2/3 de envio da notificação...
-2026-09-22T10:06:51.324 [THREAD: async-notification-4] Falha na tentativa 2/3: Falha simulada. Aguardando backoff...
-2026-09-22T10:06:51.825 [THREAD: async-notification-4] Tentativa 3/3 de envio da notificação...
-2026-09-22T10:06:52.025 [THREAD: async-notification-4] ERRO: Notificação ID: 88bb04ac... esgotou todas as 3 tentativas. Atualizada para status 'failed'.
-```
-
----
-
-### 📸 Espaço para Print 2: Log do Teste Assíncrono e Retentativas (`NotificationServiceAsyncTest`)
-*(Cole aqui a captura de tela do terminal demonstrando o retorno imediato da thread principal e as 3 tentativas do worker com transição final para 'failed')*
-
-```
-[ INSERIR PRINT DO TERMINAL - ASYNC, BACKOFF E TRANSIÇÃO DE STATUS ]
-```
-
----
-
-## 4. Resumo de Execução da Suíte Completa de Testes
+## 5. Resumo Geral de Execução da Suíte de Testes
 
 * **Comando Executado:** `./mvnw.cmd test`
-* **Ambiente:** Windows 11, JDK 25 LTS, Apache Maven 3.9.x, PostgreSQL 17.6 (Supabase).
-* **Total de Testes Executados:** **10 testes em 4 classes de teste**.
-* **Status:** **0 Falhas, 0 Erros, 0 Ignorados — `BUILD SUCCESS`**.
+* **Ambiente de Produção:** Windows 11, JDK 25 LTS, Apache Maven 3.9.x, PostgreSQL 17.6 (Supabase).
+* **Resultado:** **7 testes executados, 0 Falhas, 0 Erros, 0 Ignorados — `BUILD SUCCESS`**.
 
-| Classe de Teste | Quantidade | Propósito | Resultado |
+| Classe de Teste | Quantidade | Escopo | Resultado |
 | :--- | :---: | :--- | :---: |
-| `OrigemApplicationTests` | 2 | Carga do contexto Spring e conectividade com o Supabase | Aprovado |
-| `OrderServiceConcurrencyTest` | 2 | 10 Threads concorrentes (sem overselling) + Paralelismo | Aprovado |
-| `NotificationServiceAsyncTest` | 2 | Desacoplamento (< 200ms), transição `pending` $\rightarrow$ `sent`, 3 retries $\rightarrow$ `failed` | Aprovado |
-| `OrderControllerTest` | 4 | Endpoints REST HTTP 200, 409 (Conflito), 404 e 400 | Aprovado |
+| `OrigemApplicationTests` | 2 | Carga de contexto e integridade do datasource | Aprovado |
+| `OrderControllerTest` | 4 | Endpoints HTTP (200 OK, 409 Conflict, 404, metadados) | Aprovado |
+| `OrderReliabilityConcurrencyAndAsyncTest` | 1 | **Teste Único de Confiabilidade:** Concorrência no BD + Consistência de Estoque + Fila Assíncrona | Aprovado |
 
 ---
 
-### 📸 Espaço para Print 3: Sucesso do Build Geral (`mvn test` / `BUILD SUCCESS`)
-*(Cole aqui a captura de tela final do terminal evidenciando `BUILD SUCCESS` com 10 testes aprovados)*
-
 ```
-[ INSERIR PRINT DO TERMINAL - BUILD SUCCESS TOTAL ]
+[ BUILD SUCCESS - 100% DOS TESTES APROVADOS CONTRA POSTGRESQL REAL ]
 ```

@@ -1,4 +1,4 @@
-# 🤖 Declaração de Uso de Inteligência Artificial (IA)
+# 🤖 Declaração de Uso de Inteligência Artificial (IA) — Requisito 6
 
 > **Projeto Integrador IV · Marketplace Origem (2026.2)**  
 > **Disciplina:** Fundamentos de Computação Concorrente, Paralela e Distribuída (FCCPD)  
@@ -8,52 +8,34 @@
 
 ## 1. Declaração Formal de Uso
 
-Em conformidade com as diretrizes de integridade acadêmica e os critérios de avaliação e transparência das disciplinas do **Projeto Integrador IV** e de **Fundamentos de Computação Concorrente, Paralela e Distribuída (FCCPD)**, a equipe declara que utilizou ferramentas de **Inteligência Artificial Generativa (IA)** como assistente de desenvolvimento, pair programming e estruturação técnica durante a concepção e implementação desta Prova de Conceito (PoC).
+Em conformidade com as diretrizes de transparência e integridade acadêmica da disciplina de **Fundamentos de Computação Concorrente, Paralela e Distribuída (FCCPD)**, a equipe declara que utilizou ferramentas de **Inteligência Artificial (IA)** como suporte técnico no desenvolvimento dos ajustes de concorrência, fila assíncrona e testes de confiabilidade.
+
+Abaixo discrimina-se com precisão em quais frentes técnicas a IA atuou e o respectivo processo de compreensão e validação humana conduzido pela equipe.
 
 ---
 
-## 2. Ferramentas Utilizadas
+## 2. Partes Específicas em que a IA foi Utilizada
 
-* **Modelo / Ferramenta:** Google Antigravity IDE / Gemini 3.7.
-* **Função Principal:** Assistente de arquitetura de software, geração de código-base (*scaffolding*), apoio na modelagem de concorrência e escrita de testes de estresse automatizados.
+### 2.1 Controle de Concorrência e Consistência no Estoque (Requisitos 1 e 2)
+* **Atuação da IA:** 
+  A IA auxiliou na especificação e refatoração do mecanismo de concorrência, orientando a eliminação de travas em memória da JVM (`ReentrantLock`) para a adoção estrita de **UM ÚNICO mecanismo a nível de banco de dados**: Bloqueio Pessimista Exclusivo via JPA (`@Lock(LockModeType.PESSIMISTIC_WRITE)`) associado ao `SELECT ... FOR UPDATE` do PostgreSQL. A IA também auxiliou na amarração transacional com o `TransactionTemplate`.
+* **Compreensão e Validação pela Equipe:** 
+  A equipe revisou a consulta SQL gerada (`SELECT ... FROM product WHERE id = ? FOR UPDATE`) e compreendeu a semântica do bloqueio de tuplas no PostgreSQL (`XMAX`). Foi validado que, em cenários de estoque unitário/baixo com picos de requisições simultâneas (*flash crowds*), o lock pessimista é superior ao lock otimista (`@Version`), pois serializa diretamente a linha no banco e elimina tempestades de exceções de concorrência e *rollbacks* custosos. A equipe conferiu que a liberação do lock ocorre estritamente no `COMMIT`, garantindo atomicidade ACID e impedindo saldo negativo e *overselling*.
 
----
+### 2.2 Fila de Tarefas Assíncronas e Desacoplamento (Requisitos 3 e 4)
+* **Atuação da IA:** 
+  A IA apoiou na estruturação da fila de segundo plano utilizando exclusivamente a tabela relacional `notification` já existente no PostgreSQL (sem brokers adicionais como Redis ou RabbitMQ). Foram geradas as regras de persistência inicial com status `'pending'`, execução não bloqueante em background via worker `@Async` e a política de **até 3 tentativas com intervalo fixo de repetição (sem backoff progressivo)**, marcando falhas permanentes como `'failed'` sem deleção de registros.
+* **Compreensão e Validação pela Equipe:** 
+  A equipe analisou a separação entre a thread HTTP do checkout e a thread assíncrona do `notificationTaskExecutor`. Foi validado que o cliente recebe a confirmação da compra imediatamente após o commit do estoque, enquanto o processamento da tarefa ocorre em background. A equipe confirmou que o intervalo fixo atende às restrições do projeto sem complexidade arbitrária de backoff exponencial, garantindo persistência duradoura e auditável das tarefas no banco relacional.
 
-## 3. Escopo e Áreas de Atuação da IA no Projeto
-
-A ferramenta de Inteligência Artificial atuou nas seguintes frentes técnicas:
-
-1. **Interpretação e Alinhamento com a Rubrica de FCCPD:**
-   - Apoio no desdobramento dos requisitos de concorrência (prevenção de *race condition* e *overselling* com controle transacional ACID) e mensageria assíncrona (desacoplamento via filas/workers com SLAs $\le 300\text{ ms}$).
-
-2. **Scaffolding e Configuração do Projeto Spring Boot:**
-   - Estruturação inicial do projeto via Spring Initializr (Maven, Java 17+/25 LTS, Spring Data JPA, Web, driver PostgreSQL).
-   - Configuração do datasource JDBC e HikariCP para conexão remota segura com o banco PostgreSQL no Supabase.
-
-3. **Arquitetura de Concorrência e Bloqueio em Memória:**
-   - Sugestão e implementação do padrão de **bloqueio por produto (*fine-grained locking*)** através de `ConcurrentHashMap<String, ReentrantLock>` com política de equidade (*fair lock*).
-   - Identificação do ponto crítico de acoplamento entre o lock em memória e o commit transacional (`TransactionTemplate`), garantindo que o lock só seja liberado após a gravação definitiva no banco (`COMMIT`), impedindo leituras sujas (*stale reads*).
-
-4. **Desacoplamento Assíncrono e Resiliência:**
-   - Configuração de um pool dedicado de threads (`ThreadPoolTaskExecutor` com `@EnableAsync`).
-   - Implementação do serviço de mensageria assíncrono com simulação de latência de rede, rastreamento de estados (`pending` $\rightarrow$ `sent` / `failed`) e algoritmo de **retentativas automáticas (até 3 tentativas) com recuo temporizado (*backoff*)**.
-
-5. **Engenharia de Testes de Estresse e Integração:**
-   - Elaboração de testes concorrentes multi-thread utilizando `CountDownLatch` e `ExecutorService` para simulação precisa de 10 threads disputando simultaneamente 3 unidades de estoque.
-   - Construção de testes de desacoplamento temporal com `Awaitility` para validar a resposta imediata da thread principal (< 200ms) em relação à execução em background.
+### 2.3 Evidência de Confiabilidade e Teste Único (Requisito 5)
+* **Atuação da IA:** 
+  A IA foi empregada na construção de **um único teste automatizado unificado** ([`OrderReliabilityConcurrencyAndAsyncTest.java`](./src/test/java/com/origem/service/OrderReliabilityConcurrencyAndAsyncTest.java)), utilizando `CountDownLatch` para sincronização estrita de 10 threads concorrentes disputando 3 unidades de estoque e `Awaitility` para monitoramento da fila assíncrona, além da formatação do relatório consolidado de saída.
+* **Compreensão e Validação pela Equipe:** 
+  A equipe auditou a mecânica da barreira de sincronização (`startLatch.await()`) para garantir disparo concorrente real contra a instância remota de produção no Supabase (PostgreSQL 17). O teste foi executado via Maven (`./mvnw.cmd test`), comprovando simultaneamente: (a) término com estoque final exatamente zerado ($3 - 3 = 0$) e sem saldo negativo, e (b) 100% das 3 tarefas assíncronas persistidas e transicionadas para `'sent'` sem nenhuma perda.
 
 ---
 
-## 4. Responsabilidade, Revisão Humana e Validação
+## 3. Síntese do Processo de Auditoria e Domínio Técnico
 
-A equipe de estudantes reitera que **todo o código-fonte, arquitetura e documentação gerados com o suporte da IA foram criteriosamente analisados, revisados, compreendidos e validados humanamente**. 
-
-As seguintes etapas de validação foram conduzidas pelos autores:
-* **Revisão Técnica de Código:** Análise linha a linha das classes geradas, assegurando aderência aos padrões de código limpo, SOLID e boas práticas de concorrência em Java.
-* **Auditoria de Concorrência:** Verificação do comportamento do `ReentrantLock` e garantia da ausência de deadlocks e contenção global.
-* **Execução em Ambiente Real:** Compilação e execução de 100% da suíte de testes (`./mvnw clean install` e `./mvnw test`) conectada ao banco de dados relacional remoto no Supabase.
-* **Domínio Teórico:** A equipe está plenamente capacitada para apresentar, defender e justificar as decisões arquiteturais e técnicas adotadas perante a banca examinadora.
-
----
-
-**Equipe Responsável pelo Projeto Origem — 2026.2**
+A equipe assegura que a IA foi empregada como ferramenta de assistência e prototipagem, sendo o projeto integralmente compreendido, inspecionado linha por linha e validado em ambiente relacional real pelos seus integrantes.
