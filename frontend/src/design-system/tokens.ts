@@ -21,7 +21,7 @@ export const colors = {
 } as const
 
 export const fonts = {
-  body: '"Work Sans", "Segoe UI", sans-serif',
+  body: '"DM Sans", "Segoe UI", sans-serif',
 } as const
 
 /** Polos culturais e técnicas usados como taxonomia inicial (ver RF-CAT-02). */

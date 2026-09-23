@@ -1,32 +1,31 @@
-import { Header } from '@/components/Header'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Hero } from '@/components/Hero'
 import { CategoryShowcase } from '@/components/CategoryShowcase'
 import { FeaturedShowcase } from '@/components/FeaturedShowcase'
+import { Testimonials } from '@/components/Testimonials'
 import { ArtisanSpotlight } from '@/components/ArtisanSpotlight'
 import { Newsletter } from '@/components/Newsletter'
-import { Footer } from '@/components/Footer'
 
 export function Home() {
+  const { hash } = useLocation()
+
+  useEffect(() => {
+    if (!hash) return
+    document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
+  }, [hash])
+
   return (
-    <>
-      <a
-        href="#vitrine"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-terracota focus:px-5 focus:py-3 focus:text-creme-50"
-      >
-        Pular para o conteúdo principal
-      </a>
-      <Header />
-      <main>
-        <Hero />
-        <div className="h-screen" aria-hidden="true" />
-        <div className="relative z-10 bg-creme">
-          <CategoryShowcase />
-          <FeaturedShowcase />
-          <ArtisanSpotlight />
-          <Newsletter />
-        </div>
-      </main>
-      <Footer />
-    </>
+    <main id="main-content">
+      <Hero />
+      <div className="h-screen" aria-hidden="true" />
+      <div className="relative z-10 bg-creme">
+        <CategoryShowcase />
+        <FeaturedShowcase />
+        <Testimonials />
+        <ArtisanSpotlight />
+        <Newsletter />
+      </div>
+    </main>
   )
 }

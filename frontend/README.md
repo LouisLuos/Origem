@@ -1,4 +1,4 @@
-# Origem — Frontend
+# Origem: Frontend
 
 Base de front-end do marketplace **Origem** (vitrine/home + Design System), construída com
 **React + TypeScript + Vite + Tailwind CSS v4**.
@@ -14,12 +14,12 @@ npm run lint
 
 ## Stack e por quê
 
-- **Vite + React + TypeScript** — build rápido, DX simples, tipagem forte para os contratos de API
+- **Vite + React + TypeScript**: build rápido, DX simples, tipagem forte para os contratos de API
   que virão do backend (produtos, artesãos, pedidos).
-- **Tailwind CSS v4** (`@theme` em `src/styles/globals.css`) — tokens de design (cor, tipografia,
+- **Tailwind CSS v4** (`@theme` em `src/styles/globals.css`): tokens de design (cor, tipografia,
   raio, sombra) definidos uma vez e usados tanto em classes utilitárias quanto em JS
   (`src/design-system/tokens.ts`) quando necessário.
-- **lucide-react** — ícones leves em SVG, consistentes com o traço da marca.
+- **lucide-react**: ícones leves em SVG, consistentes com o traço da marca.
 
 Sem framework de estado global por enquanto: a Home é estática (dados mock em `src/data`). Quando a
 API entrar, o ponto de integração é substituir `src/data/mockProducts.ts` / `mockArtisans.ts` por
@@ -54,5 +54,5 @@ Documentação completa do Design System (paleta, tipografia, princípios, compo
 
 ## Próximos passos
 
-Ver seção "Próximos passos sugeridos" em [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) — página de
+Ver seção "Próximos passos sugeridos" em [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md): página de
 listagem com filtros, ficha técnica da peça, carrinho/checkout.

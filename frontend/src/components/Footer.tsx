@@ -72,7 +72,7 @@ export function Footer() {
 
       <div className="border-t border-creme-100/10 py-6">
         <Container className="flex flex-col items-center justify-between gap-2 text-xs text-creme-100/60 sm:flex-row">
-          <p>© {new Date().getFullYear()} Origem. Projeto Integrador IV — CESAR School.</p>
+          <p>© {new Date().getFullYear()} Origem. Projeto Integrador IV da CESAR School.</p>
           <p>Feito com respeito pela cultura pernambucana.</p>
         </Container>
       </div>

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /**
- * Origem — Design Tokens
+ * Design Tokens da Origem
  * Paleta oficial extraída da identidade visual (ver DESIGN_SYSTEM.md).
  * Tons neutros e estados de UI foram derivados a partir das 4 cores de marca
  * para manter contraste AA (WCAG 2.1) em texto e componentes interativos.
@@ -49,7 +49,7 @@
   --color-danger: #a3352b;
 
   /* --- Tipografia --- */
-  --font-body: "Work Sans", "Segoe UI", sans-serif;
+  --font-body: "DM Sans", "Segoe UI", sans-serif;
 
   /* --- Sombras suaves, terrosas (não cinza puro) --- */
   --shadow-soft: 0 8px 24px -12px rgb(63 27 24 / 0.25);

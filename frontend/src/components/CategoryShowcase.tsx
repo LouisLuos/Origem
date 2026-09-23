@@ -2,6 +2,7 @@ import { useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Container, SectionHeading } from '@/design-system'
 import { techniques } from '@/design-system/tokens'
+import { useProductFilter } from '@/context/ProductFilterContext'
 
 const categoryImages: Record<(typeof techniques)[number], string> = {
   'Cerâmica Figurativa': 'https://picsum.photos/seed/origem-cat-ceramica/480/560',
@@ -14,6 +15,7 @@ const categoryImages: Record<(typeof techniques)[number], string> = {
 
 export function CategoryShowcase() {
   const trackRef = useRef<HTMLDivElement>(null)
+  const { selectTechnique } = useProductFilter()
 
   const scrollByCard = (direction: 1 | -1) => {
     const track = trackRef.current
@@ -24,7 +26,7 @@ export function CategoryShowcase() {
   }
 
   return (
-    <section id="categorias" className="py-16 sm:py-20">
+    <section id="categorias" className="py-16 sm:py-20 bg-aubergine-400/10">
       <Container className="flex flex-col gap-10">
         <SectionHeading
           title="Categorias e seleções"
@@ -60,6 +62,7 @@ export function CategoryShowcase() {
               key={technique}
               href="#vitrine"
               data-carousel-item
+              onClick={() => selectTechnique(technique)}
               className="group relative aspect-4/5 w-[65vw] shrink-0 snap-start overflow-hidden bg-surface-muted shadow-soft sm:w-70"
             >
               <img

@@ -6,10 +6,10 @@ conforme cada item for implementado no projeto.
 | Status | Área | O que deve aparecer na entrega | Observações |
 |---|---|---|---|
 | [x] | Vitrine | Página inicial ou listagem de produtos. | `Home` com `FeaturedShowcase` (grade de produtos mock) e `CategoryShowcase` (carrossel de categorias). |
-| [ ] | Busca e filtros | Busca por produto, técnica, região ou categoria. | Campo de busca no `Header` é apenas visual (sem lógica de busca/filtro ligada aos dados). |
-| [ ] | Produto | Página de detalhes do produto. | Não há rota/página de detalhe — só o card na vitrine. |
-| [ ] | Artesão | Perfil do artesão com dados básicos e produtos relacionados. | `ArtisanSpotlight` mostra cards na home, sem página de perfil individual. |
-| [ ] | Carrinho | Adicionar, remover e visualizar itens. | Ícone de carrinho no `Header` é estático ("0 itens"), sem estado nem interação. |
+| [x] | Busca e filtros | Busca por produto, técnica, região ou categoria. | Busca do `Header` com dropdown de resultados em tempo real, filtro lateral por técnica/polo/preço em `ProductFilters` e ordenação em `FeaturedShowcase`, tudo via `ProductFilterContext`. |
+| [x] | Produto | Página de detalhes do produto. | Rota `/produtos/:id` (`ProductDetail`) com galeria, preço, seletor de quantidade, adicionar ao carrinho/favoritar, detalhes da peça, sobre o artesão e peças relacionadas. `ProductCard` e o dropdown de busca do `Header` linkam para ela. |
+| [x] | Artesão | Perfil do artesão com dados básicos e produtos relacionados. | Rota `/artesaos/:id` (`ArtisanProfile`) com capa, avatar, bio, estatísticas (anos de ofício, peças na loja) e grade de peças do artesão. `ArtisanSpotlight` e a página de produto linkam para ela. |
+| [x] | Carrinho | Adicionar, remover e visualizar itens. | Rota `/carrinho` (`Cart`) lista os itens com imagem, seletor de quantidade e remoção, além de resumo (subtotal, frete grátis acima de R$250, total). `CartContext` agora expõe `addItem`/`removeItem`/`setQuantity`/`clearCart`; ícone do `Header` linka para a página. |
 | [ ] | Pedido | Fluxo inicial de pedido ou simulação de compra. | Não iniciado. |
 | [ ] | Comprador | Área inicial ou fluxo mínimo do comprador. | Não iniciado (ícone de conta no `Header` sem funcionalidade). |
 | [ ] | Artesão (painel) | Área inicial para catálogo, produtos ou estoque. | Não iniciado. |
@@ -19,7 +19,7 @@ conforme cada item for implementado no projeto.
 
 ## Progresso
 
-**1 / 11** itens concluídos.
+**5 / 11** itens concluídos.
 
 ## Notas de contexto
 
