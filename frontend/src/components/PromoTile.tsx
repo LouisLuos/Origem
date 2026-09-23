@@ -15,7 +15,7 @@ export function PromoTile({ eyebrow, title, description, imageUrl, imageAlt, ton
   const toneClasses = tone === 'oliva' ? 'bg-oliva-50 text-oliva-700' : 'bg-terracota-50 text-terracota-700'
 
   return (
-    <div className={cn('relative flex flex-col overflow-hidden rounded-lg shadow-soft', toneClasses, className)}>
+    <div className={cn('relative flex flex-col overflow-hidden shadow-soft', toneClasses, className)}>
       <div className="flex flex-1 flex-col justify-center gap-3 p-6">
         <span className="text-sm font-semibold">{eyebrow}</span>
         <h3 className="text-2xl font-semibold leading-tight">{title}</h3>

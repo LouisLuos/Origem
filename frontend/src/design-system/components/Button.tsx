@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '../cn'
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'outline'
+type Variant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'light'
 type Size = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -18,6 +18,7 @@ const variantClasses: Record<Variant, string> = {
   outline:
     'bg-transparent text-aubergine border border-aubergine/30 hover:border-aubergine hover:bg-aubergine/5',
   ghost: 'bg-transparent text-aubergine hover:bg-aubergine/5',
+  light: 'bg-creme-50 text-aubergine hover:bg-creme-100 shadow-soft',
 }
 
 const sizeClasses: Record<Size, string> = {
@@ -28,7 +29,7 @@ const sizeClasses: Record<Size, string> = {
 
 /**
  * Botão base do Design System Origem.
- * Cantos generosos e cores terrosas reforçam a identidade artesanal;
+ * Cantos retos e cores terrosas reforçam uma identidade artesanal e gráfica;
  * o anel de foco (globals.css) garante navegação por teclado (RNF-07).
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -39,7 +40,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     <button
       ref={ref}
       className={cn(
-        'inline-flex items-center justify-center rounded-full font-semibold transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none',
+        'inline-flex items-center justify-center font-semibold transition-colors duration-150 disabled:opacity-50 disabled:pointer-events-none',
         variantClasses[variant],
         sizeClasses[size],
         className,

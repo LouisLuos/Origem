@@ -8,8 +8,9 @@ o suficiente para vitrine de e-commerce.
 ## 1. Princípios
 
 1. **Terroso, não genérico.** Evitamos cinza puro; neutros e sombras derivam da paleta de marca.
-2. **Orgânico nos cantos, sóbrio na grade.** Cantos bem arredondados (botões, chips, cards) contrastam
-   com um grid limpo em bento — referência direta ao layout da Bridge e da Claymere.
+2. **Flat, sem border-radius.** Cantos retos em todos os componentes (botões, chips, cards, inputs) —
+   reforça um caráter mais gráfico/editorial e afasta a interface do "template genérico" com tudo
+   arredondado. O grid limpo em bento (referência Bridge/Claymere) ganha mais nitidez sem curvas.
 3. **Uma única fonte, hierarquia por peso e tamanho.** `Work Sans` em tudo (títulos e corpo) —
    sem serifada decorativa, sem uppercase/letter-spacing artificial imitando "template genérico de IA".
    Hierarquia vem de `font-weight`, tamanho e cor.
@@ -31,7 +32,6 @@ o suficiente para vitrine de e-commerce.
 | `--color-aubergine` | `#3F1B18` | Texto principal, header/footer escuros |
 | `--color-surface` / `--color-surface-muted` | `#FFFDF9` / `#F7F1E5` | Cards e seções sobre o fundo creme |
 | `--font-body` | `Work Sans` | Toda a UI, inclusive títulos (`h1`–`h4`) |
-| `--radius-sm/md/lg/xl` | `0.5–2.5rem` | Escala de arredondamento |
 | `--shadow-soft` / `--shadow-lift` | — | Sombra terrosa padrão / sombra em hover |
 
 Todas as variações (50–700) de cada cor de marca foram derivadas para garantir contraste mínimo

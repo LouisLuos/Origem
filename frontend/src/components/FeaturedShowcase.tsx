@@ -7,8 +7,7 @@ export function FeaturedShowcase() {
     <section id="vitrine" className="py-16 sm:py-20">
       <Container className="flex flex-col gap-10">
         <SectionHeading
-          title="Peças em destaque desta semana"
-          description="Selecionadas entre os polos culturais de Pernambuco: cada peça carrega a técnica, a história e a assinatura de quem a fez."
+          title="Peças em destaque"
           action={
             <Button variant="outline" size="md">
               Ver vitrine completa

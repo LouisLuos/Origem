@@ -1,30 +1,63 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Menu, Search, ShoppingBag, User, X } from 'lucide-react'
-import { Container } from '@/design-system'
+import { Container, Input, cn } from '@/design-system'
 import logoUrl from '@/assets/logo-origem.png'
 
 const navLinks = [
-  { label: 'Vitrine', href: '#vitrine' },
-  { label: 'Técnicas', href: '#tecnicas' },
+  { label: 'Categorias', href: '#categorias' },
+  { label: 'Produtos', href: '#vitrine' },
   { label: 'Artesãos', href: '#artesaos' },
-  { label: 'Nossa história', href: '#historia' },
 ]
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 16)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    if (isSearchOpen) searchInputRef.current?.focus()
+  }, [isSearchOpen])
+
+  useEffect(() => {
+    if (!isSearchOpen) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsSearchOpen(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isSearchOpen])
+
+  const isSolid = isScrolled || isMenuOpen || isSearchOpen
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-creme/95 backdrop-blur">
+    <header
+      className={cn(
+        'fixed inset-x-0 top-0 z-40 transition-colors duration-300',
+        isSolid ? 'border-b border-border/70 bg-creme/80 backdrop-blur' : 'border-b border-transparent bg-transparent',
+      )}
+    >
       <Container className="flex h-20 items-center justify-between gap-4">
         <a href="#top" className="flex shrink-0 items-center gap-2" aria-label="Origem — página inicial">
-          <img src={logoUrl} alt="Origem" className="h-10 w-auto" />
+          <img
+            src={logoUrl}
+            alt="Origem"
+            className={cn('h-10 w-auto transition-[filter] duration-300', !isSolid && 'brightness-0 invert')}
+          />
         </a>
 
         <nav aria-label="Navegação principal" className="hidden lg:block">
-          <ul className="flex items-center gap-8 font-medium text-ink">
+          <ul className={cn('flex items-center gap-8 font-medium', isSolid ? 'text-ink' : 'text-creme-50 ')}>
             {navLinks.map((link) => (
               <li key={link.href}>
-                <a href={link.href} className="transition-colors hover:text-terracota-600">
+                <a href={link.href} className="transition-colors duration-300 hover:text-terracota-400">
                   {link.label}
                 </a>
               </li>
@@ -32,36 +65,40 @@ export function Header() {
           </ul>
         </nav>
 
-        <div className="hidden flex-1 items-center md:flex md:max-w-xs lg:max-w-sm">
-          <label htmlFor="header-search" className="sr-only">
-            Buscar peças, técnicas ou artesãos
-          </label>
-          <div className="relative w-full">
-            <Search
-              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft"
-              aria-hidden="true"
-            />
-            <input
-              id="header-search"
-              type="search"
-              placeholder="Buscar peças, técnicas, artesãos..."
-              className="w-full rounded-full border border-border bg-surface py-2.5 pl-11 pr-4 text-sm text-ink placeholder:text-ink-soft/60 focus:border-terracota"
-            />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1">
+        <div className={cn('flex items-center gap-1', isSolid ? 'text-aubergine' : 'text-creme-50')}>
+          <button
+            type="button"
+            aria-label={isSearchOpen ? 'Fechar busca' : 'Buscar peças, técnicas ou artesãos'}
+            aria-expanded={isSearchOpen}
+            aria-controls="header-search-bar"
+            onClick={() => {
+              setIsSearchOpen((open) => !open)
+              setIsMenuOpen(false)
+            }}
+            className={cn(
+              'flex h-11 w-11 items-center justify-center rounded-full transition-colors cursor-pointer',
+              isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
+            )}
+          >
+            {isSearchOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Search className="h-5 w-5" aria-hidden="true" />}
+          </button>
           <button
             type="button"
             aria-label="Entrar ou criar conta"
-            className="hidden h-11 w-11 items-center justify-center rounded-full text-aubergine transition-colors hover:bg-aubergine/5 sm:flex"
+            className={cn(
+              'hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
+              isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
+            )}
           >
             <User className="h-5 w-5" aria-hidden="true" />
           </button>
           <button
             type="button"
             aria-label="Ver carrinho, 0 itens"
-            className="flex h-11 w-11 items-center justify-center rounded-full text-aubergine transition-colors hover:bg-aubergine/5"
+            className={cn(
+              'flex h-11 w-11 items-center justify-center rounded-full transition-colors cursor-pointer',
+              isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
+            )}
           >
             <ShoppingBag className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -70,23 +107,43 @@ export function Header() {
             aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
             aria-expanded={isMenuOpen}
             aria-controls="mobile-menu"
-            onClick={() => setIsMenuOpen((open) => !open)}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-aubergine transition-colors hover:bg-aubergine/5 lg:hidden"
+            onClick={() => {
+              setIsMenuOpen((open) => !open)
+              setIsSearchOpen(false)
+            }}
+            className={cn(
+              'flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden',
+              isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
+            )}
           >
             {isMenuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
       </Container>
 
+      {isSearchOpen && (
+        <div id="header-search-bar" className="border-t border-border/70 bg-creme">
+          <Container className="py-4">
+            <Input
+              ref={searchInputRef}
+              type="search"
+              label="Buscar peças, técnicas ou artesãos"
+              hideLabel
+              placeholder="Buscar peças, técnicas, artesãos..."
+            />
+          </Container>
+        </div>
+      )}
+
       {isMenuOpen && (
-        <nav id="mobile-menu" aria-label="Navegação principal (móvel)" className="border-t border-border/70 lg:hidden">
+        <nav id="mobile-menu" aria-label="Navegação principal (móvel)" className="border-t border-border/70 bg-creme lg:hidden">
           <Container className="flex flex-col gap-1 py-4">
             {navLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className="rounded-md px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
+                className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
               >
                 {link.label}
               </a>

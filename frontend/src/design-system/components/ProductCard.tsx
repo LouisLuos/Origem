@@ -32,7 +32,7 @@ export function ProductCard({ product, className, onToggleFavorite, isFavorite }
   return (
     <article
       className={cn(
-        'relative flex flex-col overflow-hidden rounded-lg bg-surface shadow-soft transition-shadow duration-200 hover:shadow-lift',
+        'relative flex flex-col overflow-hidden bg-surface shadow-soft transition-shadow duration-200 hover:shadow-lift',
         className,
       )}
     >
@@ -50,7 +50,7 @@ export function ProductCard({ product, className, onToggleFavorite, isFavorite }
           onClick={() => onToggleFavorite?.(product.id)}
           aria-pressed={isFavorite}
           aria-label={isFavorite ? `Remover ${product.title} dos favoritos` : `Favoritar ${product.title}`}
-          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-aubergine shadow-soft transition-colors hover:bg-terracota hover:text-creme-50"
+          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center bg-surface/90 text-aubergine shadow-soft transition-colors hover:bg-terracota hover:text-creme-50"
         >
           <Heart className="h-4 w-4" fill={isFavorite ? 'currentColor' : 'none'} aria-hidden="true" />
         </button>

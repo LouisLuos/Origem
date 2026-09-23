@@ -13,8 +13,8 @@ export function SectionHeading({ title, description, align = 'left', action, cla
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between',
-        align === 'center' && 'sm:flex-col sm:items-center sm:text-center',
+        'flex flex-col gap-3',
+        align === 'center' ? 'items-center text-center' : 'sm:flex-row sm:items-end sm:justify-between',
         className,
       )}
     >

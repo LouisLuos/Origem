@@ -7,13 +7,13 @@ export function ArtisanSpotlight() {
       <Container className="flex flex-col gap-10">
         <SectionHeading
           title="Mestres e mestras do artesanato pernambucano"
-          description="Por trás de cada peça existe uma trajetória. Conheça quem transforma técnica e tradição em objetos únicos."
+          description="Quem transforma técnica e tradição em arte."
           align="center"
         />
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {artisanSpotlights.map((artisan) => (
-            <article key={artisan.id} className="flex flex-col overflow-hidden rounded-lg bg-surface shadow-soft">
+            <article key={artisan.id} className="flex flex-col overflow-hidden bg-surface shadow-soft">
               <img
                 src={artisan.photoUrl}
                 alt={artisan.photoAlt}

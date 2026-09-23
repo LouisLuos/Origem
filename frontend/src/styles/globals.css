@@ -51,12 +51,6 @@
   /* --- Tipografia --- */
   --font-body: "Work Sans", "Segoe UI", sans-serif;
 
-  /* --- Raios (identidade orgânica/artesanal: mais arredondada) --- */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.875rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 2.5rem;
-
   /* --- Sombras suaves, terrosas (não cinza puro) --- */
   --shadow-soft: 0 8px 24px -12px rgb(63 27 24 / 0.25);
   --shadow-lift: 0 16px 40px -16px rgb(63 27 24 / 0.35);
@@ -86,11 +80,21 @@
   :focus-visible {
     outline: 3px solid var(--color-terracota);
     outline-offset: 3px;
-    border-radius: 4px;
   }
 
   ::selection {
     background-color: var(--color-terracota-100);
     color: var(--color-aubergine);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
