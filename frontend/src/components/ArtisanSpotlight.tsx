@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Container, SectionHeading } from '@/design-system'
-import { artisanSpotlights } from '@/data/mockArtisans'
+import { useArtisans } from '@/context/ArtisanContext'
+import { ErrorBlock, LoadingBlock } from './AsyncState'
 
 export function ArtisanSpotlight() {
+  const { artisans, status, error, reload } = useArtisans()
+
   return (
     <section id="artesaos" className="py-16 sm:py-20">
       <Container className="flex flex-col gap-10">
@@ -12,8 +15,11 @@ export function ArtisanSpotlight() {
           align="center"
         />
 
+        {status === 'loading' && <LoadingBlock label="Carregando artesãos…" />}
+        {status === 'error' && <ErrorBlock message={error} onRetry={reload} />}
+
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {artisanSpotlights.slice(0, 3).map((artisan) => (
+          {artisans.slice(0, 3).map((artisan) => (
             <Link key={artisan.id} to={`/artesaos/${artisan.id}`} className="flex cursor-pointer flex-col">
               <div className="overflow-hidden">
                 <img

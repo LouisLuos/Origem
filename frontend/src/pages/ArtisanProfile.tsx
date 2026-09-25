@@ -1,18 +1,45 @@
 import { ChevronRight, MapPin, Package, Sparkles } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button, Container, ProductCard } from '@/design-system'
-import { artisanSpotlights, getAvatarUrl } from '@/data/mockArtisans'
-import { allProducts } from '@/data/mockProducts'
+import { getAvatarUrl } from '@/data/mockArtisans'
+import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { useArtisans } from '@/context/ArtisanContext'
+import { useCatalog } from '@/context/CatalogContext'
 import { useCart } from '@/context/CartContext'
+import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 
 export function ArtisanProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
 
-  const artisan = artisanSpotlights.find((item) => item.id === id)
+  const { artisans, status: artisansStatus, error: artisansError, reload: reloadArtisans } = useArtisans()
+  const { products: catalogProducts, status: catalogStatus } = useCatalog()
+
+  const artisan = artisans.find((item) => item.id === id)
+
+  if (artisansStatus === 'loading' || (artisan && catalogStatus === 'loading')) {
+    return (
+      <main id="main-content" className="pb-24 pt-32">
+        <Container>
+          <LoadingBlock label="Carregando perfil…" />
+        </Container>
+      </main>
+    )
+  }
+
+  if (artisansStatus === 'error') {
+    return (
+      <main id="main-content" className="pb-24 pt-32">
+        <Container>
+          <ErrorBlock message={artisansError} onRetry={reloadArtisans} />
+        </Container>
+      </main>
+    )
+  }
 
   if (!artisan) {
     return (
@@ -30,7 +57,7 @@ export function ArtisanProfile() {
     )
   }
 
-  const products = allProducts.filter((product) => product.artisan === artisan.name)
+  const products = catalogProducts.filter((product) => product.artisan === artisan.name)
   const yearsActive = new Date().getFullYear() - artisan.since
 
   const goToTechnique = () => {
@@ -144,7 +171,13 @@ export function ArtisanProfile() {
           {products.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} onAddToCart={addItem} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isFavorite={isFavorite(product.id)}
+                  onToggleFavorite={toggleFavorite}
+                  onAddToCart={addItem}
+                />
               ))}
             </div>
           ) : (

@@ -10,16 +10,16 @@ conforme cada item for implementado no projeto.
 | [x] | Produto | Página de detalhes do produto. | Rota `/produtos/:id` (`ProductDetail`) com galeria, preço, seletor de quantidade, adicionar ao carrinho/favoritar, detalhes da peça, sobre o artesão e peças relacionadas. `ProductCard` e o dropdown de busca do `Header` linkam para ela. |
 | [x] | Artesão | Perfil do artesão com dados básicos e produtos relacionados. | Rota `/artesaos/:id` (`ArtisanProfile`) com capa, avatar, bio, estatísticas (anos de ofício, peças na loja) e grade de peças do artesão. `ArtisanSpotlight` e a página de produto linkam para ela. |
 | [x] | Carrinho | Adicionar, remover e visualizar itens. | Rota `/carrinho` (`Cart`) lista os itens com imagem, seletor de quantidade e remoção, além de resumo (subtotal, frete grátis acima de R$250, total). `CartContext` agora expõe `addItem`/`removeItem`/`setQuantity`/`clearCart`; ícone do `Header` linka para a página. |
-| [ ] | Pedido | Fluxo inicial de pedido ou simulação de compra. | Não iniciado. |
-| [ ] | Comprador | Área inicial ou fluxo mínimo do comprador. | Não iniciado (ícone de conta no `Header` sem funcionalidade). |
-| [ ] | Artesão (painel) | Área inicial para catálogo, produtos ou estoque. | Não iniciado. |
-| [ ] | Administração | Estrutura inicial de painel administrativo. | Não iniciado. |
-| [ ] | Dados | Consumo por Fake API estruturada e services. | Dados hoje vêm de mocks estáticos locais (`src/data/mockProducts.ts`, `src/data/mockArtisans.ts`), sem camada de services nem Fake API. |
+| [x] | Pedido | Fluxo inicial de pedido ou simulação de compra. | Botão "Finalizar compra" do carrinho leva a `/checkout` (`Checkout`): dados do comprador, endereço de entrega com validação, forma de pagamento simulada (Pix/cartão/boleto) e resumo com frete (R$24,90, grátis acima de R$250). Ao confirmar, `OrderContext` registra o pedido em memória, o carrinho é esvaziado e o usuário vai para `/pedido/:id` (`OrderConfirmation`). |
+| [x] | Comprador | Área inicial ou fluxo mínimo do comprador. | `/entrar` (`Login`) com login e cadastro simulados (`AuthContext`, contas no localStorage) e `/conta` (`Account`) com histórico de pedidos e edição do nome. Ícone de conta do `Header` leva a uma das duas; o checkout pré-preenche nome/e-mail e vincula o pedido à conta. Pedidos agora persistem no localStorage. |
+| [x] | Artesão (painel) | Área inicial para catálogo, produtos ou estoque. | Rota `/painel` (`ArtisanPanel`), restrita a contas de artesão (cadastro com "Sou artesão(ã)" ou conta demo `artesao@origem.com` / `origem123`): resumo (peças ativas, unidades, estoque baixo, esgotadas), cadastro/edição/remoção de peças, pausar/reativar e ajuste de estoque +/−. o catálogo vem de `CatalogContext`/`catalogService`; alimenta a vitrine pública via `catalogService` (peças pausadas ficam ocultas; estoque zerado aparece como "Esgotado"). |
+| [x] | Administração | Estrutura inicial de painel administrativo. | Rota `/admin` (`AdminPanel`), restrita ao perfil `admin` (conta demo `admin@origem.com` / `origem123`; não há cadastro público de administrador). Navegação lateral com Visão geral (métricas e pedidos recentes), Usuários, Pedidos e Catálogo (pausar/remover peças de qualquer artesão). Dados vêm do localStorage. |
+| [x] | Dados | Consumo por Fake API estruturada e services. | Camada `src/services/` (`catalogService`, `artisanService`, `orderService`, `authService`, com persistência em `storage.ts`) expõe funções assíncronas com latência simulada, equivalentes a endpoints REST (`GET /produtos`, `POST /pedidos` etc.). Os contextos (`CatalogContext`, `ArtisanContext`, `OrderContext`, `AuthContext`) consomem os services via `useResource` e as telas tratam carregamento/erro (`AsyncState`). O catálogo é a fonte única da vitrine e dos painéis do artesão e da administração; pedidos baixam o estoque e falham se não houver saldo. Sem backend: os dados vêm dos mocks (`src/data/`) e do localStorage. |
 | [ ] | Publicação | Deploy público da aplicação. | Sem configuração de deploy (Vercel/Netlify/CI) no repositório ainda. |
 
 ## Progresso
 
-**5 / 11** itens concluídos.
+**10 / 11** itens concluídos.
 
 ## Notas de contexto
 

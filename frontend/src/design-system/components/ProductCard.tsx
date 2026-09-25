@@ -15,6 +15,8 @@ export interface Product {
   imageAlt: string
   description?: string
   details?: string[]
+  /** Unidades em estoque. Ausente = sem controle de estoque; 0 = esgotada. */
+  stock?: number
 }
 
 export interface ProductCardProps {
@@ -31,6 +33,7 @@ export const currency = new Intl.NumberFormat('pt-BR', {
 })
 
 export function ProductCard({ product, className, onToggleFavorite, isFavorite, onAddToCart }: ProductCardProps) {
+  const isSoldOut = product.stock === 0
   const hasDiscount = !!product.compareAtPrice && product.compareAtPrice > product.price
 
   return (
@@ -43,7 +46,13 @@ export function ProductCard({ product, className, onToggleFavorite, isFavorite, 
           className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
         />
 
-        {hasDiscount && (
+        {isSoldOut && (
+          <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-aubergine/90 text-[11px] font-medium tracking-wide text-creme-50">
+            Esgotado
+          </Badge>
+        )}
+
+        {hasDiscount && !isSoldOut && (
           <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-terracota-400/90 text-[11px] font-medium tracking-wide text-white">
             Oferta
           </Badge>
@@ -62,8 +71,9 @@ export function ProductCard({ product, className, onToggleFavorite, isFavorite, 
         <button
           type="button"
           onClick={() => onAddToCart?.(product.id)}
-          aria-label={`Adicionar ${product.title} ao carrinho`}
-          className="absolute bottom-3 right-3 z-20 flex h-9 w-9 cursor-pointer items-center justify-center bg-surface/90 text-aubergine shadow-soft transition-colors hover:bg-terracota hover:text-creme-50"
+          disabled={isSoldOut}
+          aria-label={isSoldOut ? `${product.title} esgotado` : `Adicionar ${product.title} ao carrinho`}
+          className="absolute bottom-3 right-3 z-20 flex h-9 w-9 cursor-pointer items-center justify-center bg-surface/90 text-aubergine shadow-soft transition-colors hover:bg-terracota hover:text-creme-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface/90 disabled:hover:text-aubergine"
         >
           <ShoppingBag className="h-4 w-4" aria-hidden="true" />
         </button>

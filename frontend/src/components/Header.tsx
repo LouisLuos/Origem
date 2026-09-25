@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, Search, ShoppingBag, Trash2, User, X } from 'lucide-react'
+import { Heart, Menu, Search, ShoppingBag, Trash2, User, X } from 'lucide-react'
 import { Button, Container, Input, cn, currency } from '@/design-system'
 import { useProductFilter } from '@/context/ProductFilterContext'
 import { useCart } from '@/context/CartContext'
-import { allProducts } from '@/data/mockProducts'
+import { useAuth } from '@/context/AuthContext'
+import { useFavorites } from '@/context/FavoritesContext'
+import { useCatalog } from '@/context/CatalogContext'
+import type { CatalogItem } from '@/context/CatalogContext'
 import logoUrl from '@/assets/logo-origem.png'
 
 const MAX_SEARCH_RESULTS = 5
@@ -23,30 +26,41 @@ export function Header() {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const cartRef = useRef<HTMLDivElement>(null)
   const { query, setQuery } = useProductFilter()
+  const { user } = useAuth()
+  const { products } = useCatalog()
+  const { favorites } = useFavorites()
   const { items: cartItems, itemCount: cartCount, addItem, removeItem } = useCart()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const isHome = pathname === '/'
 
+  // Incrementa a cada item adicionado; usado como `key` para reiniciar a animação.
+  const [cartBumpKey, setCartBumpKey] = useState(0)
+  const previousCartCount = useRef(cartCount)
+  useEffect(() => {
+    if (cartCount > previousCartCount.current) setCartBumpKey((key) => key + 1)
+    previousCartCount.current = cartCount
+  }, [cartCount])
+
   const cartLines = cartItems
     .map((item) => {
-      const product = allProducts.find((candidate) => candidate.id === item.id)
+      const product = products.find((candidate) => candidate.id === item.id)
       return product ? { product, quantity: item.quantity } : null
     })
-    .filter((line): line is { product: (typeof allProducts)[number]; quantity: number } => line !== null)
+    .filter((line): line is { product: CatalogItem; quantity: number } => line !== null)
   const cartSubtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
 
   const normalizedQuery = query.trim().toLowerCase()
   const searchResults = useMemo(() => {
     if (!normalizedQuery) return []
-    return allProducts
+    return products
       .filter((product) =>
         [product.title, product.artisan, product.hub, product.technique].some((field) =>
           field.toLowerCase().includes(normalizedQuery),
         ),
       )
       .slice(0, MAX_SEARCH_RESULTS)
-  }, [normalizedQuery])
+  }, [normalizedQuery, products])
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 16)
@@ -134,16 +148,34 @@ export function Header() {
           >
             {isSearchOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Search className="h-5 w-5" aria-hidden="true" />}
           </button>
-          <button
-            type="button"
-            aria-label="Entrar ou criar conta"
+          <Link
+            to="/favoritos"
+            aria-label={`Meus favoritos, ${favorites.length} ${favorites.length === 1 ? 'item' : 'itens'}`}
+            className={cn(
+              'relative hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
+              isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
+            )}
+          >
+            <Heart className="h-5 w-5" aria-hidden="true" />
+            {favorites.length > 0 && (
+              <span
+                aria-hidden="true"
+                className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-terracota-500 px-1 text-[10px] font-semibold leading-none text-creme"
+              >
+                {favorites.length > 99 ? '99+' : favorites.length}
+              </span>
+            )}
+          </Link>
+          <Link
+            to={user ? '/conta' : '/entrar'}
+            aria-label={user ? 'Minha conta' : 'Entrar ou criar conta'}
             className={cn(
               'hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
               isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
             )}
           >
             <User className="h-5 w-5" aria-hidden="true" />
-          </button>
+          </Link>
           <div ref={cartRef} className="relative">
             <button
               type="button"
@@ -160,11 +192,16 @@ export function Header() {
                 isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
               )}
             >
-              <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+              <ShoppingBag
+                key={`bag-${cartBumpKey}`}
+                className={cn('h-5 w-5', cartBumpKey > 0 && 'animate-bag-bump')}
+                aria-hidden="true"
+              />
               {cartCount > 0 && (
                 <span
+                  key={`badge-${cartBumpKey}`}
                   aria-hidden="true"
-                  className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-terracota-500 px-1 text-[10px] font-semibold leading-none text-creme"
+                  className="animate-badge-pop absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-terracota-500 px-1 text-[10px] font-semibold leading-none text-creme"
                 >
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
@@ -358,6 +395,20 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              to="/favoritos"
+              onClick={() => setIsMenuOpen(false)}
+              className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
+            >
+              Favoritos{favorites.length > 0 && ` (${favorites.length})`}
+            </Link>
+            <Link
+              to={user ? '/conta' : '/entrar'}
+              onClick={() => setIsMenuOpen(false)}
+              className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
+            >
+              {user ? 'Minha conta' : 'Entrar / Criar conta'}
+            </Link>
           </Container>
         </nav>
       )}

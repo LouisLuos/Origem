@@ -1,21 +1,23 @@
 import { ChevronRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Container, currency } from '@/design-system'
-import { allProducts } from '@/data/mockProducts'
+import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { useCatalog } from '@/context/CatalogContext'
+import type { CatalogItem } from '@/context/CatalogContext'
 import { useCart } from '@/context/CartContext'
-
-const FREE_SHIPPING_THRESHOLD = 250
+import { FREE_SHIPPING_THRESHOLD } from '@/context/OrderContext'
 
 export function Cart() {
   const { items, removeItem, setQuantity } = useCart()
+  const { products, status, error, reload } = useCatalog()
   const navigate = useNavigate()
 
   const cartLines = items
     .map((item) => {
-      const product = allProducts.find((candidate) => candidate.id === item.id)
+      const product = products.find((candidate) => candidate.id === item.id)
       return product ? { product, quantity: item.quantity } : null
     })
-    .filter((line): line is { product: (typeof allProducts)[number]; quantity: number } => line !== null)
+    .filter((line): line is { product: CatalogItem; quantity: number } => line !== null)
 
   const subtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
   const missingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
@@ -35,7 +37,11 @@ export function Cart() {
 
         <h1 className="pb-8 text-2xl font-semibold text-ink sm:text-3xl">Seu carrinho</h1>
 
-        {cartLines.length === 0 ? (
+        {status === 'loading' ? (
+          <LoadingBlock label="Carregando carrinho…" />
+        ) : status === 'error' ? (
+          <ErrorBlock message={error} onRetry={reload} />
+        ) : cartLines.length === 0 ? (
           <div className="flex flex-col items-center gap-4 border border-dashed border-border py-16 text-center">
             <ShoppingBag className="h-10 w-10 text-ink-soft/60" aria-hidden="true" />
             <div className="flex flex-col gap-1">
@@ -138,7 +144,7 @@ export function Cart() {
                 <span>{currency.format(subtotal)}</span>
               </div>
 
-              <Button variant="primary" size="lg">
+              <Button variant="primary" size="lg" onClick={() => navigate('/checkout')}>
                 Finalizar compra
               </Button>
               <Link

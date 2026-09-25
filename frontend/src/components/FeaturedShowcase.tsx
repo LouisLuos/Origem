@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { ChevronDown, X } from 'lucide-react'
 import { Container, ProductCard } from '@/design-system'
-import { allProducts } from '@/data/mockProducts'
+import { useCatalog } from '@/context/CatalogContext'
+import { ErrorBlock, LoadingBlock } from './AsyncState'
 import { priceRangeOptions, useProductFilter } from '@/context/ProductFilterContext'
 import { useCart } from '@/context/CartContext'
+import { useFavorites } from '@/context/FavoritesContext'
 import { ProductFilters } from './ProductFilters'
 
 const PAGE_SIZE = 9
@@ -30,11 +32,13 @@ export function FeaturedShowcase() {
     hasActiveFilters,
     matchesFilters,
   } = useProductFilter()
+  const { products, status, error, reload } = useCatalog()
   const { addItem } = useCart()
+  const { isFavorite, toggleFavorite } = useFavorites()
   const [sort, setSort] = useState<SortOption>('relevancia')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
-  const filteredProducts = allProducts.filter(matchesFilters)
+  const filteredProducts = products.filter(matchesFilters)
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sort === 'preco-asc') return a.price - b.price
     if (sort === 'preco-desc') return b.price - a.price
@@ -112,10 +116,20 @@ export function FeaturedShowcase() {
             </div>
           </div>
 
-          {visibleProducts.length > 0 ? (
+          {status === 'loading' ? (
+            <LoadingBlock label="Carregando peças…" />
+          ) : status === 'error' ? (
+            <ErrorBlock message={error} onRetry={reload} />
+          ) : visibleProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
               {visibleProducts.map((product) => (
-                <ProductCard key={product.id} product={product} onAddToCart={addItem} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isFavorite={isFavorite(product.id)}
+                  onToggleFavorite={toggleFavorite}
+                  onAddToCart={addItem}
+                />
               ))}
             </div>
           ) : (
@@ -124,7 +138,7 @@ export function FeaturedShowcase() {
             </p>
           )}
 
-          {visibleProducts.length > 0 && (
+          {status === 'ready' && visibleProducts.length > 0 && (
             <div className="flex flex-col items-center gap-4 pt-2">
               <span className="text-xs text-ink-soft">
                 Mostrando {visibleProducts.length} de {filteredProducts.length} peças

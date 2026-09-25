@@ -30,9 +30,9 @@ function FilterCheckbox({
   onChange: () => void
 }) {
   return (
-    <label className="group flex cursor-pointer items-center gap-2.5 py-1 text-sm text-ink-soft transition-colors hover:text-ink">
+    <label className="group/checkbox flex cursor-pointer items-center gap-2.5 py-1 text-sm text-ink-soft transition-colors hover:text-ink">
       <span
-        className="relative flex h-4 w-4 shrink-0 items-center justify-center border border-border bg-surface transition-colors group-has-checked:border-terracota group-has-checked:bg-terracota"
+        className="relative flex h-4 w-4 shrink-0 items-center justify-center border border-border bg-surface transition-colors group-has-checked/checkbox:border-terracota group-has-checked/checkbox:bg-terracota"
       >
         <input
           type="checkbox"
@@ -41,7 +41,7 @@ function FilterCheckbox({
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
         <Check
-          className="h-3 w-3 text-creme-50 opacity-0 transition-opacity group-has-checked:opacity-100"
+          className="h-3 w-3 text-creme-50 opacity-0 transition-opacity group-has-checked/checkbox:opacity-100"
           aria-hidden="true"
           strokeWidth={3}
         />
@@ -56,7 +56,7 @@ export function ProductFilters() {
     useProductFilter()
 
   return (
-    <aside className="w-full shrink-0 lg:w-64">
+    <aside className="w-full shrink-0 lg:w-64 p-6 bg-aubergine-400/10">
       <FilterSection title="Técnica">
         {techniques.map((technique) => (
           <FilterCheckbox

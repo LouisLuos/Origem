@@ -4,9 +4,12 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ChevronRight, Heart, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react'
 import { Badge, Button, Container, ProductCard, currency } from '@/design-system'
 import type { Product } from '@/design-system'
-import { allProducts } from '@/data/mockProducts'
-import { artisanSpotlights, getAvatarUrl } from '@/data/mockArtisans'
+import { getAvatarUrl } from '@/data/mockArtisans'
+import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { useArtisans } from '@/context/ArtisanContext'
+import { useCatalog } from '@/context/CatalogContext'
 import { useCart } from '@/context/CartContext'
+import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 
 function getGalleryImages(product: Product): string[] {
@@ -43,19 +46,32 @@ export function ProductDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addItem } = useCart()
+  const { isFavorite: isFavoriteProduct, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
 
-  const product = allProducts.find((item) => item.id === id)
+  const { products, getProduct, status, error, reload } = useCatalog()
+  const { artisans } = useArtisans()
+
+  const product = id ? getProduct(id) : undefined
 
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
-  const [isFavorite, setIsFavorite] = useState(false)
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
     setActiveImage(0)
     setQuantity(1)
   }, [id])
+
+  if (status !== 'ready' && !product) {
+    return (
+      <main id="main-content" className="pb-24 pt-32">
+        <Container>
+          {status === 'error' ? <ErrorBlock message={error} onRetry={reload} /> : <LoadingBlock label="Carregando peça…" />}
+        </Container>
+      </main>
+    )
+  }
 
   if (!product) {
     return (
@@ -78,8 +94,8 @@ export function ProductDetail() {
     ? Math.round(100 - (product.price / (product.compareAtPrice as number)) * 100)
     : 0
   const gallery = getGalleryImages(product)
-  const artisan = artisanSpotlights.find((item) => item.name === product.artisan)
-  const relatedProducts = allProducts
+  const artisan = artisans.find((item) => item.name === product.artisan)
+  const relatedProducts = products
     .filter((item) => item.technique === product.technique && item.id !== product.id)
     .slice(0, 4)
 
@@ -212,19 +228,20 @@ export function ProductDetail() {
                 size="lg"
                 className="h-14 flex-1"
                 onClick={() => addItem(product.id, quantity)}
+                disabled={product.stock === 0}
               >
                 <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-                Adicionar ao carrinho
+                {product.stock === 0 ? 'Esgotado' : 'Adicionar ao carrinho'}
               </Button>
 
               <button
                 type="button"
-                onClick={() => setIsFavorite((value) => !value)}
-                aria-pressed={isFavorite}
-                aria-label={isFavorite ? `Remover ${product.title} dos favoritos` : `Favoritar ${product.title}`}
+                onClick={() => toggleFavorite(product.id)}
+                aria-pressed={isFavoriteProduct(product.id)}
+                aria-label={isFavoriteProduct(product.id) ? `Remover ${product.title} dos favoritos` : `Favoritar ${product.title}`}
                 className="flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center border border-border text-aubergine transition-colors hover:border-terracota hover:text-terracota-600"
               >
-                <Heart className="h-5 w-5" fill={isFavorite ? 'currentColor' : 'none'} aria-hidden="true" />
+                <Heart className="h-5 w-5" fill={isFavoriteProduct(product.id) ? 'currentColor' : 'none'} aria-hidden="true" />
               </button>
             </div>
 
@@ -296,7 +313,13 @@ export function ProductDetail() {
             <h2 className="text-xl font-semibold text-ink sm:text-2xl">Você também pode gostar</h2>
             <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
               {relatedProducts.map((related) => (
-                <ProductCard key={related.id} product={related} onAddToCart={addItem} />
+                <ProductCard
+                  key={related.id}
+                  product={related}
+                  isFavorite={isFavoriteProduct(related.id)}
+                  onToggleFavorite={toggleFavorite}
+                  onAddToCart={addItem}
+                />
               ))}
             </div>
           </div>
