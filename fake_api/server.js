@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const produtoRoutes = require('./routes/produtoRoutes');
+const produtoController = require('./controllers/produtoController');
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(express.json()); // Permite ler JSON no corpo das requisições (POST/PU
 
 // Registrar as rotas (Prefixando com /api/v1)
 app.use('/api/v1/produtos', produtoRoutes);
+app.post('/api/v1/estoque/reservas', produtoController.reserveStock);
 
 // Tratamento para rotas inexistentes
 app.use((req, res) => {
