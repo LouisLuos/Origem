@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /**
- * Origem — Design Tokens
+ * Design Tokens da Origem
  * Paleta oficial extraída da identidade visual (ver DESIGN_SYSTEM.md).
  * Tons neutros e estados de UI foram derivados a partir das 4 cores de marca
  * para manter contraste AA (WCAG 2.1) em texto e componentes interativos.
@@ -49,17 +49,49 @@
   --color-danger: #a3352b;
 
   /* --- Tipografia --- */
-  --font-body: "Work Sans", "Segoe UI", sans-serif;
-
-  /* --- Raios (identidade orgânica/artesanal: mais arredondada) --- */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.875rem;
-  --radius-lg: 1.5rem;
-  --radius-xl: 2.5rem;
+  --font-body: "DM Sans", "Segoe UI", sans-serif;
 
   /* --- Sombras suaves, terrosas (não cinza puro) --- */
   --shadow-soft: 0 8px 24px -12px rgb(63 27 24 / 0.25);
   --shadow-lift: 0 16px 40px -16px rgb(63 27 24 / 0.35);
+
+  /* --- Animações do carrinho --- */
+  --animate-badge-pop: badge-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-bag-bump: bag-bump 0.5s ease-out;
+
+  @keyframes badge-pop {
+    0% {
+      transform: scale(0.2);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes bag-bump {
+    0%,
+    100% {
+      transform: rotate(0) scale(1);
+    }
+    25% {
+      transform: rotate(-14deg) scale(1.15);
+    }
+    55% {
+      transform: rotate(10deg) scale(1.1);
+    }
+    80% {
+      transform: rotate(-4deg) scale(1.03);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-badge-pop,
+  .animate-bag-bump {
+    animation: none;
+  }
 }
 
 @layer base {
@@ -86,11 +118,21 @@
   :focus-visible {
     outline: 3px solid var(--color-terracota);
     outline-offset: 3px;
-    border-radius: 4px;
   }
 
   ::selection {
     background-color: var(--color-terracota-100);
     color: var(--color-aubergine);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

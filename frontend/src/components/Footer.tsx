@@ -19,10 +19,10 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="bg-aubergine text-creme-100">
+    <footer className="relative z-10 bg-aubergine text-creme-100">
       <Container className="grid gap-10 py-14 lg:grid-cols-[1.2fr_2fr]">
         <div className="flex flex-col gap-4">
-          <img src={logoUrl} alt="Origem" className="h-9 w-auto brightness-0 invert" />
+          <img src={logoUrl} alt="Origem" className="h-9 w-auto self-start brightness-0 invert" />
           <p className="max-w-sm text-sm text-creme-100/80">
             Marketplace da economia criativa de Pernambuco. Conectamos artesãos e mestres populares
             diretamente a quem valoriza técnica, território e história.
@@ -72,7 +72,7 @@ export function Footer() {
 
       <div className="border-t border-creme-100/10 py-6">
         <Container className="flex flex-col items-center justify-between gap-2 text-xs text-creme-100/60 sm:flex-row">
-          <p>© {new Date().getFullYear()} Origem. Projeto Integrador IV — CESAR School.</p>
+          <p>© {new Date().getFullYear()} Origem. Projeto Integrador IV da CESAR School.</p>
           <p>Feito com respeito pela cultura pernambucana.</p>
         </Container>
       </div>

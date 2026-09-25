@@ -1,33 +1,42 @@
+import { Link } from 'react-router-dom'
 import { Container, SectionHeading } from '@/design-system'
-import { artisanSpotlights } from '@/data/mockArtisans'
+import { useArtisans } from '@/context/ArtisanContext'
+import { ErrorBlock, LoadingBlock } from './AsyncState'
 
 export function ArtisanSpotlight() {
+  const { artisans, status, error, reload } = useArtisans()
+
   return (
     <section id="artesaos" className="py-16 sm:py-20">
       <Container className="flex flex-col gap-10">
         <SectionHeading
           title="Mestres e mestras do artesanato pernambucano"
-          description="Por trás de cada peça existe uma trajetória. Conheça quem transforma técnica e tradição em objetos únicos."
+          description="Quem transforma técnica e tradição em arte."
           align="center"
         />
 
+        {status === 'loading' && <LoadingBlock label="Carregando artesãos…" />}
+        {status === 'error' && <ErrorBlock message={error} onRetry={reload} />}
+
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {artisanSpotlights.map((artisan) => (
-            <article key={artisan.id} className="flex flex-col overflow-hidden rounded-lg bg-surface shadow-soft">
-              <img
-                src={artisan.photoUrl}
-                alt={artisan.photoAlt}
-                loading="lazy"
-                className="h-64 w-full object-cover"
-              />
-              <div className="flex flex-col gap-2 p-6">
-                <span className="text-sm font-medium text-oliva-600">
+          {artisans.slice(0, 3).map((artisan) => (
+            <Link key={artisan.id} to={`/artesaos/${artisan.id}`} className="flex cursor-pointer flex-col">
+              <div className="overflow-hidden">
+                <img
+                  src={artisan.photoUrl}
+                  alt={artisan.photoAlt}
+                  loading="lazy"
+                  className="h-96 w-full object-cover object-top transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <div className="flex flex-col items-center gap-1 pt-4 text-center">
+                <span className="text-[11px] uppercase tracking-widest text-ink-soft/70">
                   {artisan.technique} · {artisan.hub}
                 </span>
-                <h3 className="text-xl font-semibold text-aubergine">{artisan.name}</h3>
-                <p className="text-sm text-ink-soft">{artisan.bio}</p>
+                <h3 className="text-sm font-medium uppercase tracking-wide text-ink">{artisan.name}</h3>
+                <p className="text-xs text-ink-soft">{artisan.bio}</p>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </Container>
