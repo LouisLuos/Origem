@@ -8,7 +8,7 @@ const app = express();
 
 // Middlewares globais
 app.use(cors());
-app.use(express.json()); // Permite ler JSON no corpo das requisições (POST/PUT)
+app.use(express.json());
 
 // Registrar as rotas (Prefixando com /api/v1)
 app.use('/api/v1/produtos', produtoRoutes);
@@ -22,5 +22,5 @@ app.use((req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Fake API rodando em http://localhost:${PORT}/api/v1/`);
+    console.log(`http://localhost:${PORT}/api/v1/`);
 });
