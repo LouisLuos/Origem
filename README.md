@@ -27,6 +27,30 @@ Implementação completa em **Spring Boot + PostgreSQL real (Supabase)**, com ev
 
 ---
 
+## ▶️ Como executar
+
+**Publicado:** frontend em https://origem-five.vercel.app, consumindo a Fake API em https://origem-bnhv.onrender.com/api/v1.
+A Render pode levar cerca de 1 minuto para responder à primeira requisição.
+
+**Localmente** (Node.js 18+):
+
+```bash
+# 1. Fake API (branch `fake-api`, pasta fake_api/) — http://localhost:3000/api/v1
+git checkout fake-api
+cd fake_api && npm install && node server.js
+
+# 2. Frontend (branch `main`, pasta frontend/) — http://localhost:5173
+cd frontend
+npm install
+npm run dev
+```
+
+Para usar a API publicada em vez da local, crie `frontend/.env.local` com
+`VITE_API_URL=https://origem-bnhv.onrender.com/api/v1`. Detalhes em [`frontend/README.md`](./frontend/README.md)
+e contratos da API em [`docs/05-desenvolvimento-web/contratos-api.md`](./docs/05-desenvolvimento-web/contratos-api.md).
+
+---
+
 ## 📁 Estrutura da Documentação do Projeto
 
 A documentação completa de Engenharia de Software foi modularizada e organizada na pasta [`/docs`](./docs/README.md):

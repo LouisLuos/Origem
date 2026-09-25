@@ -1,6 +1,15 @@
-import type { ArtisanSpotlight } from '@/data/mockArtisans'
-
-export type Artisan = ArtisanSpotlight
+export interface Artisan {
+  id: string
+  name: string
+  hub: string
+  technique: string
+  bio: string
+  since: number
+  photoUrl: string
+  photoAlt: string
+  coverUrl: string
+  coverAlt: string
+}
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1'
 

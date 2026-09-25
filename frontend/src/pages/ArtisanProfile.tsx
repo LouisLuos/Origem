@@ -1,7 +1,7 @@
 import { ChevronRight, MapPin, Package, Sparkles } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Button, Container, ProductCard } from '@/design-system'
-import { getAvatarUrl } from '@/data/mockArtisans'
+import { getAvatarUrl } from '@/utils/avatar'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'

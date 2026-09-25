@@ -1,8 +1,15 @@
 import { Star } from 'lucide-react'
 import { Container, SectionHeading } from '@/design-system'
-import { testimonials } from '@/data/mockTestimonials'
+import { reviewService } from '@/services/reviewService'
+import type { Review } from '@/services/reviewService'
+import { useResource } from '@/hooks/useResource'
+import { ErrorBlock, LoadingBlock } from './AsyncState'
+
+const noReviews: Review[] = []
 
 export function Testimonials() {
+  const { data: testimonials, status, error, reload } = useResource(reviewService.list, noReviews)
+
   return (
     <section className="bg-aubergine-400/10 py-16 sm:py-20">
       <Container className="flex flex-col gap-10">
@@ -11,6 +18,9 @@ export function Testimonials() {
           description="Histórias de quem recebeu peças feitas à mão por nossos artesãos."
           align="center"
         />
+
+        {status === 'loading' && <LoadingBlock label="Carregando avaliações…" />}
+        {status === 'error' && <ErrorBlock message={error} onRetry={reload} />}
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((testimonial) => (

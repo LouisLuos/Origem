@@ -1,10 +1,9 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { cartService } from '@/services/cartService'
+import type { CartItem } from '@/services/cartService'
 
-export interface CartItem {
-  id: string
-  quantity: number
-}
+export type { CartItem }
 
 export interface CartContextValue {
   items: CartItem[]
@@ -19,7 +18,11 @@ const CartContext = createContext<CartContextValue | null>(null)
 
 /** Estado global do carrinho (itens e contagem), compartilhado entre `ProductCard`, `ProductDetail`, `Cart` e o ícone de carrinho no `Header`. */
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
+  const [items, setItems] = useState<CartItem[]>(cartService.load)
+
+  useEffect(() => {
+    cartService.save(items)
+  }, [items])
 
   const addItem = (productId: string, quantity = 1) => {
     setItems((prev) => {

@@ -1,4 +1,6 @@
-export interface Testimonial {
+import { simulateLatency } from './storage'
+
+export interface Review {
   id: string
   name: string
   location: string
@@ -8,7 +10,7 @@ export interface Testimonial {
   avatarAlt: string
 }
 
-export const testimonials: Testimonial[] = [
+const reviews: Review[] = [
   {
     id: 't-01',
     name: 'Camila Torres',
@@ -40,3 +42,11 @@ export const testimonials: Testimonial[] = [
     avatarAlt: 'Foto de perfil de Beatriz Nascimento',
   },
 ]
+
+/** Avaliações de compradores. Equivalente a `GET /avaliacoes`; ainda simulado localmente. */
+export const reviewService = {
+  async list(): Promise<Review[]> {
+    await simulateLatency()
+    return reviews
+  },
+}

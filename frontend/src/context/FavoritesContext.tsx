@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { readStorage, writeStorage } from '@/services/storage'
 
 export interface FavoritesContextValue {
   favorites: string[]
@@ -10,13 +11,8 @@ export interface FavoritesContextValue {
 const FAVORITES_KEY = 'origem:favorites'
 
 function loadFavorites(): string[] {
-  try {
-    const raw = window.localStorage.getItem(FAVORITES_KEY)
-    const parsed: unknown = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
-  } catch {
-    return []
-  }
+  const stored = readStorage<unknown>(FAVORITES_KEY, [])
+  return Array.isArray(stored) ? stored.filter((id): id is string => typeof id === 'string') : []
 }
 
 const FavoritesContext = createContext<FavoritesContextValue | null>(null)
@@ -28,11 +24,7 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   const toggleFavorite = useCallback((productId: string) => {
     setFavorites((prev) => {
       const next = prev.includes(productId) ? prev.filter((id) => id !== productId) : [productId, ...prev]
-      try {
-        window.localStorage.setItem(FAVORITES_KEY, JSON.stringify(next))
-      } catch {
-        // Sem armazenamento: os favoritos valem só durante a sessão.
-      }
+      writeStorage(FAVORITES_KEY, next)
       return next
     })
   }, [])
