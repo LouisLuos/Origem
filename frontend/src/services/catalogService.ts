@@ -1,7 +1,4 @@
-import { allProducts } from '@/data/mockProducts'
 import type { Product } from '@/design-system/components/ProductCard'
-import { DEMO_ARTISAN } from './authService'
-import { readStorage, simulateLatency, writeStorage } from './storage'
 
 export interface CatalogItem extends Product {
   /** E-mail da conta de artesão dona da peça. */
@@ -23,34 +20,25 @@ export interface StockReservation {
   quantity: number
 }
 
-// v2: o catálogo passou a ser a fonte única da vitrine (formato incompatível com o painel antigo).
-const CATALOG_KEY = 'origem:catalog:v2'
-const SEED_STOCK = [8, 5, 12, 3, 9, 6, 4, 15, 7, 10]
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1'
 
-const slug = (value: string) =>
-  value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-
-/** Catálogo inicial: os produtos do mock, cada um com estoque e um dono (o Zé Caboclo é a conta demo). */
-function seedCatalog(): CatalogItem[] {
-  return allProducts.map((product, index) => ({
-    ...product,
-    ownerEmail: product.artisan === DEMO_ARTISAN.name ? DEMO_ARTISAN.email : `${slug(product.artisan)}@artesaos.origem.com`,
-    stock: SEED_STOCK[index % SEED_STOCK.length],
-    active: true,
-  }))
+interface ProductListResponse {
+  dados: CatalogItem[]
 }
 
-function load(): CatalogItem[] {
-  return readStorage<CatalogItem[] | null>(CATALOG_KEY, null) ?? seedCatalog()
-}
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  })
 
-function save(items: CatalogItem[]) {
-  writeStorage(CATALOG_KEY, items)
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { erro?: string } | null
+    throw new Error(payload?.erro ?? 'Não foi possível concluir a operação no catálogo.')
+  }
+
+  if (response.status === 204) return undefined as T
+  return response.json() as Promise<T>
 }
 
 /**
@@ -59,60 +47,43 @@ function save(items: CatalogItem[]) {
  */
 export const catalogService = {
   async list(): Promise<CatalogItem[]> {
-    await simulateLatency(400)
-    return load()
+    const response = await request<ProductListResponse>('/produtos?limit=100')
+    return response.dados
   },
 
   async create(owner: Owner, input: CatalogItemInput): Promise<CatalogItem> {
-    await simulateLatency(200)
-    const item: CatalogItem = { ...input, id: `c-${Date.now().toString(36)}`, ownerEmail: owner.email, artisan: owner.name }
-    save([item, ...load()])
-    return item
+    return request<CatalogItem>('/produtos', {
+      method: 'POST',
+      body: JSON.stringify({ ...input, ownerEmail: owner.email, artisan: owner.name }),
+    })
   },
 
   async update(id: string, patch: Partial<CatalogItemInput>): Promise<CatalogItem> {
-    await simulateLatency(200)
-    const items = load()
-    const current = items.find((item) => item.id === id)
-    if (!current) throw new Error('Peça não encontrada.')
-    const updated = { ...current, ...patch }
-    save(items.map((item) => (item.id === id ? updated : item)))
-    return updated
+    return request<CatalogItem>(`/produtos/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    })
   },
 
   /** Soma `delta` ao estoque atual (sem sobrescrever), para que cliques rápidos não se percam. */
   async adjustStock(id: string, delta: number): Promise<CatalogItem> {
-    await simulateLatency(120)
-    const items = load()
-    const current = items.find((item) => item.id === id)
-    if (!current) throw new Error('Peça não encontrada.')
-    const updated = { ...current, stock: Math.max(0, current.stock + delta) }
-    save(items.map((item) => (item.id === id ? updated : item)))
-    return updated
+    const current = await request<CatalogItem>(`/produtos/${encodeURIComponent(id)}`)
+    return request<CatalogItem>(`/produtos/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ stock: Math.max(0, current.stock + delta) }),
+    })
   },
 
   async remove(id: string): Promise<void> {
-    await simulateLatency(200)
-    save(load().filter((item) => item.id !== id))
+    await request<void>(`/produtos/${encodeURIComponent(id)}`, { method: 'DELETE' })
   },
 
   /** Baixa o estoque de um pedido. Falha, sem alterar nada, se alguma peça não tiver saldo. */
   async reserveStock(lines: StockReservation[]): Promise<CatalogItem[]> {
-    const items = load()
-    for (const line of lines) {
-      const item = items.find((candidate) => candidate.id === line.productId)
-      if (!item || !item.active) throw new Error('Uma das peças do pedido não está mais disponível.')
-      if (item.stock < line.quantity) {
-        throw new Error(
-          item.stock === 0 ? `“${item.title}” esgotou.` : `Só restam ${item.stock} unidade(s) de “${item.title}”.`,
-        )
-      }
-    }
-    const next = items.map((item) => {
-      const line = lines.find((candidate) => candidate.productId === item.id)
-      return line ? { ...item, stock: item.stock - line.quantity } : item
+    const response = await request<ProductListResponse>('/estoque/reservas', {
+      method: 'POST',
+      body: JSON.stringify({ lines }),
     })
-    save(next)
-    return next
+    return response.dados
   },
 }
