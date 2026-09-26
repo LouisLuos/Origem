@@ -1,20 +1,37 @@
 # 🏺 Origem — Marketplace da Economia Criativa de Pernambuco
-### Projeto Integrador IV · Análise e Desenvolvimento de Sistemas (2026.2)
+
+**Projeto Integrador IV · Análise e Desenvolvimento de Sistemas (2026.2)**
 **CESAR School · Disciplinas Integradas do 4º Semestre**
+
+---
+
+## 📑 Sumário
+
+- [Sobre o Projeto](#-sobre-o-projeto)
+- [Checklist — Rubrica FCCPD](#-checklist--rubrica-fccpd-concorrência-mensageria-e-confiabilidade)
+- [Como Executar](#️-como-executar)
+- [Estrutura da Documentação](#-estrutura-da-documentação-do-projeto)
+- [Disciplinas Integradas](#-disciplinas-integradas)
 
 ---
 
 ## 📖 Sobre o Projeto
 
-O **Origem** é uma aplicação web *full stack* concebida para fortalecer a economia criativa e o artesanato tradicional do estado de Pernambuco. 
+O **Origem** é uma aplicação web *full stack* criada para fortalecer a economia criativa e o artesanato tradicional do estado de Pernambuco.
 
-Artesãos e mestres populares frequentemente enfrentam invisibilidade digital, dependem de intermediários comerciais que reduzem sua margem de renda e lidam com uma gestão precária de catálogo, pedidos e estoque. O **Origem** conecta essa produção autêntica diretamente a compradores em âmbito nacional, valorizando o **território de origem**, a **técnica tradicional** *(cerâmica figurativa, renda renascença, xilogravura, marcenaria, etc.)* e a **história de quem faz**.
+Artesãos e mestres populares enfrentam, com frequência, três grandes desafios: **invisibilidade digital**, **dependência de intermediários comerciais** — que reduzem sua margem de renda — e **gestão precária** de catálogo, pedidos e estoque.
+
+O **Origem** enfrenta esses problemas conectando essa produção autêntica diretamente a compradores de todo o país, valorizando três pilares:
+
+- 📍 o **território de origem**;
+- 🛠️ a **técnica tradicional** (cerâmica figurativa, renda renascença, xilogravura, marcenaria, entre outras);
+- 👤 a **história de quem faz**.
 
 ---
 
 ## ✅ Checklist — Rubrica FCCPD (Concorrência, Mensageria e Confiabilidade)
 
-Implementação completa em **Spring Boot + PostgreSQL real (Supabase)**, com evidências e teste automatizado únicos cobrindo os 6 critérios avaliados:
+A rubrica foi implementada de ponta a ponta em **Spring Boot + PostgreSQL real (Supabase)**, com evidências e um teste automatizado único cobrindo os 6 critérios avaliados:
 
 | # | Critério | Evidência |
 |---|---|---|
@@ -27,27 +44,38 @@ Implementação completa em **Spring Boot + PostgreSQL real (Supabase)**, com ev
 
 ---
 
-## ▶️ Como executar
+## ▶️ Como Executar
 
-**Publicado:** frontend em https://origem-five.vercel.app, consumindo a Fake API em https://origem-bnhv.onrender.com/api/v1.
-A Render pode levar cerca de 1 minuto para responder à primeira requisição.
+### Ambiente publicado
 
-**Localmente** (Node.js 18+):
+O frontend está publicado em **https://origem-five.vercel.app** e consome a Fake API disponível em **https://origem-bnhv.onrender.com/api/v1**.
+
+> ⏳ A Render pode levar cerca de 1 minuto para responder à primeira requisição (cold start).
+
+### Ambiente local (Node.js 18+)
+
+**1. Fake API** — branch `fake-api`, pasta `fake_api/` — sobe em `http://localhost:3000/api/v1`:
 
 ```bash
-# 1. Fake API (branch `fake-api`, pasta fake_api/) — http://localhost:3000/api/v1
 git checkout fake-api
 cd fake_api && npm install && node server.js
+```
 
-# 2. Frontend (branch `main`, pasta frontend/) — http://localhost:5173
+**2. Frontend** — branch `main`, pasta `frontend/` — sobe em `http://localhost:5173`:
+
+```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Para usar a API publicada em vez da local, crie `frontend/.env.local` com
-`VITE_API_URL=https://origem-bnhv.onrender.com/api/v1`. Detalhes em [`frontend/README.md`](./frontend/README.md)
-e contratos da API em [`docs/05-desenvolvimento-web/contratos-api.md`](./docs/05-desenvolvimento-web/contratos-api.md).
+**Usando a API publicada em vez da local:** crie o arquivo `frontend/.env.local` com:
+
+```
+VITE_API_URL=https://origem-bnhv.onrender.com/api/v1
+```
+
+Mais detalhes em [`frontend/README.md`](./frontend/README.md) e nos contratos da API em [`docs/05-desenvolvimento-web/contratos-api.md`](./docs/05-desenvolvimento-web/contratos-api.md).
 
 ---
 
@@ -55,13 +83,14 @@ e contratos da API em [`docs/05-desenvolvimento-web/contratos-api.md`](./docs/05
 
 A documentação completa de Engenharia de Software foi modularizada e organizada na pasta [`/docs`](./docs/README.md):
 
-* 🏛️ **[Requisitos e Arquitetura](./docs/01-requisitos-e-arquitetura/):** Análise de domínio, modelagem conceitual UML, histórias BDD, tarefas SMART, priorização e princípios SOLID.
-* 🗄️ **[Banco de Dados](./docs/02-banco-de-dados/):** Modelo ER, modelo lógico relacional, normalização 1FN–3FN, scripts DDL e seeds.
-* ⚡ **[Computação Concorrente e Distribuída (FCCPD)](./docs/03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md):** Controle de concorrência no checkout (lock pessimista no PostgreSQL), fila assíncrona baseada em banco e teste de consistência — implementação em [`/src`](./src), evidências em [`EVIDENCIAS.md`](./EVIDENCIAS.md) e [`IA.md`](./IA.md).
-* 🤖 **[Engenharia de Software e IA](./docs/04-engenharia-software-e-ia/):** Formulação do problema de recomendação, features do BD, baseline simples e métricas.
-* 🌐 **[Desenvolvimento Web](./docs/05-desenvolvimento-web/):** Frontend responsivo, backend inicial, contratos da API e deploy.
-  * 💻 Código do front-end (vitrine + Design System): [`/frontend`](./frontend/README.md)
-* 🎯 **[Projeto Integrador IV](./docs/06-projeto-integrador-iv/):** Checkpoints quinzenais, matriz de riscos e acompanhamento da squad.
+| Área | Conteúdo | Link |
+|---|---|---|
+| 🏛️ Requisitos e Arquitetura | Análise de domínio, modelagem conceitual UML, histórias BDD, tarefas SMART, priorização e princípios SOLID | [`docs/01-requisitos-e-arquitetura`](./docs/01-requisitos-e-arquitetura/) |
+| 🗄️ Banco de Dados | Modelo ER, modelo lógico relacional, normalização 1FN–3FN, scripts DDL e seeds | [`docs/02-banco-de-dados`](./docs/02-banco-de-dados/) |
+| ⚡ Computação Concorrente e Distribuída (FCCPD) | Controle de concorrência no checkout (lock pessimista no PostgreSQL), fila assíncrona baseada em banco e teste de consistência — implementação em [`/src`](./src), evidências em [`EVIDENCIAS.md`](./EVIDENCIAS.md) e [`IA.md`](./IA.md) | [`docs/03-computacao-concorrente-distribuida`](./docs/03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md) |
+| 🤖 Engenharia de Software e IA | Formulação do problema de recomendação, features do BD, baseline simples e métricas | [`docs/04-engenharia-software-e-ia`](./docs/04-engenharia-software-e-ia/) |
+| 🌐 Desenvolvimento Web | Frontend responsivo, backend inicial, contratos da API e deploy. Código do front-end (vitrine + Design System) em [`/frontend`](./frontend/README.md) | [`docs/05-desenvolvimento-web`](./docs/05-desenvolvimento-web/) |
+| 🎯 Projeto Integrador IV | Checkpoints quinzenais, matriz de riscos e acompanhamento da squad | [`docs/06-projeto-integrador-iv`](./docs/06-projeto-integrador-iv/) |
 
 ---
 
