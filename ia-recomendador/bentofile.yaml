@@ -1,0 +1,13 @@
+service: "service:Recomendador"
+labels:
+  projeto: origem
+  hu: HU-24
+include:
+  - "*.py"
+  - "dados/*.json"
+python:
+  packages:
+    - bentoml
+    - numpy
+models:
+  - origem-recomendador:latest
