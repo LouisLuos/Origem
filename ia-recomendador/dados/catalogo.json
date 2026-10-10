@@ -1,0 +1,30 @@
+{
+  "produtos": [
+    {"id": "p01", "nome": "Boneco de barro Vitalino (réplica)", "artesao": "Mestre Severino", "tecnica": "ceramica", "polo": "Alto do Moura", "categoria": "decoracao", "preco": 180.0, "estoque": 5, "pedidos": 48},
+    {"id": "p02", "nome": "Cena de forró em barro", "artesao": "Mestre Severino", "tecnica": "ceramica", "polo": "Alto do Moura", "categoria": "decoracao", "preco": 260.0, "estoque": 2, "pedidos": 31},
+    {"id": "p03", "nome": "Vaso de barro pintado", "artesao": "Dona Lourdes", "tecnica": "ceramica", "polo": "Alto do Moura", "categoria": "utilitario", "preco": 95.0, "estoque": 0, "pedidos": 40},
+    {"id": "p04", "nome": "Leão de cerâmica", "artesao": "Mestre Zé do Carmo", "tecnica": "ceramica", "polo": "Tracunhaém", "categoria": "decoracao", "preco": 320.0, "estoque": 3, "pedidos": 22},
+    {"id": "p05", "nome": "Santo de barro", "artesao": "Mestre Zé do Carmo", "tecnica": "ceramica", "polo": "Tracunhaém", "categoria": "arte_sacra", "preco": 210.0, "estoque": 4, "pedidos": 18},
+    {"id": "p06", "nome": "Gibão de couro em miniatura", "artesao": "Seu Expedito", "tecnica": "couro", "polo": "Alto do Moura", "categoria": "decoracao", "preco": 150.0, "estoque": 6, "pedidos": 12},
+    {"id": "p07", "nome": "Xilogravura Lampião e Maria Bonita", "artesao": "J. Borges (ateliê)", "tecnica": "xilogravura", "polo": "Bezerros", "categoria": "quadro", "preco": 120.0, "estoque": 10, "pedidos": 52},
+    {"id": "p08", "nome": "Cordel ilustrado com capa em xilo", "artesao": "J. Borges (ateliê)", "tecnica": "xilogravura", "polo": "Bezerros", "categoria": "livro", "preco": 25.0, "estoque": 40, "pedidos": 30},
+    {"id": "p09", "nome": "Xilogravura A Chegada da Prostituta no Céu", "artesao": "Ateliê Bezerros", "tecnica": "xilogravura", "polo": "Bezerros", "categoria": "quadro", "preco": 140.0, "estoque": 7, "pedidos": 26},
+    {"id": "p10", "nome": "Máscara de Papangu", "artesao": "Lula Vassoureiro", "tecnica": "papel_mache", "polo": "Bezerros", "categoria": "decoracao", "preco": 90.0, "estoque": 8, "pedidos": 34},
+    {"id": "p11", "nome": "Toalha de renda renascença", "artesao": "Rendeiras de Poção", "tecnica": "renda_renascenca", "polo": "Pesqueira", "categoria": "cama_mesa", "preco": 380.0, "estoque": 2, "pedidos": 15},
+    {"id": "p12", "nome": "Caminho de mesa em renascença", "artesao": "Rendeiras de Poção", "tecnica": "renda_renascenca", "polo": "Pesqueira", "categoria": "cama_mesa", "preco": 160.0, "estoque": 5, "pedidos": 20},
+    {"id": "p13", "nome": "Gola de renascença", "artesao": "Dona Socorro", "tecnica": "renda_renascenca", "polo": "Pesqueira", "categoria": "vestuario", "preco": 110.0, "estoque": 0, "pedidos": 9},
+    {"id": "p14", "nome": "Bordado manual de Passira", "artesao": "Bordadeiras de Passira", "tecnica": "bordado", "polo": "Passira", "categoria": "cama_mesa", "preco": 140.0, "estoque": 6, "pedidos": 14}
+  ],
+  "cestas": [
+    ["p07", "p08"],
+    ["p07", "p08", "p10"],
+    ["p07", "p08"],
+    ["p07", "p09"],
+    ["p01", "p02"],
+    ["p01", "p04"],
+    ["p01", "p02", "p06"],
+    ["p11", "p12"],
+    ["p12", "p14"],
+    ["p04", "p05"]
+  ]
+}
