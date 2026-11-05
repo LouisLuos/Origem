@@ -1,0 +1,188 @@
+// ==============================================================================
+// ORIGEM — MARKETPLACE DA ECONOMIA CRIATIVA DE PERNAMBUCO
+// Schema Relacional PostgreSQL (Prisma ORM)
+// Conformidade: RNF-01 (Lock Pessimista ACID), RNF-04 (Clean Arch),
+//               RNF-05 (Fila Durável Notification), RNF-07 (WCAG alt), LGPD
+// ==============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUYER   @map("buyer")
+  ARTISAN @map("artisan")
+  ADMIN   @map("admin")
+}
+
+enum OrderStatus {
+  PENDING   @map("pending")
+  PAID      @map("paid")
+  SHIPPED   @map("shipped")
+  DELIVERED @map("delivered")
+  CANCELLED @map("cancelled")
+}
+
+enum NotificationStatus {
+  PENDING @map("pending")
+  SENT    @map("sent")
+  FAILED  @map("failed")
+}
+
+enum NotificationType {
+  ORDER_CONFIRMATION @map("order_confirmation")
+  ARTISAN_NEW_SALE   @map("artisan_new_sale")
+}
+
+/// Contas de acesso ao marketplace (compradores, artesãos e administradores).
+/// Senhas armazenadas exclusivamente como hash irreversível bcrypt (LGPD).
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole @default(BUYER)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+/// Perfis culturais de mestres populares, cooperativas e artesãos de Pernambuco.
+/// Campos sensíveis (phone, workshopAddress) protegidos por consentimento explícito (LGPD).
+model Artisan {
+  id                   String    @id
+  name                 String
+  hub                  String
+  technique            String
+  bio                  String    @db.Text
+  since                Int
+  photoUrl             String    @map("photo_url")
+  photoAlt             String    @map("photo_alt")
+  coverUrl             String    @map("cover_url")
+  coverAlt             String    @map("cover_alt")
+  email                String?   @unique
+  phone                String?
+  workshopAddress      String?   @map("workshop_address")
+  publicContactConsent Boolean   @default(false) @map("public_contact_consent")
+  products             Product[]
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  @@index([hub])
+  @@index([technique])
+  @@map("artisan")
+}
+
+/// Peças artesanais do acervo. Suporta controle estrito de estoque via
+/// SELECT ... FOR UPDATE (Lock Pessimista a nível de tupla PostgreSQL - RNF-01).
+model Product {
+  id             String      @id
+  title          String
+  artisanId      String?     @map("artisan_id")
+  artisanRel     Artisan?    @relation(fields: [artisanId], references: [id], onDelete: SetNull)
+  artisanName    String      @map("artisan_name")
+  hub            String
+  technique      String
+  price          Decimal     @db.Decimal(10, 2)
+  compareAtPrice Decimal?    @map("compare_at_price") @db.Decimal(10, 2)
+  imageUrl       String      @map("image_url")
+  imageAlt       String      @map("image_alt")
+  description    String?     @db.Text
+  details        String[]    @default([])
+  ownerEmail     String      @map("owner_email")
+  stock          Int
+  active         Boolean     @default(true)
+  orderItems     OrderItem[]
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  @@index([technique])
+  @@index([hub])
+  @@index([ownerEmail])
+  @@index([active])
+  @@map("product")
+}
+
+/// Pedidos confirmados no checkout transacional ACID.
+model Order {
+  id              String         @id
+  userEmail       String?        @map("user_email")
+  customerName    String         @map("customer_name")
+  customerEmail   String         @map("customer_email")
+  shippingAddress Json           @map("shipping_address")
+  paymentMethod   String         @map("payment_method")
+  subtotal        Decimal        @db.Decimal(10, 2)
+  shippingFee     Decimal        @map("shipping_fee") @db.Decimal(10, 2)
+  total           Decimal        @db.Decimal(10, 2)
+  status          OrderStatus    @default(PENDING)
+  items           OrderItem[]
+  notifications   Notification[]
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@index([userEmail])
+  @@index([customerEmail])
+  @@map("orders")
+}
+
+/// Itens imutáveis (snapshot histórico de título, artesão e preço unitário) de um pedido.
+/// Alimenta também o cálculo de co-ocorrência em compras conjuntas para o módulo de IA (HU-24).
+model OrderItem {
+  id          String  @id @default(uuid())
+  orderId     String  @map("order_id")
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String  @map("product_id")
+  product     Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  title       String
+  artisanName String  @map("artisan_name")
+  imageUrl    String  @map("image_url")
+  imageAlt    String  @map("image_alt")
+  quantity    Int
+  unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_item")
+}
+
+/// Fila durável de mensageria assíncrona no PostgreSQL (RNF-05 / Rubrica FCCPD).
+/// Gravada como 'pending' no checkout sem bloquear a resposta HTTP; processada em background
+/// com política fixa de até 3 tentativas antes de transitar para 'sent' ou 'failed'.
+model Notification {
+  id             String             @id @default(uuid())
+  orderId        String             @map("order_id")
+  order          Order?             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  recipientEmail String             @map("recipient_email")
+  type           NotificationType   @default(ORDER_CONFIRMATION)
+  payload        Json
+  status         NotificationStatus @default(PENDING)
+  retryCount     Int                @default(0) @map("retry_count")
+  lastError      String?            @map("last_error") @db.Text
+  createdAt      DateTime           @default(now()) @map("created_at")
+  processedAt    DateTime?          @map("processed_at")
+
+  @@index([status])
+  @@index([orderId])
+  @@map("notification")
+}
+
+/// Depoimentos e avaliações verificadas da vitrine pública.
+model Review {
+  id        String   @id
+  name      String
+  location  String
+  quote     String   @db.Text
+  rating    Int
+  avatarUrl String   @map("avatar_url")
+  avatarAlt String   @map("avatar_alt")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("review")
+}
+
