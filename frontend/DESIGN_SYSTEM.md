@@ -22,7 +22,7 @@ o suficiente para vitrine de e-commerce.
 6. **Acessível por padrão (RNF-07).** Contraste AA, foco visível, `alt` obrigatório, navegação por
    teclado e semântica HTML5 em todos os componentes: não é opcional, é parte do componente.
 
-## 2. Tokens (`src/styles/globals.css` + `src/design-system/tokens.ts`)
+## 2. Tokens (`src/app/globals.css` + `src/design-system/tokens.ts`)
 
 | Token | Valor | Uso |
 | --- | --- | --- |

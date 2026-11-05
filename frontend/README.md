@@ -1,60 +1,68 @@
 # Origem: Frontend
 
 Base de front-end do marketplace **Origem** (vitrine/home + Design System), construída com
-**React + TypeScript + Vite + Tailwind CSS v4**.
+**Next.js 15 (App Router) + React 18 + TypeScript + Tailwind CSS v4**.
 
 ## Rodando localmente
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173
-npm run build    # build de produção em dist/
-npm run lint
+npm run build    # build de produção via next build (.next/)
+npm run lint     # validação ESLint
 ```
 
 ## Deploy e Fake API
 
-- **Frontend:** https://origem-five.vercel.app (Vercel).
+- **Frontend:** https://origem-five.vercel.app (Vercel com Next.js).
 - **Fake API:** https://origem-bnhv.onrender.com/api/v1 (Render). Serve `/produtos` e `/artesaos`
   e mantém os dados em memória: peças criadas pelo painel do artesão somem quando o serviço reinicia.
   No plano gratuito a primeira requisição após um período parado pode levar cerca de 1 minuto.
 - O código da Fake API fica na branch `fake-api` deste repositório (pasta `fake_api/`); foi removido da `main` no commit `0b7e7f9`.
-- A URL da API vem de `VITE_API_URL` (padrão: `http://localhost:3000/api/v1`). Ela é embutida no
-  build, então alterar a variável na Vercel exige um novo deploy.
+- A URL da API vem de `NEXT_PUBLIC_API_URL` ou `VITE_API_URL` (padrão: `http://localhost:3000/api/v1`). Ela é lida dinamicamente no runtime/build do Next.js.
 
 ## Stack e por quê
 
-- **Vite + React + TypeScript**: build rápido, DX simples, tipagem forte para os contratos de API
-  que virão do backend (produtos, artesãos, pedidos).
-- **Tailwind CSS v4** (`@theme` em `src/styles/globals.css`): tokens de design (cor, tipografia,
+- **Next.js 15 + React 18 + TypeScript**: SSR rápido, App Router moderno, roteamento declarativo em diretórios (`src/app/`), tipagem forte para os contratos de API que virão do backend (produtos, artesãos, pedidos).
+- **Tailwind CSS v4** (`@theme` em `src/app/globals.css`): tokens de design (cor, tipografia,
   raio, sombra) definidos uma vez e usados tanto em classes utilitárias quanto em JS
   (`src/design-system/tokens.ts`) quando necessário.
 - **lucide-react**: ícones leves em SVG, consistentes com o traço da marca.
 
-O estado global fica em Context API (`src/context`) e os dados vêm de `src/services`, organizados por
-domínio (catálogo, artesãos, pedidos, autenticação, carrinho, avaliações). Catálogo e artesãos
-consomem a Fake API via `fetch`; os demais ainda usam simulação local (`localStorage`). Para trocar
-pelo backend real, basta ajustar os services, sem mexer nas telas.
+O estado global fica em Context API (`src/context`) envelopado no componente `Providers.tsx` (`"use client"`), com salvaguarda de hidratação SSR (`isMounted`). Os dados vêm de `src/services`, organizados por domínio (catálogo, artesãos, pedidos, autenticação, carrinho, avaliações). Catálogo e artesãos consomem a Fake API via `fetch`; os demais mantêm suporte via persistência local controlada (`storage.ts`).
 
 ## Estrutura
 
 ```
 src/
-├── design-system/       # Design System puro (tokens + componentes reutilizáveis)
+├── app/                  # Next.js 15 App Router (rotas declarativas, layouts, metadados)
+│   ├── layout.tsx        # Shell global com Providers, Header e Footer
+│   ├── globals.css       # Tokens @theme do Tailwind v4
+│   ├── not-found.tsx     # Página de erro 404 personalizada
+│   ├── page.tsx          # Rota '/' (Home)
+│   ├── produtos/[id]/    # Rota dinâmica '/produtos/:id'
+│   ├── artesaos/[id]/    # Rota dinâmica '/artesaos/:id'
+│   ├── carrinho/         # Rota '/carrinho'
+│   ├── checkout/         # Rota '/checkout'
+│   ├── pedido/[id]/      # Rota '/pedido/:id'
+│   ├── favoritos/        # Rota '/favoritos'
+│   ├── conta/            # Rota '/conta'
+│   ├── entrar/           # Rota '/entrar'
+│   ├── painel/           # Rota '/painel' (Artesão)
+│   └── admin/            # Rota '/admin' (Administrador)
+├── views/                # Telas e lógicas de apresentação das rotas (Account, Cart, etc.)
+├── design-system/        # Design System puro (tokens + componentes sem border-radius)
 │   ├── tokens.ts
 │   ├── cn.ts
 │   └── components/       # Button, Badge, Chip, Input, ProductCard, SectionHeading, Container
-├── components/           # Componentes de página (Header, Hero, seções da Home, Footer)
-├── pages/                # Telas (Home, produto, artesão, carrinho, checkout, conta, painéis)
+├── components/           # Componentes de seção (Providers, Header, Hero, Footer)
 ├── context/              # Estado global (auth, catálogo, carrinho, pedidos, favoritos, filtros)
-├── services/             # Acesso a dados por domínio (Fake API e simulações locais)
+├── services/             # Acesso a dados por domínio (API e storage SSR-safe)
 ├── hooks/                # useResource (loading/erro/retry)
-├── utils/                # Funções utilitárias
-├── styles/globals.css     # Tokens de tema (@theme) + estilos base
-└── assets/                # Logo e referências de identidade visual
+└── utils/                # Funções utilitárias
 ```
 
-Documentação completa do Design System (paleta, tipografia, princípios, componentes): ver
+Documentação completa do Design System (paleta terrosa, tipografia DM Sans, princípios, componentes): ver
 [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md).
 
 ## Acessibilidade e qualidade (RNF-07)

@@ -62,7 +62,7 @@ git checkout fake-api
 cd fake_api && npm install && node server.js
 ```
 
-**2. Frontend** — branch `main`, pasta `frontend/` — sobe em `http://localhost:5173`:
+**2. Frontend** — branch `refactor-core`, pasta `frontend/` (Next.js 15 App Router) — sobe em `http://localhost:5173`:
 
 ```bash
 cd frontend
