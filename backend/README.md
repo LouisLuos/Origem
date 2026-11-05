@@ -1,6 +1,6 @@
-# Origem: Backend & Persistência Relacional (Prisma ORM + PostgreSQL)
+# Origem: Backend Express + Prisma ORM + Worker Assíncrono
 
-Camada de domínio, aplicação e persistência relacional do marketplace **Origem**, construída sob **Clean Architecture / Hexagonal (RNF-04)** com **TypeScript + Prisma ORM + PostgreSQL (Supabase)**.
+Servidor HTTP **Express** e camada de domínio, aplicação e persistência relacional do marketplace **Origem**, construído sob **Clean Architecture / Hexagonal (RNF-04)** com **TypeScript + Express + Prisma ORM + PostgreSQL (Supabase)**.
 
 ## Arquitetura em Camadas
 
@@ -11,21 +11,31 @@ backend/
 │   └── seed.ts              # Carga idempotente (upsert) de polos, mestres, peças artesanais e contas bcrypt
 ├── src/
 │   ├── domain/              # Entidades puras, invariantes, exceções e portas de repositório (zero acoplamento externo)
-│   ├── application/         # Casos de uso ACID (StockReservationService, OrderCheckoutService) e DTOs Zod
-│   └── infrastructure/      # Adaptadores Prisma ORM, mappers e Lock Pessimista SQL (SELECT ... FOR UPDATE)
-└── tests/                   # Suíte automatizada Vitest (Clean Arch, Lock Pessimista, Concorrência 100x, LGPD, Seed)
+│   ├── application/         # Casos de uso ACID (StockReservationService, OrderCheckoutService) e NotificationWorkerService
+│   ├── infrastructure/      # Adaptadores Prisma ORM, mappers e Lock Pessimista SQL (SELECT ... FOR UPDATE)
+│   ├── presentation/http/   # Servidor Express, rotas /api/v1, controllers finos e handler global de erros
+│   └── server.ts            # Bootstrap de produção com graceful shutdown e polling de recuperação da fila
+└── tests/                   # Suíte automatizada Vitest + Supertest (Domínio, Concorrência 100x, Endpoints REST e Worker)
 ```
 
-## Garantias de Engenharia (RNF-01, RNF-05 & LGPD)
+## Endpoints REST (`/api/v1`)
 
-1. **Controle de Concorrência Pessimista (RNF-01 / Rubrica FCCPD):**
-   - `PrismaProductRepository.findByIdForUpdate` executa consulta parametrizada `SELECT ... FROM "product" WHERE "id" = $1 FOR UPDATE` dentro de `prisma.$transaction`.
-   - `StockReservationService` consolida e ordena os `productId`s alfabeticamente antes de bloquear as tuplas, eliminando *deadlocks* em carrinhos multi-item concorrentes.
-2. **Fila Durável de Mensageria Assíncrona (RNF-05 / Rubrica FCCPD):**
-   - `OrderCheckoutService` persiste registros `Notification` com status `'pending'` na mesma transação ACID do pedido (*Transactional Outbox*), liberando o retorno imediatamente sem aguardar envio externo.
-3. **Privacidade e LGPD (Lei nº 13.709/2018):**
-   - Senhas armazenadas exclusivamente como hash `bcryptjs`.
-   - Dados de contato direto e endereço físico de ateliês (`Artisan.toPublicProfileDto()`) permanecem ocultos por padrão e só são expostos mediante `publicContactConsent = true`.
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| `GET` | `/health` | Health check do servidor, banco PostgreSQL e worker assíncrono |
+| `GET` | `/api/v1/produtos` | Catálogo paginado (`page`, `limit`, `technique`/`categoria`, `hub`) |
+| `GET` | `/api/v1/produtos/:id` | Detalhe de peça artesanal |
+| `POST` | `/api/v1/produtos` | Publicação de nova peça artesanal (`201`) |
+| `PATCH` | `/api/v1/produtos/:id` | Atualização parcial de peça / estoque / visibilidade |
+| `DELETE` | `/api/v1/produtos/:id` | Remoção de peça (`204`) |
+| `POST` | `/api/v1/estoque/reservas` | Reserva e baixa atômica multi-item com Lock Pessimista (`SELECT ... FOR UPDATE`) |
+| `GET` | `/api/v1/artesaos` | Perfis públicos de mestres e cooperativas (`q`/`nome`, `hub`, `technique`) com proteção LGPD |
+| `GET` | `/api/v1/artesaos/:id` | Perfil público individual do artesão |
+| `POST` | `/api/v1/artesaos` | Cadastro de novo perfil artesanal (`201`) |
+| `GET` | `/api/v1/pedidos` | Listagem de pedidos (`?userEmail=...` opcional) |
+| `GET` | `/api/v1/pedidos/:id` | Detalhe de pedido |
+| `POST` | `/api/v1/pedidos` | Checkout transacional ACID + agendamento assíncrono na fila `notification` (`201`) |
+| `GET` | `/api/v1/avaliacoes` | Depoimentos verificados da vitrine |
 
 ## Comandos Principais
 
@@ -33,12 +43,11 @@ backend/
 cd backend
 cp .env.example .env          # Configure DATABASE_URL apontando para seu PostgreSQL / Supabase
 npm install
-npm run prisma:validate       # Valida o schema.prisma
 npm run prisma:generate       # Gera o cliente tipado @prisma/client
-npm run prisma:db:push        # Sincroniza tabelas no banco PostgreSQL (ou prisma:migrate:dev)
+npm run prisma:db:push        # Sincroniza tabelas no banco PostgreSQL
 npm run prisma:seed           # Executa carga inicial idempotente do acervo pernambucano
+npm run dev                   # Inicia servidor Express em modo watch (http://localhost:3000/api/v1)
 npm run typecheck             # Validação estrita do TypeScript (tsc --noEmit)
 npm run build                 # Compila artefatos de produção em dist/
-npm test                      # Executa a suíte de testes automatizados (Vitest)
+npm test                      # Executa toda a suíte Vitest + Supertest
 ```
-
