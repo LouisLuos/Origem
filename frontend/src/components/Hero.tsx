@@ -1,11 +1,15 @@
+'use client'
+
 import { Button } from '@/design-system'
 import heroBackground from '@/assets/hero-background.jpg'
+
+const heroBgSrc = typeof heroBackground === 'string' ? heroBackground : heroBackground.src
 
 export function Hero() {
   return (
     <section id="top" className="fixed inset-0 z-0 flex items-center overflow-hidden">
       <img
-        src={heroBackground}
+        src={heroBgSrc}
         alt="Cabeças de cerâmica figurativa em argila crua, ainda sem queima, enfileiradas em um ateliê de Pernambuco"
         className="absolute inset-0 h-full w-full object-cover"
         style={{ objectPosition: '50% 70%' }}

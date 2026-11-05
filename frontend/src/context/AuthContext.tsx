@@ -1,4 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+'use client'
+
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { authService } from '@/services/authService'
 import type { User, UserRole } from '@/services/authService'
@@ -7,6 +9,7 @@ export type { User, UserRole }
 
 export interface AuthContextValue {
   user: User | null
+  isReady: boolean
   /** Retornam uma mensagem de erro, ou `null` em caso de sucesso. */
   login: (email: string, password: string) => Promise<string | null>
   register: (name: string, email: string, password: string, role?: UserRole) => Promise<string | null>
@@ -20,7 +23,13 @@ const messageOf = (reason: unknown) => (reason instanceof Error ? reason.message
 
 /** Sessão do usuário logado; a autenticação em si vive em `authService`. */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => authService.getSession())
+  const [user, setUser] = useState<User | null>(null)
+  const [isReady, setIsReady] = useState(false)
+
+  useEffect(() => {
+    setUser(authService.getSession())
+    setIsReady(true)
+  }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     try {
@@ -59,8 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, login, register, logout, updateName }),
-    [user, login, register, logout, updateName],
+    () => ({ user, isReady, login, register, logout, updateName }),
+    [user, isReady, login, register, logout, updateName],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

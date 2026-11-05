@@ -2,6 +2,8 @@ import { Facebook, Instagram, Youtube } from 'lucide-react'
 import { Container } from '@/design-system'
 import logoUrl from '@/assets/logo-origem.png'
 
+const logoSrc = typeof logoUrl === 'string' ? logoUrl : logoUrl.src
+
 const columns = [
   {
     title: 'Sobre o Origem',
@@ -22,7 +24,7 @@ export function Footer() {
     <footer className="relative z-10 bg-aubergine text-creme-100">
       <Container className="grid gap-10 py-14 lg:grid-cols-[1.2fr_2fr]">
         <div className="flex flex-col gap-4">
-          <img src={logoUrl} alt="Origem" className="h-9 w-auto self-start brightness-0 invert" />
+          <img src={logoSrc} alt="Origem" className="h-9 w-auto self-start brightness-0 invert" />
           <p className="max-w-sm text-sm text-creme-100/80">
             Marketplace da economia criativa de Pernambuco. Conectamos artesãos e mestres populares
             diretamente a quem valoriza técnica, território e história.

@@ -1,5 +1,7 @@
+'use client'
+
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Search } from 'lucide-react'
 import { Container, SectionHeading } from '@/design-system'
 import { Input } from '@/design-system'
@@ -46,7 +48,7 @@ export function ArtisanSpotlight() {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredArtisans.slice(0, 3).map((artisan) => (
-            <Link key={artisan.id} to={`/artesaos/${artisan.id}`} className="flex cursor-pointer flex-col">
+            <Link key={artisan.id} href={`/artesaos/${artisan.id}`} className="flex cursor-pointer flex-col">
               <div className="overflow-hidden">
                 <img
                   src={artisan.photoUrl}

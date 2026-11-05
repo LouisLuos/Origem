@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom'
+'use client'
+
+import Link from 'next/link'
 import { Heart, ShoppingBag } from 'lucide-react'
 import { cn } from '../cn'
 import { Badge } from './Badge'
@@ -92,7 +94,7 @@ export function ProductCard({ product, className, onToggleFavorite, isFavorite, 
         </div>
       </div>
 
-      <Link to={`/produtos/${product.id}`} className="absolute inset-0 z-10" aria-label={`Ver detalhes de ${product.title}`} />
+      <Link href={`/produtos/${product.id}`} className="absolute inset-0 z-10" aria-label={`Ver detalhes de ${product.title}`} />
     </article>
   )
 }

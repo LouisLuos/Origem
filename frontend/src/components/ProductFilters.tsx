@@ -1,3 +1,5 @@
+'use client'
+
 import type { ReactNode } from 'react'
 import { Check } from 'lucide-react'
 import { techniques, culturalHubs } from '@/design-system/tokens'

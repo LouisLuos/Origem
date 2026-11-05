@@ -1,22 +1,30 @@
-import { useState } from 'react'
+'use client'
+
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { LogOut, Package } from 'lucide-react'
-import { Link, Navigate } from 'react-router-dom'
+import Link from 'next/link'
 import { Button, Container, Input, currency } from '@/design-system'
 import { useAuth } from '@/context/AuthContext'
 import { LoadingBlock } from '@/components/AsyncState'
+import { Redirect } from '@/components/Redirect'
 import { useOrders } from '@/context/OrderContext'
 
 const dateFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' })
 
 export function Account() {
-  const { user, logout, updateName } = useAuth()
+  const { user, isReady, logout, updateName } = useAuth()
   const { orders, status: ordersStatus } = useOrders()
   const [name, setName] = useState(user?.name ?? '')
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  if (!user) return <Navigate to="/entrar" state={{ from: '/conta' }} replace />
+  useEffect(() => {
+    if (user) setName(user.name)
+  }, [user])
+
+  if (!isReady) return null
+  if (!user) return <Redirect to="/entrar" from="/conta" replace />
 
   const myOrders = orders.filter((order) => order.userEmail === user.email)
 
@@ -38,14 +46,14 @@ export function Account() {
           </div>
           <div className="flex gap-3">
             {user.role === 'admin' && (
-              <Link to="/admin">
+              <Link href="/admin">
                 <Button variant="primary" size="sm">
                   Painel administrativo
                 </Button>
               </Link>
             )}
             {user.role === 'artisan' && (
-              <Link to="/painel">
+              <Link href="/painel">
                 <Button variant="primary" size="sm">
                   Painel do artesão
                 </Button>
@@ -73,7 +81,7 @@ export function Account() {
                   <p className="text-base font-medium text-ink">Você ainda não fez pedidos</p>
                   <p className="text-sm text-ink-soft">Quando finalizar uma compra, ela aparece aqui.</p>
                 </div>
-                <Link to="/#vitrine">
+                <Link href="/#vitrine">
                   <Button variant="primary" size="md">
                     Ver vitrine
                   </Button>
@@ -85,7 +93,7 @@ export function Account() {
                   <li key={order.id} className="border border-border bg-surface p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
                       <Link
-                        to={`/pedido/${order.id}`}
+                        href={`/pedido/${order.id}`}
                         className="text-sm font-semibold tracking-widest text-ink hover:text-terracota-600 hover:underline underline-offset-4"
                       >
                         {order.id}

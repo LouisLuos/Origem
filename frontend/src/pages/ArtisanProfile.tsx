@@ -1,5 +1,8 @@
+'use client'
+
 import { ChevronRight, MapPin, Package, Sparkles } from 'lucide-react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { Button, Container, ProductCard } from '@/design-system'
 import { getAvatarUrl } from '@/utils/avatar'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
@@ -10,8 +13,9 @@ import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 
 export function ArtisanProfile() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const params = useParams<{ id?: string }>()
+  const id = typeof params?.id === 'string' ? params.id : undefined
+  const router = useRouter()
   const { addItem } = useCart()
   const { isFavorite, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
@@ -49,7 +53,7 @@ export function ArtisanProfile() {
           <p className="max-w-md text-ink-soft">
             O perfil que você procura não existe ou não está mais disponível.
           </p>
-          <Button variant="primary" onClick={() => navigate('/#artesaos')}>
+          <Button variant="primary" onClick={() => router.push('/#artesaos')}>
             Voltar aos artesãos
           </Button>
         </Container>
@@ -62,14 +66,14 @@ export function ArtisanProfile() {
 
   const goToTechnique = () => {
     selectTechnique(artisan.technique)
-    navigate('/#vitrine')
+    router.push('/#vitrine')
   }
 
   return (
     <main id="main-content" className="pb-16 sm:pb-24">
       <Container className="pt-24 sm:pt-28">
         <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 pb-4 text-xs text-ink-soft">
-          <Link to="/#artesaos" className="hover:text-terracota-600 hover:underline underline-offset-4">
+          <Link href="/#artesaos" className="hover:text-terracota-600 hover:underline underline-offset-4">
             Artesãos
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden="true" />

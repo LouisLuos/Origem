@@ -1,5 +1,8 @@
+'use client'
+
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { Heart, Menu, Search, ShoppingBag, Trash2, User, X } from 'lucide-react'
 import { Button, Container, Input, cn, currency } from '@/design-system'
 import { useProductFilter } from '@/context/ProductFilterContext'
@@ -10,6 +13,8 @@ import { useCatalog } from '@/context/CatalogContext'
 import { useArtisans } from '@/context/ArtisanContext'
 import type { CatalogItem } from '@/context/CatalogContext'
 import logoUrl from '@/assets/logo-origem.png'
+
+const logoSrc = typeof logoUrl === 'string' ? logoUrl : logoUrl.src
 
 const MAX_SEARCH_RESULTS = 5
 const MAX_ARTISAN_SEARCH_RESULTS = 3
@@ -33,8 +38,8 @@ export function Header() {
   const { artisans } = useArtisans()
   const { favorites } = useFavorites()
   const { items: cartItems, itemCount: cartCount, addItem, removeItem } = useCart()
-  const navigate = useNavigate()
-  const { pathname } = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
   const isHome = pathname === '/'
 
   // Incrementa a cada item adicionado; usado como `key` para reiniciar a animação.
@@ -123,9 +128,9 @@ export function Header() {
       )}
     >
       <Container className="flex h-20 items-center justify-between gap-4">
-        <Link to="/#top" className="flex shrink-0 items-center gap-2" aria-label="Página inicial da Origem">
+        <Link href="/#top" className="flex shrink-0 items-center gap-2" aria-label="Página inicial da Origem">
           <img
-            src={logoUrl}
+            src={logoSrc}
             alt="Origem"
             className={cn('h-10 w-auto transition-[filter] duration-300', !isSolid && 'brightness-0 invert')}
           />
@@ -135,7 +140,7 @@ export function Header() {
           <ul className={cn('flex items-center gap-8 font-medium', isSolid ? 'text-ink' : 'text-creme-50 ')}>
             {navLinks.map((link) => (
               <li key={link.href}>
-                <Link to={link.href} className="transition-colors duration-300 hover:text-terracota-400">
+                <Link href={link.href} className="transition-colors duration-300 hover:text-terracota-400">
                   {link.label}
                 </Link>
               </li>
@@ -162,7 +167,7 @@ export function Header() {
             {isSearchOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Search className="h-5 w-5" aria-hidden="true" />}
           </button>
           <Link
-            to="/favoritos"
+            href="/favoritos"
             aria-label={`Meus favoritos, ${favorites.length} ${favorites.length === 1 ? 'item' : 'itens'}`}
             className={cn(
               'relative hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
@@ -180,7 +185,7 @@ export function Header() {
             )}
           </Link>
           <Link
-            to={user ? '/conta' : '/entrar'}
+            href={user ? '/conta' : '/entrar'}
             aria-label={user ? 'Minha conta' : 'Entrar ou criar conta'}
             className={cn(
               'hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
@@ -239,7 +244,7 @@ export function Header() {
                       {cartLines.map(({ product, quantity }) => (
                         <li key={product.id} className="flex items-center gap-3 px-4 py-3">
                           <Link
-                            to={`/produtos/${product.id}`}
+                            href={`/produtos/${product.id}`}
                             onClick={() => setIsCartOpen(false)}
                             className="h-14 w-14 shrink-0 bg-surface-muted"
                           >
@@ -247,7 +252,7 @@ export function Header() {
                           </Link>
                           <div className="flex min-w-0 flex-1 flex-col">
                             <Link
-                              to={`/produtos/${product.id}`}
+                              href={`/produtos/${product.id}`}
                               onClick={() => setIsCartOpen(false)}
                               className="truncate text-sm font-medium text-ink hover:text-terracota-600 hover:underline underline-offset-4"
                             >
@@ -279,7 +284,7 @@ export function Header() {
                         size="md"
                         onClick={() => {
                           setIsCartOpen(false)
-                          navigate('/carrinho')
+                          router.push('/carrinho')
                         }}
                       >
                         Ver carrinho
@@ -294,7 +299,7 @@ export function Header() {
                       size="sm"
                       onClick={() => {
                         setIsCartOpen(false)
-                        navigate('/#vitrine')
+                        router.push('/#vitrine')
                       }}
                     >
                       Ver vitrine
@@ -332,7 +337,7 @@ export function Header() {
               onSubmit={(event) => {
                 event.preventDefault()
                 setIsSearchOpen(false)
-                navigate('/#vitrine')
+                router.push('/#vitrine')
               }}
             >
               <Input
@@ -359,7 +364,7 @@ export function Header() {
                           {searchResults.map((product) => (
                             <li key={product.id} className="flex items-center gap-1">
                               <Link
-                                to={`/produtos/${product.id}`}
+                                href={`/produtos/${product.id}`}
                                 onClick={() => setIsSearchOpen(false)}
                                 className="-ml-2 flex min-w-0 flex-1 items-center gap-3 px-2 py-2.5 transition-colors hover:bg-aubergine/10 hover:text-terracota-600"
                               >
@@ -399,7 +404,7 @@ export function Header() {
                           {artisanSearchResults.map((artisan) => (
                             <li key={artisan.id} className="flex items-center gap-1">
                               <Link
-                                to={`/artesaos/${artisan.id}`}
+                                href={`/artesaos/${artisan.id}`}
                                 onClick={() => setIsSearchOpen(false)}
                                 className="-ml-2 flex min-w-0 flex-1 items-center gap-3 px-2 py-2.5 transition-colors hover:bg-aubergine/10 hover:text-terracota-600"
                               >
@@ -437,7 +442,7 @@ export function Header() {
             {navLinks.map((link) => (
               <Link
                 key={link.href}
-                to={link.href}
+                href={link.href}
                 onClick={() => setIsMenuOpen(false)}
                 className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
               >
@@ -445,14 +450,14 @@ export function Header() {
               </Link>
             ))}
             <Link
-              to="/favoritos"
+              href="/favoritos"
               onClick={() => setIsMenuOpen(false)}
               className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
             >
               Favoritos{favorites.length > 0 && ` (${favorites.length})`}
             </Link>
             <Link
-              to={user ? '/conta' : '/entrar'}
+              href={user ? '/conta' : '/entrar'}
               onClick={() => setIsMenuOpen(false)}
               className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
             >

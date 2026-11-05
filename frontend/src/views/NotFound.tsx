@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Button, Container } from '@/design-system'
 
 const shortcuts = [
@@ -32,7 +34,7 @@ export function NotFound() {
           </p>
         </div>
 
-        <Link to="/">
+        <Link href="/">
           <Button variant="primary" size="lg">
             Voltar para o início
           </Button>
@@ -41,7 +43,7 @@ export function NotFound() {
         <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 border-t border-border pt-6 text-sm">
           {shortcuts.map(({ label, to }) => (
             <li key={to}>
-              <Link to={to} className="text-ink-soft underline-offset-4 hover:text-terracota-600 hover:underline">
+              <Link href={to} className="text-ink-soft underline-offset-4 hover:text-terracota-600 hover:underline">
                 {label}
               </Link>
             </li>

@@ -1,10 +1,12 @@
+'use client'
+
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Eye, EyeOff, LayoutDashboard, Package, ShoppingBag, Trash2, Users } from 'lucide-react'
-import { Navigate } from 'react-router-dom'
 import { Container, cn, currency } from '@/design-system'
 import { useAuth } from '@/context/AuthContext'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { Redirect } from '@/components/Redirect'
 import { useCatalog } from '@/context/CatalogContext'
 import { useOrders } from '@/context/OrderContext'
 import { useResource } from '@/hooks/useResource'
@@ -53,15 +55,16 @@ function Empty({ children }: { children: ReactNode }) {
 }
 
 export function AdminPanel() {
-  const { user } = useAuth()
+  const { user, isReady } = useAuth()
   const { orders, status: ordersStatus, error: ordersError, reload: reloadOrders } = useOrders()
   const { items, status: catalogStatus, error: catalogError, reload: reloadCatalog, updateItem, removeItem } = useCatalog()
   const { data: users, status: usersStatus, error: usersError, reload: reloadUsers } = useResource(authService.listUsers, [] as User[])
   const [actionError, setActionError] = useState<string | null>(null)
   const [section, setSection] = useState<SectionId>('overview')
 
-  if (!user) return <Navigate to="/entrar" state={{ from: '/admin' }} replace />
-  if (user.role !== 'admin') return <Navigate to="/conta" replace />
+  if (!isReady) return null
+  if (!user) return <Redirect to="/entrar" from="/admin" replace />
+  if (user.role !== 'admin') return <Redirect to="/conta" replace />
 
   const statuses = [usersStatus, ordersStatus, catalogStatus]
   if (statuses.includes('loading')) {

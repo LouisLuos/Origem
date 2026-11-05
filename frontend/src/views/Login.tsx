@@ -1,18 +1,28 @@
+'use client'
+
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { Button, Container, Input, cn } from '@/design-system'
 import { culturalHubs, techniques } from '@/design-system/tokens'
 import { useAuth } from '@/context/AuthContext'
 import { artisanService } from '@/services/artisanService'
+import { Redirect, REDIRECT_FROM_KEY } from '@/components/Redirect'
 
 type Mode = 'login' | 'register'
 
+function getRedirectTarget(): string {
+  if (typeof window === 'undefined') return '/conta'
+  try {
+    return window.sessionStorage.getItem(REDIRECT_FROM_KEY) ?? '/conta'
+  } catch {
+    return '/conta'
+  }
+}
+
 export function Login() {
-  const { user, login, register } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/conta'
+  const { user, isReady, login, register } = useAuth()
+  const router = useRouter()
 
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')
@@ -25,7 +35,8 @@ export function Login() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  if (user) return <Navigate to={redirectTo} replace />
+  if (!isReady) return null
+  if (user) return <Redirect to={getRedirectTarget()} replace />
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -64,7 +75,15 @@ export function Login() {
     }
     setIsSubmitting(false)
     if (result) return setError(result)
-    navigate(redirectTo, { replace: true })
+    const target = getRedirectTarget()
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.removeItem(REDIRECT_FROM_KEY)
+      } catch {
+        // ignorado
+      }
+    }
+    router.replace(target)
   }
 
   const switchMode = (next: Mode) => {

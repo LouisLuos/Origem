@@ -1,7 +1,10 @@
 node_modules
+.next
+out
 dist
 dist-ssr
 *.tsbuildinfo
+next-env.d.ts
 *.local
 .env
 .env.local

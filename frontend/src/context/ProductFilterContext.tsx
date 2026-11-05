@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Product } from '@/design-system/components/ProductCard'

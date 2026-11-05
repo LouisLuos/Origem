@@ -1,11 +1,15 @@
+'use client'
+
 import { Button, Container, Input } from '@/design-system'
 import ctaBackground from '@/assets/cta-background.jpg'
+
+const ctaBgSrc = typeof ctaBackground === 'string' ? ctaBackground : ctaBackground.src
 
 export function Newsletter() {
   return (
     <section className="relative overflow-hidden bg-oliva-600 py-24 text-creme-50">
       <img
-        src={ctaBackground}
+        src={ctaBgSrc}
         alt=""
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover"

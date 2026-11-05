@@ -3,6 +3,7 @@
  * Quando houver backend, os services deixam de usar isto e passam a chamar `fetch`.
  */
 export function readStorage<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
   try {
     const raw = window.localStorage.getItem(key)
     return raw ? (JSON.parse(raw) as T) : fallback
@@ -12,6 +13,7 @@ export function readStorage<T>(key: string, fallback: T): T {
 }
 
 export function writeStorage(key: string, value: unknown) {
+  if (typeof window === 'undefined') return
   try {
     window.localStorage.setItem(key, JSON.stringify(value))
   } catch {
@@ -20,6 +22,7 @@ export function writeStorage(key: string, value: unknown) {
 }
 
 export function removeStorage(key: string) {
+  if (typeof window === 'undefined') return
   try {
     window.localStorage.removeItem(key)
   } catch {
@@ -29,5 +32,5 @@ export function removeStorage(key: string) {
 
 /** Simula o tempo de resposta de uma requisição de rede. */
 export function simulateLatency(ms = 300) {
-  return new Promise<void>((resolve) => window.setTimeout(resolve, ms))
+  return new Promise<void>((resolve) => setTimeout(resolve, ms))
 }

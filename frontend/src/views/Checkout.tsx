@@ -1,9 +1,13 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ChevronRight, CreditCard, FileText, QrCode } from 'lucide-react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button, Container, Input, cn, currency } from '@/design-system'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { Redirect } from '@/components/Redirect'
 import { useCatalog } from '@/context/CatalogContext'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
@@ -82,7 +86,7 @@ export function Checkout() {
   const { placeOrder } = useOrders()
   const { products, status: catalogStatus, error: catalogError, reload: reloadCatalog } = useCatalog()
   const { user } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
   const [customer, setCustomer] = useState<OrderCustomer>(() => ({
     ...emptyCustomer,
     name: user?.name ?? '',
@@ -162,7 +166,7 @@ export function Checkout() {
   }
 
   // O carrinho só é esvaziado ao concluir o pedido, que já navega para a confirmação.
-  if (lines.length === 0 && !isSubmitting) return <Navigate to="/carrinho" replace />
+  if (lines.length === 0 && !isSubmitting) return <Redirect to="/carrinho" replace />
 
   const subtotal = lines.reduce((total, line) => total + line.unitPrice * line.quantity, 0)
   const shipping = calculateShipping(subtotal)
@@ -219,7 +223,7 @@ export function Checkout() {
         total,
       })
       clearCart()
-      navigate(`/pedido/${order.id}`, { replace: true })
+      router.replace(`/pedido/${order.id}`)
     } catch (reason) {
       setSubmitError(reason instanceof Error ? reason.message : 'Não foi possível concluir o pedido.')
       setIsSubmitting(false)
@@ -230,7 +234,7 @@ export function Checkout() {
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
       <Container>
         <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 pb-6 text-xs text-ink-soft">
-          <Link to="/carrinho" className="hover:text-terracota-600 hover:underline underline-offset-4">
+          <Link href="/carrinho" className="hover:text-terracota-600 hover:underline underline-offset-4">
             Carrinho
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden="true" />

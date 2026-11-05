@@ -1,6 +1,9 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { ChevronRight, Heart, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react'
 import { Badge, Button, Container, ProductCard, currency } from '@/design-system'
 import type { Product } from '@/design-system'
@@ -43,8 +46,9 @@ const trustPoints = [
 ]
 
 export function ProductDetail() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const params = useParams<{ id?: string }>()
+  const id = typeof params?.id === 'string' ? params.id : undefined
+  const router = useRouter()
   const { addItem } = useCart()
   const { isFavorite: isFavoriteProduct, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
@@ -81,7 +85,7 @@ export function ProductDetail() {
           <p className="max-w-md text-ink-soft">
             O produto que você procura não existe ou não está mais disponível na vitrine.
           </p>
-          <Button variant="primary" onClick={() => navigate('/#vitrine')}>
+          <Button variant="primary" onClick={() => router.push('/#vitrine')}>
             Voltar à vitrine
           </Button>
         </Container>
@@ -101,14 +105,14 @@ export function ProductDetail() {
 
   const goToTechnique = () => {
     selectTechnique(product.technique)
-    navigate('/#vitrine')
+    router.push('/#vitrine')
   }
 
   return (
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
       <Container>
         <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 pb-8 text-xs text-ink-soft">
-          <Link to="/#vitrine" className="hover:text-terracota-600 hover:underline underline-offset-4">
+          <Link href="/#vitrine" className="hover:text-terracota-600 hover:underline underline-offset-4">
             Vitrine
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden="true" />
@@ -170,7 +174,7 @@ export function ProductDetail() {
                 por{' '}
                 {artisan ? (
                   <Link
-                    to={`/artesaos/${artisan.id}`}
+                    href={`/artesaos/${artisan.id}`}
                     className="font-medium text-ink underline-offset-4 hover:text-terracota-600 hover:underline"
                   >
                     {product.artisan}
@@ -178,7 +182,7 @@ export function ProductDetail() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => navigate('/#artesaos')}
+                    onClick={() => router.push('/#artesaos')}
                     className="cursor-pointer font-medium text-ink underline-offset-4 hover:text-terracota-600 hover:underline"
                   >
                     {product.artisan}
@@ -283,7 +287,7 @@ export function ProductDetail() {
                       <p>{artisan.bio}</p>
                     </div>
                     <Link
-                      to={`/artesaos/${artisan.id}`}
+                      href={`/artesaos/${artisan.id}`}
                       className="w-fit font-medium text-terracota-600 underline-offset-4 hover:underline"
                     >
                       Ver perfil completo

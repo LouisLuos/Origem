@@ -1,5 +1,8 @@
+'use client'
+
 import { ChevronRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button, Container, currency } from '@/design-system'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
@@ -10,7 +13,7 @@ import { FREE_SHIPPING_THRESHOLD } from '@/context/OrderContext'
 export function Cart() {
   const { items, removeItem, setQuantity } = useCart()
   const { products, status, error, reload } = useCatalog()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const cartLines = items
     .map((item) => {
@@ -26,7 +29,7 @@ export function Cart() {
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
       <Container>
         <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 pb-6 text-xs text-ink-soft">
-          <Link to="/#vitrine" className="hover:text-terracota-600 hover:underline underline-offset-4">
+          <Link href="/#vitrine" className="hover:text-terracota-600 hover:underline underline-offset-4">
             Vitrine
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden="true" />
@@ -48,7 +51,7 @@ export function Cart() {
               <p className="text-base font-medium text-ink">Seu carrinho está vazio</p>
               <p className="text-sm text-ink-soft">Explore a vitrine e leve um pedaço de Pernambuco pra casa.</p>
             </div>
-            <Button variant="primary" size="md" onClick={() => navigate('/#vitrine')}>
+            <Button variant="primary" size="md" onClick={() => router.push('/#vitrine')}>
               Ver vitrine
             </Button>
           </div>
@@ -57,7 +60,7 @@ export function Cart() {
             <ul className="flex flex-col">
               {cartLines.map(({ product, quantity }) => (
                 <li key={product.id} className="flex gap-4 border-b border-border py-6 first:pt-0">
-                  <Link to={`/produtos/${product.id}`} className="h-24 w-24 shrink-0 overflow-hidden bg-surface-muted sm:h-28 sm:w-28">
+                  <Link href={`/produtos/${product.id}`} className="h-24 w-24 shrink-0 overflow-hidden bg-surface-muted sm:h-28 sm:w-28">
                     <img src={product.imageUrl} alt={product.imageAlt} className="h-full w-full object-cover" />
                   </Link>
 
@@ -67,7 +70,7 @@ export function Cart() {
                         {product.technique} · {product.hub}
                       </span>
                       <Link
-                        to={`/produtos/${product.id}`}
+                        href={`/produtos/${product.id}`}
                         className="font-medium text-ink hover:text-terracota-600 hover:underline underline-offset-4"
                       >
                         {product.title}
@@ -144,11 +147,11 @@ export function Cart() {
                 <span>{currency.format(subtotal)}</span>
               </div>
 
-              <Button variant="primary" size="lg" onClick={() => navigate('/checkout')}>
+              <Button variant="primary" size="lg" onClick={() => router.push('/checkout')}>
                 Finalizar compra
               </Button>
               <Link
-                to="/#vitrine"
+                href="/#vitrine"
                 className="text-center text-sm text-ink-soft underline-offset-4 hover:text-terracota-600 hover:underline"
               >
                 Continuar comprando

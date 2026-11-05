@@ -1,11 +1,13 @@
+'use client'
+
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Eye, EyeOff, Minus, Pencil, Plus, Trash2 } from 'lucide-react'
-import { Navigate } from 'react-router-dom'
 import { Button, Container, Input, cn, currency } from '@/design-system'
 import { culturalHubs, techniques } from '@/design-system/tokens'
 import { useAuth } from '@/context/AuthContext'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { Redirect } from '@/components/Redirect'
 import { useCatalog } from '@/context/CatalogContext'
 import type { CatalogItem, CatalogItemInput } from '@/context/CatalogContext'
 
@@ -41,7 +43,7 @@ function stockTone(stock: number) {
 }
 
 export function ArtisanPanel() {
-  const { user } = useAuth()
+  const { user, isReady } = useAuth()
   const { items, status, error: loadError, reload, addItem, updateItem, adjustStock, removeItem } = useCatalog()
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
@@ -49,8 +51,9 @@ export function ArtisanPanel() {
   const [isSaving, setIsSaving] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  if (!user) return <Navigate to="/entrar" state={{ from: '/painel' }} replace />
-  if (user.role !== 'artisan') return <Navigate to="/conta" replace />
+  if (!isReady) return null
+  if (!user) return <Redirect to="/entrar" from="/painel" replace />
+  if (user.role !== 'artisan') return <Redirect to="/conta" replace />
 
   if (status !== 'ready') {
     return (

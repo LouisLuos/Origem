@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { ChevronDown, X } from 'lucide-react'
 import { Container, ProductCard } from '@/design-system'

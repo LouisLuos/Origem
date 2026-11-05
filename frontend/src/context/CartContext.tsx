@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { cartService } from '@/services/cartService'
@@ -18,11 +20,18 @@ const CartContext = createContext<CartContextValue | null>(null)
 
 /** Estado global do carrinho (itens e contagem), compartilhado entre `ProductCard`, `ProductDetail`, `Cart` e o ícone de carrinho no `Header`. */
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(cartService.load)
+  const [items, setItems] = useState<CartItem[]>([])
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
+    setItems(cartService.load())
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
     cartService.save(items)
-  }, [items])
+  }, [items, hydrated])
 
   const addItem = (productId: string, quantity = 1) => {
     setItems((prev) => {
@@ -52,6 +61,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(
     () => ({ items, itemCount, addItem, removeItem, setQuantity, clearCart }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [items, itemCount],
   )
 
