@@ -24,7 +24,9 @@ docs/
 │   └── 01-concorrencia-e-mensageria.md
 ├── 04-engenharia-software-e-ia/                 # Engenharia de Software e IA (Eletiva)
 ├── 05-desenvolvimento-web/                      # Desenvolvimento Web Full Stack
-└── 06-projeto-integrador-iv/                    # Projeto 4 (Acompanhamento e Integração)
+├── 06-projeto-integrador-iv/                    # Projeto 4 (Acompanhamento e Integração)
+└── 07-plano-de-testes/                          # Validação e Testes de Software (ISO/IEC/IEEE 29119-3)
+    └── plano-de-testes.md
 ```
 
 ---
@@ -42,6 +44,7 @@ docs/
 * **[05. Priorização de Requisitos](./01-requisitos-e-arquitetura/05-priorizacao-de-requisitos.md):** Matriz MoSCoW (U1 vs U2), Matriz Valor $\times$ Risco, Modelo Kano e Grafo de Dependências.
 * **[06. RNFs e Arquitetura](./01-requisitos-e-arquitetura/06-requisitos-nao-funcionais-e-arquitetura.md):** Requisitos Não Funcionais (ISO/IEC 25010), princípios SOLID e Clean Architecture.
 * **[📋 Tarefas SMART para Trello](./01-requisitos-e-arquitetura/tarefas-smart-trello.md):** Versão formatada em cards e checklists pronta para importação no quadro Kanban.
+* **[🧪 07. Plano de Testes e Validação (ISO/IEC/IEEE 29119-3)](./07-plano-de-testes/plano-de-testes.md):** Plano oficial de testes da Unidade 2 (AV2) contendo matriz de rastreabilidade para as 18 Histórias de Usuário, casos de teste detalhados, protocolos de estresse/concorrência (Invariante 1) e relatório de refatorações.
 
 ### ⚡ 2. Computação Concorrente, Paralela e Distribuída (FCCPD)
 * **[01. Concorrência e Mensageria](./03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md):** Lock transacional no checkout/estoque, arquitetura de fila assíncrona (Redis/BullMQ) e protocolo de teste de consistência.
