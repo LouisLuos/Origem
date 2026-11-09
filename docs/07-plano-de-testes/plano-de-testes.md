@@ -12,8 +12,7 @@
 | **Objeto de Teste** | Sistema Origem — Marketplace da Economia Criativa e Artesanato Autoral de Pernambuco |
 | **Versão** | 2.0 (Consolidação Unidade 2 — AV2) |
 | **Data da Versão** | Novembro / 2026 |
-| **QA Lead / Autor Principal** | Marcos Antônio Fraga (QA Lead) |
-| **Coautores / Squad 7** | Cauã dos Santos, Eduardo Henrique, Luiz Henrique, Matheus Freitas, Pedro Vinicius, Vinicius Gabriel |
+| **Autores / Squad 7** | Cauã dos Santos, Eduardo Henrique, Luiz Henrique, Marcos Antônio, Matheus Freitas, Pedro Vinicius, Vinicius Gabriel |
 | **Status** | Homologado para Execução e Validação de AV2 |
 
 ---
@@ -62,7 +61,7 @@ Na Unidade 2 (AV2), a disciplina de *Requisitos, Projeto de Software e Validaç�
 
 | Integrante | Papel no Projeto | Atribuições na Garantia da Qualidade (QA) |
 |---|---|---|
-| **Marcos Antônio** | **QA Lead** | Planejamento formal (ISO 29119-3), escrita dos casos de teste BDD, execução dos testes funcionais, auditoria de defeitos e relatório de refatoração |
+| **Marcos Antônio** | QA / Engenharia de Testes | Planejamento formal (ISO 29119-3), escrita dos casos de teste BDD, execução dos testes funcionais, auditoria de defeitos e relatório de refatoração |
 | **Cauã dos Santos** | Tech Lead & Arquiteto | Testabilidade de arquitetura, garantia de Clean Architecture e testes de integração de API |
 | **Eduardo Henrique** | Designer UI/UX & Frontend | Testes de usabilidade, responsividade mobile (360px) e acessibilidade visual dos componentes |
 | **Luiz Henrique** | Product Owner (PO) | Validação de critérios de aceitação BDD com regras de negócio e testes de aceitação de usuário (UAT) |
@@ -344,3 +343,4 @@ Para a homologação final da Entrega da Unidade 2 perante a banca e professores
 ---
 *Plano de Testes Homologado e Versionado no Repositório Oficial do Projeto Origem.*  
 *Squad 7 · CESAR School · 2026.2*
+
