@@ -1,3 +1,5 @@
+import { apiRequest } from './api'
+
 export interface Artisan {
   id: string
   name: string
@@ -11,8 +13,6 @@ export interface Artisan {
   coverAlt: string
 }
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1'
-
 interface ArtisanListResponse {
   dados: Artisan[]
 }
@@ -20,28 +20,15 @@ interface ArtisanListResponse {
 /** Perfis públicos de artesãos consumidos pela Fake API. */
 export const artisanService = {
   async list(): Promise<Artisan[]> {
-    const response = await fetch(`${API_URL}/artesaos?limit=100`)
-    if (!response.ok) throw new Error('Não foi possível carregar os artesãos.')
-    const payload = (await response.json()) as ArtisanListResponse
-    return payload.dados
+    const response = await apiRequest<ArtisanListResponse>('/artesaos?limit=100', undefined, 'Não foi possível carregar os artesãos.')
+    return response.dados
   },
 
-  async getById(id: string): Promise<Artisan> {
-    const response = await fetch(`${API_URL}/artesaos/${encodeURIComponent(id)}`)
-    if (!response.ok) throw new Error('Artesão não encontrado.')
-    return response.json() as Promise<Artisan>
+  async get(id: string): Promise<Artisan> {
+    return apiRequest<Artisan>(`/artesaos/${encodeURIComponent(id)}`, undefined, 'Artesão não encontrado.')
   },
 
   async create(data: Omit<Artisan, 'id'> & { email?: string }): Promise<Artisan> {
-    const response = await fetch(`${API_URL}/artesaos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { erro?: string } | null
-      throw new Error(payload?.erro ?? 'Não foi possível cadastrar o artesão.')
-    }
-    return response.json() as Promise<Artisan>
+    return apiRequest<Artisan>('/artesaos', { method: 'POST', body: JSON.stringify(data) }, 'Não foi possível cadastrar o artesão.')
   },
 }

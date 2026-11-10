@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useCallback, useContext, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useResource } from '@/hooks/useResource'

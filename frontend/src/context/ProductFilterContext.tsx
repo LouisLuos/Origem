@@ -1,6 +1,9 @@
+'use client'
+
 import { createContext, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Product } from '@/design-system/components/ProductCard'
+import { matchesSearch } from '@/utils/text'
 
 export interface PriceRangeOption {
   id: string
@@ -42,59 +45,36 @@ export function ProductFilterProvider({ children }: { children: ReactNode }) {
   const [hubs, setHubs] = useState<string[]>([])
   const [priceRanges, setPriceRanges] = useState<string[]>([])
 
-  const toggleTechnique = (technique: string) => setTechniques((prev) => toggleValue(prev, technique))
-  const toggleHub = (hub: string) => setHubs((prev) => toggleValue(prev, hub))
-  const togglePriceRange = (id: string) => setPriceRanges((prev) => toggleValue(prev, id))
-
-  const selectTechnique = (technique: string) => {
-    setQuery('')
-    setHubs([])
-    setPriceRanges([])
-    setTechniques([technique])
-  }
-
-  const clearFilters = () => {
-    setTechniques([])
-    setHubs([])
-    setPriceRanges([])
-  }
-
-  const hasActiveFilters = techniques.length > 0 || hubs.length > 0 || priceRanges.length > 0
-
-  const matchesFilters = (product: Product) => {
-    const normalizedQuery = query.trim().toLowerCase()
-
-    const matchesQuery =
-      !normalizedQuery ||
-      [product.title, product.artisan, product.hub, product.technique].some((field) =>
-        field.toLowerCase().includes(normalizedQuery),
-      )
-
-    const matchesTechnique = techniques.length === 0 || techniques.includes(product.technique)
-    const matchesHub = hubs.length === 0 || hubs.includes(product.hub)
-    const matchesPrice =
-      priceRanges.length === 0 ||
-      priceRangeOptions.some((range) => priceRanges.includes(range.id) && range.test(product.price))
-
-    return matchesQuery && matchesTechnique && matchesHub && matchesPrice
-  }
-
   const value = useMemo<ProductFilterContextValue>(
     () => ({
       query,
       setQuery,
       techniques,
-      toggleTechnique,
+      toggleTechnique: (technique) => setTechniques((prev) => toggleValue(prev, technique)),
       hubs,
-      toggleHub,
+      toggleHub: (hub) => setHubs((prev) => toggleValue(prev, hub)),
       priceRanges,
-      togglePriceRange,
-      selectTechnique,
-      clearFilters,
-      hasActiveFilters,
-      matchesFilters,
+      togglePriceRange: (id) => setPriceRanges((prev) => toggleValue(prev, id)),
+      selectTechnique: (technique) => {
+        setQuery('')
+        setHubs([])
+        setPriceRanges([])
+        setTechniques([technique])
+      },
+      clearFilters: () => {
+        setQuery('')
+        setTechniques([])
+        setHubs([])
+        setPriceRanges([])
+      },
+      hasActiveFilters: query.trim().length > 0 || techniques.length > 0 || hubs.length > 0 || priceRanges.length > 0,
+      matchesFilters: (product) =>
+        matchesSearch(query, [product.title, product.artisan, product.hub, product.technique]) &&
+        (techniques.length === 0 || techniques.includes(product.technique)) &&
+        (hubs.length === 0 || hubs.includes(product.hub)) &&
+        (priceRanges.length === 0 ||
+          priceRangeOptions.some((range) => priceRanges.includes(range.id) && range.test(product.price))),
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [query, techniques, hubs, priceRanges],
   )
 

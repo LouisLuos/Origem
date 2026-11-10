@@ -11,6 +11,12 @@ export function calculateShipping(subtotal: number) {
 
 export type PaymentMethod = 'pix' | 'card' | 'boleto'
 
+export const paymentLabels: Record<PaymentMethod, string> = {
+  pix: 'Pix',
+  card: 'Cartão de crédito',
+  boleto: 'Boleto',
+}
+
 export interface OrderLine {
   productId: string
   title: string

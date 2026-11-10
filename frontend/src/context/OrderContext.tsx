@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext, useContext, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useCatalog } from '@/context/CatalogContext'
@@ -6,7 +8,7 @@ import type { ResourceStatus } from '@/hooks/useResource'
 import { orderService } from '@/services/orderService'
 import type { NewOrder, Order } from '@/services/orderService'
 
-export { FREE_SHIPPING_THRESHOLD, FLAT_SHIPPING, calculateShipping } from '@/services/orderService'
+export { FREE_SHIPPING_THRESHOLD, calculateShipping, paymentLabels } from '@/services/orderService'
 export type {
   NewOrder,
   Order,

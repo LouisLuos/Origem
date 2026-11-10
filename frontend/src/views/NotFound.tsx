@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Button, Container } from '@/design-system'
+import Link from 'next/link'
+import { ButtonLink, Container } from '@/design-system'
 
 const shortcuts = [
   { label: 'Ver a vitrine', to: '/#vitrine' },
@@ -10,14 +9,6 @@ const shortcuts = [
 ]
 
 export function NotFound() {
-  useEffect(() => {
-    const previousTitle = document.title
-    document.title = 'Página não encontrada - Origem'
-    return () => {
-      document.title = previousTitle
-    }
-  }, [])
-
   return (
     <main id="main-content" className="pb-16 pt-32 sm:pb-24 sm:pt-40">
       <Container className="flex flex-col items-center gap-6 text-center">
@@ -32,16 +23,14 @@ export function NotFound() {
           </p>
         </div>
 
-        <Link to="/">
-          <Button variant="primary" size="lg">
+        <ButtonLink href="/" variant="primary" size="lg">
             Voltar para o início
-          </Button>
-        </Link>
+          </ButtonLink>
 
         <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 border-t border-border pt-6 text-sm">
           {shortcuts.map(({ label, to }) => (
             <li key={to}>
-              <Link to={to} className="text-ink-soft underline-offset-4 hover:text-terracota-600 hover:underline">
+              <Link href={to} className="text-ink-soft underline-offset-4 hover:text-terracota-600 hover:underline">
                 {label}
               </Link>
             </li>

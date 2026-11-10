@@ -14,7 +14,7 @@ conforme cada item for implementado no projeto.
 | [x] | Comprador | Área inicial ou fluxo mínimo do comprador. | `/entrar` (`Login`) com login e cadastro simulados (`AuthContext`, contas no localStorage) e `/conta` (`Account`) com histórico de pedidos e edição do nome. Ícone de conta do `Header` leva a uma das duas; o checkout pré-preenche nome/e-mail e vincula o pedido à conta. Pedidos agora persistem no localStorage. |
 | [x] | Artesão (painel) | Área inicial para catálogo, produtos ou estoque. | Rota `/painel` (`ArtisanPanel`), restrita a contas de artesão (cadastro com "Sou artesão(ã)" ou conta demo `artesao@origem.com` / `origem123`): resumo (peças ativas, unidades, estoque baixo, esgotadas), cadastro/edição/remoção de peças, pausar/reativar e ajuste de estoque +/−. o catálogo vem de `CatalogContext`/`catalogService`; alimenta a vitrine pública via `catalogService` (peças pausadas ficam ocultas; estoque zerado aparece como "Esgotado"). |
 | [x] | Administração | Estrutura inicial de painel administrativo. | Rota `/admin` (`AdminPanel`), restrita ao perfil `admin` (conta demo `admin@origem.com` / `origem123`; não há cadastro público de administrador). Navegação lateral com Visão geral (métricas e pedidos recentes), Usuários, Pedidos e Catálogo (pausar/remover peças de qualquer artesão). Dados vêm do localStorage. |
-| [x] | Dados | Consumo por Fake API estruturada e services. | `catalogService` consome `GET/POST/PATCH/DELETE /api/v1/produtos` e `POST /api/v1/estoque/reservas`, e `artisanService` consome `/api/v1/artesaos`, ambos via `fetch`, com `VITE_API_URL` configurável. Carrinho (`cartService`), pedidos, autenticação e avaliações (`reviewService`) mantêm as simulações locais previstas para esta etapa. Os contextos consomem os services via `useResource` e as telas tratam carregamento/erro (`AsyncState`). |
+| [x] | Dados | Consumo por Fake API estruturada e services. | `catalogService` consome `GET/POST/PATCH/DELETE /api/v1/produtos` e `POST /api/v1/estoque/reservas`, e `artisanService` consome `/api/v1/artesaos`, ambos via `fetch`, com `NEXT_PUBLIC_API_URL` configurável. Carrinho (`cartService`), pedidos, autenticação e avaliações (`reviewService`) mantêm as simulações locais previstas para esta etapa. Os contextos consomem os services via `useResource` e as telas tratam carregamento/erro (`AsyncState`). |
 | [x] | Publicação | Deploy público da aplicação. | Frontend publicado na Vercel (https://origem-five.vercel.app; configuração em `frontend/vercel.json`) e Fake API publicada na Render (https://origem-bnhv.onrender.com/api/v1). |
 
 ## Progresso
@@ -50,7 +50,7 @@ conforme cada item for implementado no projeto.
 ## Notas de contexto
 
 - Em produção, o frontend consome a Fake API em `https://origem-bnhv.onrender.com/api/v1`; localmente o padrão é `http://localhost:3000/api/v1`.
-- Defina `VITE_API_URL` no ambiente do frontend (Vercel) quando a API estiver em outro endereço; a variável é embutida no build e exige novo deploy.
+- Defina `NEXT_PUBLIC_API_URL` no ambiente do frontend (Vercel) quando a API estiver em outro endereço; a variável é embutida no build e exige novo deploy.
 - Os dados da Fake API ficam em memória e voltam ao seed (3 produtos, 7 artesãos) quando a Render reinicia.
 - Pedidos e autenticação ainda usam os services locais (localStorage); somente catálogo, estoque e artesãos estão conectados à Fake API nesta etapa.
 - O deploy público foi realizado e está acessível para avaliação.

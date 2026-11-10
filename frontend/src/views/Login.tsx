@@ -1,18 +1,26 @@
+'use client'
+
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { Navigate } from '@/components/Navigate'
 import { Button, Container, Input, cn } from '@/design-system'
 import { culturalHubs, techniques } from '@/design-system/tokens'
 import { useAuth } from '@/context/AuthContext'
 import { artisanService } from '@/services/artisanService'
+import { errorMessage } from '@/utils/errors'
 
 type Mode = 'login' | 'register'
 
+/** `from` vem da URL: só aceita caminho interno, para o login não redirecionar para outro site. */
+function safeRedirect(from: string | null) {
+  return from && /^\/(?![/\\])/.test(from) ? from : '/conta'
+}
+
 export function Login() {
   const { user, login, register } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const redirectTo = (location.state as { from?: string } | null)?.from ?? '/conta'
+  const redirectTo = safeRedirect(useSearchParams().get('from'))
 
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')
@@ -25,7 +33,8 @@ export function Login() {
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  if (user) return <Navigate to={redirectTo} replace />
+  // Com a conta já criada, espera o perfil público ser salvo e mantém a tela se ele falhar.
+  if (user && !isSubmitting && !error) return <Navigate to={redirectTo} />
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -58,13 +67,12 @@ export function Login() {
             coverAlt: `Ateliê de ${name.trim()}`,
           })
         } catch (reason) {
-          result = reason instanceof Error ? reason.message : 'A conta foi criada, mas não foi possível criar o perfil público.'
+          result = `A conta foi criada, mas não foi possível criar o perfil público. ${errorMessage(reason, '')}`.trim()
         }
       }
     }
     setIsSubmitting(false)
-    if (result) return setError(result)
-    navigate(redirectTo, { replace: true })
+    setError(result)
   }
 
   const switchMode = (next: Mode) => {
@@ -174,6 +182,12 @@ export function Login() {
             <p role="alert" className="text-sm text-danger">
               {error}
             </p>
+          )}
+
+          {user && (
+            <Link href={redirectTo} className="text-sm font-medium text-terracota-600 underline-offset-4 hover:underline">
+              Continuar para a minha conta
+            </Link>
           )}
 
           <Button type="submit" variant="primary" size="lg" disabled={isSubmitting} aria-busy={isSubmitting}>

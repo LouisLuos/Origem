@@ -1,6 +1,8 @@
+'use client'
+
 import { ChevronRight, Heart } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { Button, Container, ProductCard } from '@/design-system'
+import Link from 'next/link'
+import { ButtonLink, Container, ProductCard } from '@/design-system'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCart } from '@/context/CartContext'
@@ -18,7 +20,7 @@ export function Favorites() {
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
       <Container>
         <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 pb-6 text-xs text-ink-soft">
-          <Link to="/#vitrine" className="hover:text-terracota-600 hover:underline underline-offset-4">
+          <Link href="/#vitrine" className="hover:text-terracota-600 hover:underline underline-offset-4">
             Vitrine
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden="true" />
@@ -43,11 +45,9 @@ export function Favorites() {
               <p className="text-base font-medium text-ink">Nenhuma peça favoritada ainda</p>
               <p className="text-sm text-ink-soft">Toque no coração de uma peça para guardá-la aqui.</p>
             </div>
-            <Link to="/#vitrine">
-              <Button variant="primary" size="md">
+            <ButtonLink href="/#vitrine" variant="primary" size="md">
                 Ver vitrine
-              </Button>
-            </Link>
+              </ButtonLink>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">

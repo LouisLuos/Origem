@@ -1,3 +1,5 @@
+'use client'
+
 import { useRef } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Container, SectionHeading } from '@/design-system'
@@ -72,7 +74,7 @@ export function CategoryShowcase() {
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-aubergine-600/60" aria-hidden="true" />
-              <span className="absolute inset-0 flex items-center justify-center px-4 text-center text-md font-semibold text-terracota-50 sm:text-lg uppercase leading-tight tracking-wider" aria-hidden="true">
+              <span className="absolute inset-0 flex items-center justify-center px-4 text-center text-base font-semibold text-terracota-50 sm:text-lg uppercase leading-tight tracking-wider" aria-hidden="true">
                 {technique}
               </span>
             </a>

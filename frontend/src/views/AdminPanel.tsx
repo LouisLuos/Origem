@@ -1,12 +1,15 @@
+'use client'
+
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Eye, EyeOff, LayoutDashboard, Package, ShoppingBag, Trash2, Users } from 'lucide-react'
-import { Navigate } from 'react-router-dom'
+import { Navigate } from '@/components/Navigate'
 import { Container, cn, currency } from '@/design-system'
 import { useAuth } from '@/context/AuthContext'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
-import { useOrders } from '@/context/OrderContext'
+import { useCatalogAction } from '@/hooks/useCatalogAction'
+import { paymentLabels, useOrders } from '@/context/OrderContext'
 import { useResource } from '@/hooks/useResource'
 import { authService } from '@/services/authService'
 import type { User } from '@/services/authService'
@@ -57,11 +60,11 @@ export function AdminPanel() {
   const { orders, status: ordersStatus, error: ordersError, reload: reloadOrders } = useOrders()
   const { items, status: catalogStatus, error: catalogError, reload: reloadCatalog, updateItem, removeItem } = useCatalog()
   const { data: users, status: usersStatus, error: usersError, reload: reloadUsers } = useResource(authService.listUsers, [] as User[])
-  const [actionError, setActionError] = useState<string | null>(null)
+  const { actionError, run } = useCatalogAction()
   const [section, setSection] = useState<SectionId>('overview')
 
-  if (!user) return <Navigate to="/entrar" state={{ from: '/admin' }} replace />
-  if (user.role !== 'admin') return <Navigate to="/conta" replace />
+  if (!user) return <Navigate to="/entrar?from=/admin" />
+  if (user.role !== 'admin') return <Navigate to="/conta" />
 
   const statuses = [usersStatus, ordersStatus, catalogStatus]
   if (statuses.includes('loading')) {
@@ -88,16 +91,6 @@ export function AdminPanel() {
         </Container>
       </main>
     )
-  }
-
-  /** Executa uma operação do catálogo e mostra o erro, se houver. */
-  const run = async (operation: () => Promise<void>) => {
-    setActionError(null)
-    try {
-      await operation()
-    } catch (reason) {
-      setActionError(reason instanceof Error ? reason.message : 'Não foi possível concluir a operação.')
-    }
   }
 
   const revenue = orders.reduce((total, order) => total + order.total, 0)
@@ -199,7 +192,7 @@ export function AdminPanel() {
                       </td>
                       <td className="px-4 py-3">{order.lines.reduce((total, line) => total + line.quantity, 0)}</td>
                       <td className="px-4 py-3 text-ink-soft">
-                        {order.paymentMethod === 'pix' ? 'Pix' : order.paymentMethod === 'card' ? 'Cartão' : 'Boleto'}
+                        {paymentLabels[order.paymentMethod]}
                       </td>
                       <td className="px-4 py-3 text-ink-soft">{dateFormat.format(new Date(order.createdAt))}</td>
                       <td className="px-4 py-3 font-semibold">{currency.format(order.total)}</td>

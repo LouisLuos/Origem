@@ -1,3 +1,5 @@
+'use client'
+
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 export type ResourceStatus = 'loading' | 'ready' | 'error'
@@ -31,8 +33,10 @@ export function useResource<T>(fetcher: () => Promise<T>, initial: T) {
 
   useEffect(() => {
     reload()
+    // Respostas de uma requisição antiga são descartadas ao comparar com este contador.
+    const latestRequest = requestId
     return () => {
-      requestId.current++
+      latestRequest.current++
     }
   }, [reload])
 

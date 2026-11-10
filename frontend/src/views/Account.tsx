@@ -1,8 +1,11 @@
+'use client'
+
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { LogOut, Package } from 'lucide-react'
-import { Link, Navigate } from 'react-router-dom'
-import { Button, Container, Input, currency } from '@/design-system'
+import Link from 'next/link'
+import { Navigate } from '@/components/Navigate'
+import { Button, ButtonLink, Container, Input, currency } from '@/design-system'
 import { useAuth } from '@/context/AuthContext'
 import { LoadingBlock } from '@/components/AsyncState'
 import { useOrders } from '@/context/OrderContext'
@@ -16,7 +19,7 @@ export function Account() {
   const [saved, setSaved] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  if (!user) return <Navigate to="/entrar" state={{ from: '/conta' }} replace />
+  if (!user) return <Navigate to="/entrar?from=/conta" />
 
   const myOrders = orders.filter((order) => order.userEmail === user.email)
 
@@ -38,18 +41,14 @@ export function Account() {
           </div>
           <div className="flex gap-3">
             {user.role === 'admin' && (
-              <Link to="/admin">
-                <Button variant="primary" size="sm">
+              <ButtonLink href="/admin" variant="primary" size="sm">
                   Painel administrativo
-                </Button>
-              </Link>
+                </ButtonLink>
             )}
             {user.role === 'artisan' && (
-              <Link to="/painel">
-                <Button variant="primary" size="sm">
+              <ButtonLink href="/painel" variant="primary" size="sm">
                   Painel do artesão
-                </Button>
-              </Link>
+                </ButtonLink>
             )}
             <Button variant="outline" size="sm" onClick={logout}>
               <LogOut className="h-4 w-4" aria-hidden="true" />
@@ -73,11 +72,9 @@ export function Account() {
                   <p className="text-base font-medium text-ink">Você ainda não fez pedidos</p>
                   <p className="text-sm text-ink-soft">Quando finalizar uma compra, ela aparece aqui.</p>
                 </div>
-                <Link to="/#vitrine">
-                  <Button variant="primary" size="md">
+                <ButtonLink href="/#vitrine" variant="primary" size="md">
                     Ver vitrine
-                  </Button>
-                </Link>
+                  </ButtonLink>
               </div>
             ) : (
               <ul className="flex flex-col gap-4">
@@ -85,7 +82,7 @@ export function Account() {
                   <li key={order.id} className="border border-border bg-surface p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
                       <Link
-                        to={`/pedido/${order.id}`}
+                        href={`/pedido/${order.id}`}
                         className="text-sm font-semibold tracking-widest text-ink hover:text-terracota-600 hover:underline underline-offset-4"
                       >
                         {order.id}

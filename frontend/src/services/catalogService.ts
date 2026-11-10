@@ -1,4 +1,5 @@
 import type { Product } from '@/design-system/components/ProductCard'
+import { apiRequest } from './api'
 
 export interface CatalogItem extends Product {
   /** E-mail da conta de artesão dona da peça. */
@@ -20,25 +21,12 @@ export interface StockReservation {
   quantity: number
 }
 
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1'
-
 interface ProductListResponse {
   dados: CatalogItem[]
 }
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as { erro?: string } | null
-    throw new Error(payload?.erro ?? 'Não foi possível concluir a operação no catálogo.')
-  }
-
-  if (response.status === 204) return undefined as T
-  return response.json() as Promise<T>
+function request<T>(path: string, options?: RequestInit) {
+  return apiRequest<T>(path, options, 'Não foi possível concluir a operação no catálogo.')
 }
 
 /**
@@ -49,6 +37,10 @@ export const catalogService = {
   async list(): Promise<CatalogItem[]> {
     const response = await request<ProductListResponse>('/produtos?limit=100')
     return response.dados
+  },
+
+  async get(id: string): Promise<CatalogItem> {
+    return request<CatalogItem>(`/produtos/${encodeURIComponent(id)}`)
   },
 
   async create(owner: Owner, input: CatalogItemInput): Promise<CatalogItem> {
@@ -67,7 +59,7 @@ export const catalogService = {
 
   /** Soma `delta` ao estoque atual (sem sobrescrever), para que cliques rápidos não se percam. */
   async adjustStock(id: string, delta: number): Promise<CatalogItem> {
-    const current = await request<CatalogItem>(`/produtos/${encodeURIComponent(id)}`)
+    const current = await catalogService.get(id)
     return request<CatalogItem>(`/produtos/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       body: JSON.stringify({ stock: Math.max(0, current.stock + delta) }),

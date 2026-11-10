@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
-import type { ButtonHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes, ComponentProps } from 'react'
+import Link from 'next/link'
 import { cn } from '../cn'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'light'
@@ -27,6 +28,9 @@ const sizeClasses: Record<Size, string> = {
   lg: 'text-lg px-8 py-4 gap-2.5',
 }
 
+const baseClasses =
+  'inline-flex items-center justify-center font-semibold transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed'
+
 /**
  * Botão base do Design System Origem.
  * Cantos retos e cores terrosas reforçam uma identidade artesanal e gráfica;
@@ -40,7 +44,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     <button
       ref={ref}
       className={cn(
-        'inline-flex items-center justify-center font-semibold transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed',
+        baseClasses,
         variantClasses[variant],
         sizeClasses[size],
         className,
@@ -51,3 +55,17 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     </button>
   )
 })
+
+export interface ButtonLinkProps extends ComponentProps<typeof Link> {
+  variant?: Variant
+  size?: Size
+}
+
+/** Navegação com a aparência de `Button`: um link de verdade, que abre em nova aba e é anunciado como link. */
+export function ButtonLink({ variant = 'primary', size = 'md', className, children, ...props }: ButtonLinkProps) {
+  return (
+    <Link className={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)} {...props}>
+      {children}
+    </Link>
+  )
+}

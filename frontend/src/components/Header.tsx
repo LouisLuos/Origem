@@ -1,14 +1,18 @@
+'use client'
+
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { Heart, Menu, Search, ShoppingBag, Trash2, User, X } from 'lucide-react'
-import { Button, Container, Input, cn, currency } from '@/design-system'
+import { ButtonLink, Container, Input, cn, currency } from '@/design-system'
+import { matchesSearch } from '@/utils/text'
 import { useProductFilter } from '@/context/ProductFilterContext'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { useFavorites } from '@/context/FavoritesContext'
 import { useCatalog } from '@/context/CatalogContext'
 import { useArtisans } from '@/context/ArtisanContext'
-import type { CatalogItem } from '@/context/CatalogContext'
 import logoUrl from '@/assets/logo-origem.png'
 
 const MAX_SEARCH_RESULTS = 5
@@ -32,48 +36,36 @@ export function Header() {
   const { products } = useCatalog()
   const { artisans } = useArtisans()
   const { favorites } = useFavorites()
-  const { items: cartItems, itemCount: cartCount, addItem, removeItem } = useCart()
-  const navigate = useNavigate()
-  const { pathname } = useLocation()
+  const { lines: cartLines, hydrated: cartHydrated, itemCount: cartCount, addItem, removeItem } = useCart()
+  const router = useRouter()
+  const pathname = usePathname()
   const isHome = pathname === '/'
 
   // Incrementa a cada item adicionado; usado como `key` para reiniciar a animação.
   const [cartBumpKey, setCartBumpKey] = useState(0)
-  const previousCartCount = useRef(cartCount)
+  const previousCartCount = useRef<number | null>(null)
   useEffect(() => {
-    if (cartCount > previousCartCount.current) setCartBumpKey((key) => key + 1)
+    // A primeira contagem é a leitura do carrinho salvo, não um item adicionado agora.
+    if (!cartHydrated) return
+    if (previousCartCount.current !== null && cartCount > previousCartCount.current) setCartBumpKey((key) => key + 1)
     previousCartCount.current = cartCount
-  }, [cartCount])
+  }, [cartCount, cartHydrated])
 
-  const cartLines = cartItems
-    .map((item) => {
-      const product = products.find((candidate) => candidate.id === item.id)
-      return product ? { product, quantity: item.quantity } : null
-    })
-    .filter((line): line is { product: CatalogItem; quantity: number } => line !== null)
   const cartSubtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
 
-  const normalizedQuery = query.trim().toLowerCase()
+  const hasQuery = query.trim().length > 0
   const searchResults = useMemo(() => {
-    if (!normalizedQuery) return []
+    if (!hasQuery) return []
     return products
-      .filter((product) =>
-        [product.title, product.artisan, product.hub, product.technique].some((field) =>
-          field.toLowerCase().includes(normalizedQuery),
-        ),
-      )
+      .filter((product) => matchesSearch(query, [product.title, product.artisan, product.hub, product.technique]))
       .slice(0, MAX_SEARCH_RESULTS)
-  }, [normalizedQuery, products])
+  }, [hasQuery, query, products])
   const artisanSearchResults = useMemo(() => {
-    if (!normalizedQuery) return []
+    if (!hasQuery) return []
     return artisans
-      .filter((artisan) =>
-        [artisan.name, artisan.hub, artisan.technique].some((field) =>
-          field.toLocaleLowerCase('pt-BR').includes(normalizedQuery),
-        ),
-      )
+      .filter((artisan) => matchesSearch(query, [artisan.name, artisan.hub, artisan.technique]))
       .slice(0, MAX_ARTISAN_SEARCH_RESULTS)
-  }, [artisans, normalizedQuery])
+  }, [artisans, hasQuery, query])
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 16)
@@ -123,10 +115,11 @@ export function Header() {
       )}
     >
       <Container className="flex h-20 items-center justify-between gap-4">
-        <Link to="/#top" className="flex shrink-0 items-center gap-2" aria-label="Página inicial da Origem">
-          <img
+        <Link href="/#top" className="flex shrink-0 items-center gap-2" aria-label="Página inicial da Origem">
+          <Image
             src={logoUrl}
             alt="Origem"
+            preload
             className={cn('h-10 w-auto transition-[filter] duration-300', !isSolid && 'brightness-0 invert')}
           />
         </Link>
@@ -135,7 +128,7 @@ export function Header() {
           <ul className={cn('flex items-center gap-8 font-medium', isSolid ? 'text-ink' : 'text-creme-50 ')}>
             {navLinks.map((link) => (
               <li key={link.href}>
-                <Link to={link.href} className="transition-colors duration-300 hover:text-terracota-400">
+                <Link href={link.href} className="transition-colors duration-300 hover:text-terracota-400">
                   {link.label}
                 </Link>
               </li>
@@ -162,7 +155,7 @@ export function Header() {
             {isSearchOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Search className="h-5 w-5" aria-hidden="true" />}
           </button>
           <Link
-            to="/favoritos"
+            href="/favoritos"
             aria-label={`Meus favoritos, ${favorites.length} ${favorites.length === 1 ? 'item' : 'itens'}`}
             className={cn(
               'relative hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
@@ -180,7 +173,7 @@ export function Header() {
             )}
           </Link>
           <Link
-            to={user ? '/conta' : '/entrar'}
+            href={user ? '/conta' : '/entrar'}
             aria-label={user ? 'Minha conta' : 'Entrar ou criar conta'}
             className={cn(
               'hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
@@ -239,7 +232,7 @@ export function Header() {
                       {cartLines.map(({ product, quantity }) => (
                         <li key={product.id} className="flex items-center gap-3 px-4 py-3">
                           <Link
-                            to={`/produtos/${product.id}`}
+                            href={`/produtos/${product.id}`}
                             onClick={() => setIsCartOpen(false)}
                             className="h-14 w-14 shrink-0 bg-surface-muted"
                           >
@@ -247,7 +240,7 @@ export function Header() {
                           </Link>
                           <div className="flex min-w-0 flex-1 flex-col">
                             <Link
-                              to={`/produtos/${product.id}`}
+                              href={`/produtos/${product.id}`}
                               onClick={() => setIsCartOpen(false)}
                               className="truncate text-sm font-medium text-ink hover:text-terracota-600 hover:underline underline-offset-4"
                             >
@@ -274,31 +267,17 @@ export function Header() {
                         <span>Subtotal</span>
                         <span>{currency.format(cartSubtotal)}</span>
                       </div>
-                      <Button
-                        variant="primary"
-                        size="md"
-                        onClick={() => {
-                          setIsCartOpen(false)
-                          navigate('/carrinho')
-                        }}
-                      >
+                      <ButtonLink href="/carrinho" variant="primary" size="md" onClick={() => setIsCartOpen(false)}>
                         Ver carrinho
-                      </Button>
+                      </ButtonLink>
                     </div>
                   </>
                 ) : (
                   <div className="flex flex-col items-center gap-3 px-4 py-8 text-center">
                     <p className="text-sm text-ink-soft">Seu carrinho está vazio.</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setIsCartOpen(false)
-                        navigate('/#vitrine')
-                      }}
-                    >
+                    <ButtonLink href="/#vitrine" variant="outline" size="sm" onClick={() => setIsCartOpen(false)}>
                       Ver vitrine
-                    </Button>
+                    </ButtonLink>
                   </div>
                 )}
               </div>
@@ -332,7 +311,7 @@ export function Header() {
               onSubmit={(event) => {
                 event.preventDefault()
                 setIsSearchOpen(false)
-                navigate('/#vitrine')
+                router.push('/#vitrine')
               }}
             >
               <Input
@@ -343,13 +322,11 @@ export function Header() {
                 placeholder="Buscar peças, técnicas, artesãos..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                aria-controls="header-search-results"
-                aria-expanded={normalizedQuery.length > 0}
               />
             </form>
 
-            {normalizedQuery && (
-              <div id="header-search-results" className="mt-3 border-t border-border/70 pt-3">
+            {hasQuery && (
+              <div className="mt-3 border-t border-border/70 pt-3">
                 {searchResults.length > 0 || artisanSearchResults.length > 0 ? (
                   <div className="flex flex-col gap-4">
                     {searchResults.length > 0 && (
@@ -359,7 +336,7 @@ export function Header() {
                           {searchResults.map((product) => (
                             <li key={product.id} className="flex items-center gap-1">
                               <Link
-                                to={`/produtos/${product.id}`}
+                                href={`/produtos/${product.id}`}
                                 onClick={() => setIsSearchOpen(false)}
                                 className="-ml-2 flex min-w-0 flex-1 items-center gap-3 px-2 py-2.5 transition-colors hover:bg-aubergine/10 hover:text-terracota-600"
                               >
@@ -382,8 +359,9 @@ export function Header() {
                               <button
                                 type="button"
                                 onClick={() => addItem(product.id)}
-                                aria-label={`Adicionar ${product.title} ao carrinho`}
-                                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:bg-terracota hover:text-creme-50"
+                                disabled={product.stock === 0}
+                                aria-label={product.stock === 0 ? `${product.title} esgotado` : `Adicionar ${product.title} ao carrinho`}
+                                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:bg-terracota hover:text-creme-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink-soft"
                               >
                                 <ShoppingBag className="h-4 w-4" aria-hidden="true" />
                               </button>
@@ -399,7 +377,7 @@ export function Header() {
                           {artisanSearchResults.map((artisan) => (
                             <li key={artisan.id} className="flex items-center gap-1">
                               <Link
-                                to={`/artesaos/${artisan.id}`}
+                                href={`/artesaos/${artisan.id}`}
                                 onClick={() => setIsSearchOpen(false)}
                                 className="-ml-2 flex min-w-0 flex-1 items-center gap-3 px-2 py-2.5 transition-colors hover:bg-aubergine/10 hover:text-terracota-600"
                               >
@@ -437,7 +415,7 @@ export function Header() {
             {navLinks.map((link) => (
               <Link
                 key={link.href}
-                to={link.href}
+                href={link.href}
                 onClick={() => setIsMenuOpen(false)}
                 className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
               >
@@ -445,14 +423,14 @@ export function Header() {
               </Link>
             ))}
             <Link
-              to="/favoritos"
+              href="/favoritos"
               onClick={() => setIsMenuOpen(false)}
               className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
             >
               Favoritos{favorites.length > 0 && ` (${favorites.length})`}
             </Link>
             <Link
-              to={user ? '/conta' : '/entrar'}
+              href={user ? '/conta' : '/entrar'}
               onClick={() => setIsMenuOpen(false)}
               className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
             >

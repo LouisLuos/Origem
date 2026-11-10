@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { ChevronDown, X } from 'lucide-react'
 import { Container, ProductCard } from '@/design-system'
@@ -22,6 +24,7 @@ const sortOptions: { id: SortOption; label: string }[] = [
 export function FeaturedShowcase() {
   const {
     query,
+    setQuery,
     techniques,
     toggleTechnique,
     hubs,
@@ -53,6 +56,7 @@ export function FeaturedShowcase() {
   const visibleProducts = sortedProducts.slice(0, visibleCount)
 
   const activeFilterChips = [
+    ...(query.trim() ? [{ value: 'busca', label: `Busca: ${query.trim()}`, onRemove: () => setQuery('') }] : []),
     ...techniques.map((value) => ({ value, label: value, onRemove: () => toggleTechnique(value) })),
     ...hubs.map((value) => ({ value, label: value, onRemove: () => toggleHub(value) })),
     ...priceRanges.map((id) => ({

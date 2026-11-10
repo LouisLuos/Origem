@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
 import { Hero } from '@/components/Hero'
 import { CategoryShowcase } from '@/components/CategoryShowcase'
 import { FeaturedShowcase } from '@/components/FeaturedShowcase'
@@ -8,13 +6,6 @@ import { ArtisanSpotlight } from '@/components/ArtisanSpotlight'
 import { Newsletter } from '@/components/Newsletter'
 
 export function Home() {
-  const { hash } = useLocation()
-
-  useEffect(() => {
-    if (!hash) return
-    document.querySelector(hash)?.scrollIntoView({ behavior: 'smooth' })
-  }, [hash])
-
   return (
     <main id="main-content">
       <Hero />

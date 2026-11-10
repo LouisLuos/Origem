@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react'
+'use client'
+
+import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { ChevronRight, Heart, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react'
-import { Badge, Button, Container, ProductCard, currency } from '@/design-system'
+import { Badge, Button, ButtonLink, Container, ProductCard, currency } from '@/design-system'
 import type { Product } from '@/design-system'
 import { getAvatarUrl } from '@/utils/avatar'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
-import { useCart } from '@/context/CartContext'
+import { availableQuantity, useCart } from '@/context/CartContext'
 import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 
@@ -43,8 +46,8 @@ const trustPoints = [
 ]
 
 export function ProductDetail() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const router = useRouter()
   const { addItem } = useCart()
   const { isFavorite: isFavoriteProduct, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
@@ -52,16 +55,10 @@ export function ProductDetail() {
   const { products, getProduct, status, error, reload } = useCatalog()
   const { artisans } = useArtisans()
 
-  const product = id ? getProduct(id) : undefined
+  const product = getProduct(id)
 
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
-
-  useEffect(() => {
-    window.scrollTo({ top: 0 })
-    setActiveImage(0)
-    setQuantity(1)
-  }, [id])
 
   if (status !== 'ready' && !product) {
     return (
@@ -81,9 +78,9 @@ export function ProductDetail() {
           <p className="max-w-md text-ink-soft">
             O produto que você procura não existe ou não está mais disponível na vitrine.
           </p>
-          <Button variant="primary" onClick={() => navigate('/#vitrine')}>
+          <ButtonLink href="/#vitrine" variant="primary">
             Voltar à vitrine
-          </Button>
+          </ButtonLink>
         </Container>
       </main>
     )
@@ -94,6 +91,7 @@ export function ProductDetail() {
     ? Math.round(100 - (product.price / (product.compareAtPrice as number)) * 100)
     : 0
   const gallery = getGalleryImages(product)
+  const maxQuantity = Math.max(1, availableQuantity(product))
   const artisan = artisans.find((item) => item.name === product.artisan)
   const relatedProducts = products
     .filter((item) => item.technique === product.technique && item.id !== product.id)
@@ -101,14 +99,14 @@ export function ProductDetail() {
 
   const goToTechnique = () => {
     selectTechnique(product.technique)
-    navigate('/#vitrine')
+    router.push('/#vitrine')
   }
 
   return (
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
       <Container>
         <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 pb-8 text-xs text-ink-soft">
-          <Link to="/#vitrine" className="hover:text-terracota-600 hover:underline underline-offset-4">
+          <Link href="/#vitrine" className="hover:text-terracota-600 hover:underline underline-offset-4">
             Vitrine
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden="true" />
@@ -170,19 +168,18 @@ export function ProductDetail() {
                 por{' '}
                 {artisan ? (
                   <Link
-                    to={`/artesaos/${artisan.id}`}
+                    href={`/artesaos/${artisan.id}`}
                     className="font-medium text-ink underline-offset-4 hover:text-terracota-600 hover:underline"
                   >
                     {product.artisan}
                   </Link>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => navigate('/#artesaos')}
-                    className="cursor-pointer font-medium text-ink underline-offset-4 hover:text-terracota-600 hover:underline"
+                  <Link
+                    href="/#artesaos"
+                    className="font-medium text-ink underline-offset-4 hover:text-terracota-600 hover:underline"
                   >
                     {product.artisan}
-                  </button>
+                  </Link>
                 )}
               </p>
             </div>
@@ -214,8 +211,8 @@ export function ProductDetail() {
                 </span>
                 <button
                   type="button"
-                  onClick={() => setQuantity((value) => Math.min(10, value + 1))}
-                  disabled={quantity >= 10}
+                  onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
+                  disabled={quantity >= maxQuantity}
                   aria-label="Aumentar quantidade"
                   className="flex h-full w-12 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -283,7 +280,7 @@ export function ProductDetail() {
                       <p>{artisan.bio}</p>
                     </div>
                     <Link
-                      to={`/artesaos/${artisan.id}`}
+                      href={`/artesaos/${artisan.id}`}
                       className="w-fit font-medium text-terracota-600 underline-offset-4 hover:underline"
                     >
                       Ver perfil completo

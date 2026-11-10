@@ -1,12 +1,16 @@
+'use client'
+
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Eye, EyeOff, Minus, Pencil, Plus, Trash2 } from 'lucide-react'
-import { Navigate } from 'react-router-dom'
+import { Navigate } from '@/components/Navigate'
 import { Button, Container, Input, cn, currency } from '@/design-system'
 import { culturalHubs, techniques } from '@/design-system/tokens'
 import { useAuth } from '@/context/AuthContext'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
+import { useCatalogAction } from '@/hooks/useCatalogAction'
+import { errorMessage } from '@/utils/errors'
 import type { CatalogItem, CatalogItemInput } from '@/context/CatalogContext'
 
 const LOW_STOCK = 3
@@ -47,10 +51,10 @@ export function ArtisanPanel() {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [actionError, setActionError] = useState<string | null>(null)
+  const { actionError, run } = useCatalogAction()
 
-  if (!user) return <Navigate to="/entrar" state={{ from: '/painel' }} replace />
-  if (user.role !== 'artisan') return <Navigate to="/conta" replace />
+  if (!user) return <Navigate to="/entrar?from=/painel" />
+  if (user.role !== 'artisan') return <Navigate to="/conta" />
 
   if (status !== 'ready') {
     return (
@@ -60,16 +64,6 @@ export function ArtisanPanel() {
         </Container>
       </main>
     )
-  }
-
-  /** Executa uma operação do catálogo e mostra o erro, se houver. */
-  const run = async (operation: () => Promise<void>) => {
-    setActionError(null)
-    try {
-      await operation()
-    } catch (reason) {
-      setActionError(reason instanceof Error ? reason.message : 'Não foi possível concluir a operação.')
-    }
   }
 
   const myItems = items.filter((item) => item.ownerEmail === user.email)
@@ -141,7 +135,7 @@ export function ArtisanPanel() {
       }
       closeForm()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Não foi possível salvar a peça.')
+      setError(errorMessage(reason, 'Não foi possível salvar a peça.'))
     } finally {
       setIsSaving(false)
     }

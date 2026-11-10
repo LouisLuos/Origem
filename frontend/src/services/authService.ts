@@ -44,7 +44,7 @@ function readUsers(): StoredUser[] {
  * Promise com `Error` e mensagem em português.
  */
 export const authService = {
-  /** Leitura síncrona da sessão para evitar "piscar" a tela de login ao recarregar. */
+  /** Leitura da sessão no navegador; o `AuthProvider` a chama depois da hidratação. */
   getSession(): User | null {
     return readStorage<User | null>(SESSION_KEY, null)
   },

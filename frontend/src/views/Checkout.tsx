@@ -1,10 +1,16 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ChevronRight, CreditCard, FileText, QrCode } from 'lucide-react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Navigate } from '@/components/Navigate'
 import { Button, Container, Input, cn, currency } from '@/design-system'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
+import { addressService } from '@/services/addressService'
+import { errorMessage } from '@/utils/errors'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import { calculateShipping, useOrders } from '@/context/OrderContext'
@@ -78,11 +84,11 @@ function validate(customer: OrderCustomer): Errors {
 }
 
 export function Checkout() {
-  const { items, clearCart } = useCart()
+  const { lines: cartLines, clearCart } = useCart()
   const { placeOrder } = useOrders()
-  const { products, status: catalogStatus, error: catalogError, reload: reloadCatalog } = useCatalog()
+  const { status: catalogStatus, error: catalogError, reload: reloadCatalog } = useCatalog()
   const { user } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
   const [customer, setCustomer] = useState<OrderCustomer>(() => ({
     ...emptyCustomer,
     name: user?.name ?? '',
@@ -103,22 +109,19 @@ export function Checkout() {
     }
     const controller = new AbortController()
     setZipStatus('loading')
-    fetch(`https://viacep.com.br/ws/${zipDigits}/json/`, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error('viacep')
-        return response.json() as Promise<{ erro?: boolean; logradouro: string; bairro: string; localidade: string; uf: string }>
-      })
-      .then((data) => {
-        if (data.erro) {
+    addressService
+      .lookup(zipDigits, controller.signal)
+      .then((address) => {
+        if (!address) {
           setZipStatus('notFound')
           return
         }
         setCustomer((prev) => ({
           ...prev,
-          street: data.logradouro || prev.street,
-          neighborhood: data.bairro || prev.neighborhood,
-          city: data.localidade,
-          state: data.uf,
+          street: address.street || prev.street,
+          neighborhood: address.neighborhood || prev.neighborhood,
+          city: address.city,
+          state: address.state,
         }))
         setErrors((prev) => ({ ...prev, street: undefined, neighborhood: undefined, city: undefined, state: undefined }))
         setZipStatus('idle')
@@ -130,22 +133,15 @@ export function Checkout() {
     return () => controller.abort()
   }, [zipDigits])
 
-  const lines: OrderLine[] = items.flatMap((item) => {
-    const product = products.find((candidate) => candidate.id === item.id)
-    return product
-      ? [
-          {
-            productId: product.id,
-            title: product.title,
-            imageUrl: product.imageUrl,
-            imageAlt: product.imageAlt,
-            artisan: product.artisan,
-            unitPrice: product.price,
-            quantity: item.quantity,
-          },
-        ]
-      : []
-  })
+  const lines: OrderLine[] = cartLines.map(({ product, quantity }) => ({
+    productId: product.id,
+    title: product.title,
+    imageUrl: product.imageUrl,
+    imageAlt: product.imageAlt,
+    artisan: product.artisan,
+    unitPrice: product.price,
+    quantity,
+  }))
 
   if (catalogStatus !== 'ready' && !isSubmitting) {
     return (
@@ -162,7 +158,7 @@ export function Checkout() {
   }
 
   // O carrinho só é esvaziado ao concluir o pedido, que já navega para a confirmação.
-  if (lines.length === 0 && !isSubmitting) return <Navigate to="/carrinho" replace />
+  if (lines.length === 0 && !isSubmitting) return <Navigate to="/carrinho" />
 
   const subtotal = lines.reduce((total, line) => total + line.unitPrice * line.quantity, 0)
   const shipping = calculateShipping(subtotal)
@@ -219,9 +215,9 @@ export function Checkout() {
         total,
       })
       clearCart()
-      navigate(`/pedido/${order.id}`, { replace: true })
+      router.replace(`/pedido/${order.id}`)
     } catch (reason) {
-      setSubmitError(reason instanceof Error ? reason.message : 'Não foi possível concluir o pedido.')
+      setSubmitError(errorMessage(reason, 'Não foi possível concluir o pedido.'))
       setIsSubmitting(false)
     }
   }
@@ -230,7 +226,7 @@ export function Checkout() {
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
       <Container>
         <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 pb-6 text-xs text-ink-soft">
-          <Link to="/carrinho" className="hover:text-terracota-600 hover:underline underline-offset-4">
+          <Link href="/carrinho" className="hover:text-terracota-600 hover:underline underline-offset-4">
             Carrinho
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden="true" />
@@ -241,7 +237,7 @@ export function Checkout() {
 
         <h1 className="pb-8 text-2xl font-semibold text-ink sm:text-3xl">Finalizar compra</h1>
 
-        <form onSubmit={handleSubmit} noValidate className="grid gap-10 lg:grid-cols-[2fr_1fr] lg:gap-14">
+        <form onSubmit={handleSubmit} noValidate className="grid grid-cols-1 gap-10 lg:grid-cols-[2fr_1fr] lg:gap-14">
           <div className="flex flex-col gap-10">
             <fieldset className="flex flex-col gap-4">
               <legend className="pb-2 text-sm font-semibold uppercase tracking-widest text-ink">Seus dados</legend>

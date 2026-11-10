@@ -1,6 +1,9 @@
+'use client'
+
 import { ChevronRight, MapPin, Package, Sparkles } from 'lucide-react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Button, Container, ProductCard } from '@/design-system'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
+import { Button, ButtonLink, Container, ProductCard } from '@/design-system'
 import { getAvatarUrl } from '@/utils/avatar'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
@@ -10,14 +13,14 @@ import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 
 export function ArtisanProfile() {
-  const { id } = useParams()
-  const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const router = useRouter()
   const { addItem } = useCart()
   const { isFavorite, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
 
   const { artisans, status: artisansStatus, error: artisansError, reload: reloadArtisans } = useArtisans()
-  const { products: catalogProducts, status: catalogStatus } = useCatalog()
+  const { products: catalogProducts, status: catalogStatus, error: catalogError, reload: reloadCatalog } = useCatalog()
 
   const artisan = artisans.find((item) => item.id === id)
 
@@ -49,9 +52,9 @@ export function ArtisanProfile() {
           <p className="max-w-md text-ink-soft">
             O perfil que você procura não existe ou não está mais disponível.
           </p>
-          <Button variant="primary" onClick={() => navigate('/#artesaos')}>
+          <ButtonLink href="/#artesaos" variant="primary">
             Voltar aos artesãos
-          </Button>
+          </ButtonLink>
         </Container>
       </main>
     )
@@ -62,14 +65,14 @@ export function ArtisanProfile() {
 
   const goToTechnique = () => {
     selectTechnique(artisan.technique)
-    navigate('/#vitrine')
+    router.push('/#vitrine')
   }
 
   return (
     <main id="main-content" className="pb-16 sm:pb-24">
       <Container className="pt-24 sm:pt-28">
         <nav aria-label="Trilha de navegação" className="flex flex-wrap items-center gap-1.5 pb-4 text-xs text-ink-soft">
-          <Link to="/#artesaos" className="hover:text-terracota-600 hover:underline underline-offset-4">
+          <Link href="/#artesaos" className="hover:text-terracota-600 hover:underline underline-offset-4">
             Artesãos
           </Link>
           <ChevronRight className="h-3 w-3" aria-hidden="true" />
@@ -168,7 +171,9 @@ export function ArtisanProfile() {
             )}
           </div>
 
-          {products.length > 0 ? (
+          {catalogStatus === 'error' ? (
+            <ErrorBlock message={catalogError} onRetry={reloadCatalog} />
+          ) : products.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
               {products.map((product) => (
                 <ProductCard

@@ -1,20 +1,16 @@
-import { CheckCircle2 } from 'lucide-react'
-import { Link, useParams } from 'react-router-dom'
-import { Button, Container, currency } from '@/design-system'
-import { LoadingBlock } from '@/components/AsyncState'
-import { useOrders } from '@/context/OrderContext'
-import type { PaymentMethod } from '@/context/OrderContext'
+'use client'
 
-const paymentLabels: Record<PaymentMethod, string> = {
-  pix: 'Pix',
-  card: 'Cartão de crédito',
-  boleto: 'Boleto',
-}
+import { CheckCircle2 } from 'lucide-react'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { ButtonLink, Container, currency } from '@/design-system'
+import { LoadingBlock } from '@/components/AsyncState'
+import { paymentLabels, useOrders } from '@/context/OrderContext'
 
 export function OrderConfirmation() {
-  const { id } = useParams()
+  const { id } = useParams<{ id: string }>()
   const { getOrder, status } = useOrders()
-  const order = id ? getOrder(id) : undefined
+  const order = getOrder(id)
 
   if (!order && status === 'loading') {
     return (
@@ -33,11 +29,9 @@ export function OrderConfirmation() {
           <div className="flex flex-col items-center gap-4 border border-dashed border-border py-16 text-center">
             <p className="text-base font-medium text-ink">Pedido não encontrado</p>
             <p className="text-sm text-ink-soft">Os pedidos simulados ficam salvos apenas neste navegador.</p>
-            <Link to="/#vitrine">
-              <Button variant="primary" size="md">
+            <ButtonLink href="/#vitrine" variant="primary" size="md">
                 Ver vitrine
-              </Button>
-            </Link>
+              </ButtonLink>
           </div>
         </Container>
       </main>
@@ -67,7 +61,7 @@ export function OrderConfirmation() {
                 <img src={line.imageUrl} alt={line.imageAlt} className="h-20 w-20 shrink-0 object-cover" />
                 <div className="flex flex-1 flex-col">
                   <Link
-                    to={`/produtos/${line.productId}`}
+                    href={`/produtos/${line.productId}`}
                     className="font-medium text-ink hover:text-terracota-600 hover:underline underline-offset-4"
                   >
                     {line.title}
@@ -112,11 +106,9 @@ export function OrderConfirmation() {
                 <span>{currency.format(order.total)}</span>
               </div>
             </div>
-            <Link to="/#vitrine">
-              <Button variant="outline" size="md" className="w-full">
+            <ButtonLink href="/#vitrine" variant="outline" size="md" className="w-full">
                 Continuar comprando
-              </Button>
-            </Link>
+              </ButtonLink>
           </aside>
         </div>
       </Container>
