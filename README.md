@@ -105,27 +105,64 @@ chmod +x monitor.sh
 
 ---
 
-## 🧪 Como Testar
+## 🧪 Como rodar os testes
 
-Para executar toda a suíte de testes unitários e de integração (32 testes automatizados):
+### 1. Tabela de Classes de Teste por Grupo
+
+| Grupo | Classe de Teste | O que testa (1 linha) |
+| :--- | :--- | :--- |
+| **Compra e Pedidos (API REST)** | `com.origem.controller.OrderControllerTest` | Testa os endpoints HTTP REST de checkout (`POST /orders/purchase`) para sucesso, produto inexistente e estoque insuficiente. |
+| **Estoque Concorrente e Notificações** | `com.origem.service.OrderReliabilityConcurrencyAndAsyncTest` | Testa baixa atômica de estoque sob 10 requisições concorrentes com Lock Pessimista e processamento/retentativas da fila assíncrona. |
+| **Inicialização da Aplicação** | `com.origem.OrigemApplicationTests` | Valida o carregamento integral do contexto do Spring Boot, JPA EntityManager e repositórios. |
+| **Estruturas de Dados (AED)** | `com.origem.ed.estrutura.ListaEncadeadaTest` | Testa inserção (início/fim/posição), remoção, busca e conversão para array em lista simplesmente encadeada. |
+| **Estruturas de Dados (AED)** | `com.origem.ed.estrutura.PilhaTest` | Testa operações de empilhar, desempilhar e consulta de topo respeitando a política LIFO. |
+| **Estruturas de Dados (AED)** | `com.origem.ed.estrutura.FilaTest` | Testa enfileirar e desenfileirar garantindo a ordem estrita de atendimento FIFO. |
+| **Estruturas de Dados (AED)** | `com.origem.ed.estrutura.FilaCircularTest` | Testa buffer estático com ponteiros modulares circulares e validação de limites de capacidade. |
+| **Estruturas de Dados (AED)** | `com.origem.ed.estrutura.TabelaHashTest` | Testa pares chave-valor, tratamento de colisões por encadeamento separado e redimensionamento automático (*rehashing*). |
+| **Estruturas de Dados (AED)** | `com.origem.ed.estrutura.ArvoreBinariaBuscaTest` | Testa inserção na BST, percurso em-ordem e os 3 casos de remoção (folha, 1 filho e 2 filhos com sucessor). |
+| **Algoritmos de Ordenação e Busca** | `com.origem.ed.algoritmo.OrdenacaoTest` | Testa ordenação in-place e estável com Insertion Sort, Selection Sort, Merge Sort e Quick Sort. |
+| **Algoritmos de Ordenação e Busca** | `com.origem.ed.algoritmo.BuscaTest` | Testa busca sequencial (linear) em dados arbitrários e busca binária logarítmica em dados ordenados. |
+| **Concorrência (Threads)** | `com.origem.concorrencia.ProdutorConsumidorTest` | Evidencia anomalias de *Race Condition* no buffer inseguro e valida consistência total no buffer com Lock/Mutex. |
+
+---
+
+### 2. Comandos Maven por Grupo
+
+Execute no terminal (Linux/macOS use `./mvnw`, Windows use `.\mvnw.cmd`):
+
+* **Grupo 1 — Compra e Pedidos (API REST):**
+  ```bash
+  mvn test -Dtest=OrderControllerTest
+  ```
+* **Grupo 2 — Concorrência de Estoque e Notificações Assíncronas:**
+  ```bash
+  mvn test -Dtest=OrderReliabilityConcurrencyAndAsyncTest
+  ```
+* **Grupo 3 — Inicialização da Aplicação:**
+  ```bash
+  mvn test -Dtest=OrigemApplicationTests
+  ```
+* **Grupo 4 — Estruturas de Dados (AED):**
+  ```bash
+  mvn test -Dtest="com.origem.ed.estrutura.*Test"
+  ```
+* **Grupo 5 — Algoritmos de Ordenação e Busca (AED):**
+  ```bash
+  mvn test -Dtest="com.origem.ed.algoritmo.*Test"
+  ```
+* **Grupo 6 — Concorrência e Threads (Produtor-Consumidor):**
+  ```bash
+  mvn test -Dtest=ProdutorConsumidorTest
+  ```
+
+---
+
+### 3. Comando para Rodar TODOS os Testes de uma Vez
 
 ```bash
-# No Linux/macOS:
-./mvnw test
-
-# No Windows (PowerShell):
-.\mvnw.cmd test
+mvn test
 ```
-
-### Testes Específicos por Módulo:
-- **Testes de Estruturas de Dados:**  
-  `.\mvnw.cmd test -Dtest=ListaEncadeadaTest,PilhaTest,FilaTest,FilaCircularTest,TabelaHashTest,ArvoreBinariaBuscaTest`
-- **Testes de Algoritmos de Ordenação e Busca:**  
-  `.\mvnw.cmd test -Dtest=OrdenacaoTest,BuscaTest`
-- **Testes de Concorrência (Race Condition vs Mutex/Lock):**  
-  `.\mvnw.cmd test -Dtest=ProdutorConsumidorTest`
-- **Testes de Integração com Banco (Checkout com Lock Pessimista e Fila Assíncrona):**  
-  `.\mvnw.cmd test -Dtest=OrderReliabilityConcurrencyAndAsyncTest`
+*(No Windows PowerShell / CMD: `.\mvnw.cmd test`)*
 
 ---
 
