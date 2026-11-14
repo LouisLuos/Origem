@@ -27,7 +27,7 @@ O objetivo da Avaliação 2 é entregar a aplicação full stack funcional e int
 1. **Frontend:** Interface Next.js (App Router) responsiva, acessível e refatorada, substituindo progressivamente os dados estáticos/simulados da Fake API pelas rotas oficiais da API RESTful.
 2. **Backend:** Servidor Node.js com Express e TypeScript rigoroso (NodeNext ESM), estruturado em camadas (Routes, Controllers, Services, Repositories), expondo endpoints sob o prefixo padronizado `/api/v1` com tratamento centralizado de erros (`{ "erro": string }`).
 3. **Persistência:** Banco de dados relacional PostgreSQL hospedado na infraestrutura Supabase, integrado ao backend via Prisma ORM 7 com adaptador `@prisma/adapter-pg` e pool `pg.Pool`. A modelagem é desenvolvida cooperativamente com a equipe da disciplina de Banco de Dados.
-4. **Módulo de IA:** Recomendador inteligente de peças afins baseado em similaridade de cosseno ponderada por atributos culturais (técnica, polo, categoria, preço) e reforço de co-ocorrência em cestas de compra (HU-24 / PI L377).
+4. **Módulo de IA:** Recomendador inteligente de peças afins baseado em similaridade de cosseno ponderada por atributos culturais (técnica, polo, categoria, preço) e reforço de co-ocorrência em cestas de compra (Requisito da Avaliação 2 — PI L377 / Could Have do Backlog).
 
 ### 1.3. Stack Tecnológica Oficial
 - **Frontend:** Next.js 16.4.5, React 19.3.1, Tailwind CSS v4, Lucide React, TypeScript 5.6.3. Porta de desenvolvimento: `5173`.
@@ -60,12 +60,24 @@ Para garantir rastreabilidade bidirecional entre o repositório Git e o Jira, ad
 5. **Validação de QA (In Test):** Execução dos critérios de aceite BDD e casos de teste com evidência gravada.
 6. **Concluído (Done):** Código integrado à branch principal, migrations versionadas, testes passando e checklist de conformidade atualizado.
 
-### 1.7. Critérios para Conclusão de uma Issue (Definition of Done - DoD)
-Uma issue só poderá transitar para **Done** se cumprir cumulativamente:
-- **Código:** Clean Architecture respeitada, tipagem estrita sem `any` abusivo, build e typecheck com zero erros.
-- **Testes:** Cenários BDD correspondentes implementados e validados com evidência automatizada.
-- **Integração:** Funcionalidade operando com dados reais do backend e PostgreSQL (recursos simulados em `localStorage` ou Fake API impedem a transição para Done).
-- **Revisão:** Pull Request revisado e aprovado por desenvolvedor par.
+### 1.7. Critérios de Conclusão e Definições de Pronto (DoD)
+Para preservar a fidelidade às fontes normativas e não impor requisitos adicionais de forma indevida, diferenciam-se três níveis de conclusão:
+
+1. **Definition of Done (DoD) de cada Tarefa SMART (Nível de Sub-task/Task):**
+   - Cada uma das 64 tarefas técnicas possui seu DoD original específico definido no backlog (detalhado na Seção 4).
+   - A tarefa é considerada concluída no Jira quando seu critério específico é entregue e verificado (ex.: para `T-CAD-04`, telas responsivas com máscaras de CPF/telefone e validação; para `T-CAD-01`, tabelas `usuarios` e `usuarios_papeis` criadas no banco; para `T-CAD-02`, rota `POST /auth/register` funcionando com hash de senha).
+   - Uma tarefa de frontend não deve ser mantida aberta apenas porque a migration de banco da história ainda não foi rodada, desde que o escopo delimitado da task de UI tenha sido concluído e testado em sua camada.
+
+2. **Critérios de Conclusão de uma História de Usuário (Nível de Story):**
+   - Uma História (`HU-XX`) só transita para **Concluída / Done** quando todas as suas tarefas filhas (Banco, Backend e Frontend) estiverem finalizadas e todos os cenários de aceite em **BDD / Gherkin** estiverem implementados e validados com testes automatizados de integração.
+
+3. **Critérios de Conclusão da Entrega Full Stack (Nível de Avaliação 2 — AV2):**
+   - Conforme o Projeto Integrador, o produto final integrado exige a eliminação total de dados simulados em `localStorage` ou Fake API nos fluxos principais de compra, catálogo, checkout e autenticação, operando de ponta a ponta com o backend Express e banco PostgreSQL no Supabase.
+
+### 1.8. Divergência Documental de Horas e Decisão para o Jira
+- **Soma das 64 Tarefas Individuais:** A soma aritmética exata das estimativas de todas as 64 tarefas SMART do backlog é de **223 horas** (16h + 15h + 11h + 16h + 9h + 16h + 8h + 15h + 15h + 8h + 15h + 14h + 15h + 14h + 8h + 9h + 9h + 10h = 223h).
+- **Registro no Cabeçalho do Backlog:** Na tabela resumo de `references/backlog-priorizado-origem.md` (linha 66), consta o texto `"64 Tarefas · 226h"`, representando uma divergência documental interna de +3h no total geral original.
+- **Decisão para o Jira:** No Jira, o campo `Original Estimate` de cada issue receberá estritamente a estimativa documentada na respectiva tarefa SMART (ex.: `3h`, `4h`, etc.), resultando no total *bottom-up* de **223 horas**. Não serão adicionadas horas fictícias a nenhuma tarefa arbitrária para forçar a soma em 226h, preservando a rastreabilidade exata item a item.
 
 ---
 
@@ -299,7 +311,7 @@ Uma issue só poderá transitar para **Done** se cumprir cumulativamente:
   E exibir o valor e o prazo estimado em menos de 1.800ms
   ```
 - **Tarefas SMART Vinculadas:** `T-VIT-01` (Banco), `T-VIT-02` (Backend), `T-VIT-03` (Backend), `T-VIT-04` (Frontend).
-- **Casos de Teste Associados:** `TC06` (Resultado oficial: ❌ Reprovado por ausência de índices GIN e FTS na API; nota documental repetiu texto do TC04).
+- **Casos de Teste Associados:** `TC06` (Resultado oficial: ❌ Reprovado; a observação oficial da equipe duplicou acidentalmente a nota do TC04; no código da branch atual, índices GIN e FTS no backend ainda não foram implementados).
 - **Estado Atual da Implementação:** **Parcialmente implementada**.
 - **Evidências no Código:** [Home.tsx](file:///c:/Users/CAUÂ/Documents/GitHub/projetos/Origem/frontend/src/views/Home.tsx) e [ProductFilters.tsx](file:///c:/Users/CAUÂ/Documents/GitHub/projetos/Origem/frontend/src/components/ProductFilters.tsx) possuem filtros por técnica e polo; [ProductDetail.tsx](file:///c:/Users/CAUÂ/Documents/GitHub/projetos/Origem/frontend/src/views/ProductDetail.tsx#L42) exibe aviso estático de frete.
 - **Ressalvas e Funcionalidades Simuladas:** A busca atual é filtragem de strings em memória do React; não há índices GIN/tsvector no banco; simulação de frete na página da peça não existe.
@@ -817,29 +829,32 @@ Uma issue só poderá transitar para **Done** se cumprir cumulativamente:
 
 ## 5. Matriz Oficial de Testes da Equipe (19 Casos)
 
-Todos os 19 casos de teste executados oficialmente pela equipe foram preservados conforme o [relatorio-execucao-testes-origem.md](file:///c:/Users/CAUÂ/Documents/GitHub/projetos/Origem/references/relatorio-execucao-testes-origem.md):
+Todos os 19 casos de teste executados oficialmente pela equipe foram preservados conforme o [relatorio-execucao-testes-origem.md](file:///c:/Users/CAUÂ/Documents/GitHub/projetos/Origem/references/relatorio-execucao-testes-origem.md).
 
-| Caso de Teste | Título Oficial do Caso | Resultado Oficial | Data | Executor | Ambiente / Versão | HU / Tasks Vinculadas | Observação Oficial da Equipe | Ressalva Técnica para a Branch Atual (`feat/frontend-next`) |
+> [!NOTE]
+> **Diferenciação de Ambientes de Execução:** O cabeçalho geral do relatório oficial declara como contexto macro da rodada: *Build 2.0 (Consolidação Unidade 2 — AV2), Navegador Brave, Linux Fedora 44, `https://origem-five.vercel.app/`*. Entretanto, os relatos individuais de execução comprovam ambientes específicos para diferentes casos (como Docker local com PostgreSQL 16 para o TC04, chamadas via FakeAPI para o TC-STRESS-01 e validações em telas do deploy para TC07, TC10, TC16 e TC18). A tabela a seguir discrimina rigorosamente o ambiente geral declarado daqueles com comprovação individual no relato oficial.
+
+| Caso de Teste | Título Oficial do Caso | Resultado Oficial | Data | Executor | Ambiente Comprovado no Relato | HU / Tasks Vinculadas | Observação Oficial da Equipe | Ressalva Técnica para a Branch Atual (`feat/frontend-next`) |
 | :---: | :--- | :---: | :---: | :--- | :--- | :---: | :--- | :--- |
-| **TC01** | Login bloqueado após 5 tentativas (Força Bruta) | ❌ Reprovado | 09/11/2026 | Vinicius Gabriel dos Santos Braz | Build 2.0 / Vercel | HU-01 (`T-CAD-03`) | Não há o bloqueio de novas tentativas após inserir a senha inválida 5 vezes para o mesmo email. | Endpoint `/auth/login` ainda não existe no Express desta branch; teste permanece reprovado. |
-| **TC02** | Blindagem de acesso financeiro por Curador (Invariante 5.5) | ⛔ Bloqueado | 10/11/2026 | Cauã dos Santos Nascimento | Build 2.0 / Vercel | HU-03 (`T-ART-02`, `T-ART-03`) | Endpoint de atualização de Chave Pix e o papel CURADOR não se encontram implementados, retornando HTTP 404 antes de alcançar a regra esperada (HTTP 403). | Bloqueado pela ausência de tabela `artesaos` e middleware RBAC no backend. |
-| **TC03** | Parametrização Atômica de Ateliê e Endereço de Expedição | ⛔ Bloqueado | 10/11/2026 | Cauã dos Santos Nascimento | Build 2.0 / Vercel | HU-04 (`T-ATE-01`, `T-ATE-02`) | Endpoint de cadastro e relação 1:1 entre ateliê e endereço não existem no roteador nem no banco no deploy atual, resultando em HTTP 404. | Bloqueado pela ausência de endpoint `POST /atelies` e schema relacional no Supabase. |
-| **TC04** | Validação de Cubagem Física e Peso Mínimo de 50g | ❌ Reprovado | 10/11/2026 | Eduardo Henrique Albuquerque Pessoa de Andrade | Docker Local / branch `refactor-core` | HU-05 (`T-PEC-01`, `T-PEC-02`) | Executado pela rota POST /api/v1/produtos sem autenticação; peças com 30g e altura 0cm retornaram 201 Created em vez de 422, pois a API ignora cubagem. | Formulário no frontend e backend continuam omitindo cubagem nesta branch; teste permanece reprovado. |
-| **TC05** | Desmembramento exato de pedido consolidado multi-origem | ✅ Aprovado | 09/11/2026 | Vinicius Gabriel dos Santos Braz | Build 2.0 / Vercel | HU-12 (`T-SUB-01`, `T-SUB-02`) | Evento de "Pagamento Aprovado" ocorreu e gerou 3 subpedidos independentes no banco. | Teste aprovado oficialmente na rodada; contudo, o código de particionamento ainda não foi integrado à branch atual. |
-| **TC06** | Busca Textual Cultural FTS com Índices GIN e Filtros Regionais | ❌ Reprovado | 10/11/2026 | Eduardo Henrique Albuquerque Pessoa de Andrade | Docker Local / branch `refactor-core` | HU-07 (`T-VIT-01`, `T-VIT-02`) | *Observação documental:* Texto original duplicou acidentalmente a nota do TC04 (cubagem). A reprovação técnica decorre da ausência de índices GIN e FTS. | Inconsistência documental registrada; resultado oficial mantido como Reprovado. |
-| **TC07** | Storytelling e Isolamento de Catálogo do Mestre Artesão | ✅ Aprovado | 09/11/2026 | Matheus de Freitas Oliveira | Build 2.0 / Vercel | HU-08 (`T-MES-02`, `T-MES-03`) | Validado com sucesso via interface e portfólio. Storytelling completo e catálogo mantém isolamento estrito por mestre, sem vazamento. | Aprovado na interface; pendente de conexão com endpoint `GET /artesaos/:id` do backend real. |
-| **TC08** | Carrinho Multi-Origem e Reserva Concorrente de 15 Minutos | ⛔ Bloqueado | 10/11/2026 | Pedro Vinicíus Silva de Souza | Build 2.0 / Vercel | HU-09 (`T-RES-01`, `T-RES-02`) | Ciclo de vida com estado RESERVADA e expiração não existem no banco; rotina em background de 15 minutos não desenvolvida. | Bloqueado pela ausência da tabela `reservas` e lógica de lock no backend. |
-| **TC09** | Checkout Unificado e Webhook com Idempotência | ⛔ Bloqueado | 10/11/2026 | Cauã dos Santos Nascimento | Build 2.0 / Vercel | HU-10 (`T-PAG-02`, `T-PAG-03`) | Rota de webhook e middleware com cabeçalho Idempotency-Key ausentes na API e sem tabela de transações no deploy atual. | Bloqueado pela ausência de webhook no backend e persistência de pedidos. |
-| **TC10** | Livro de Endereços e Preservação Histórica | ⛔ Bloqueado | 09/11/2026 | Matheus de Freitas Oliveira | Build 2.0 / Vercel | HU-11 (`T-END-01`, `T-END-03`) | Interface `/conta` possui apenas edição básica de Nome/E-mail. Livro de múltiplos endereços e snapshot em pedidos ausentes. | Bloqueado por ausência de livro de endereços no frontend e backend. |
-| **TC11** | Desmembramento Logístico e Trava de Peças Frágeis | ⛔ Bloqueado | 10/11/2026 | Pedro Vinicíus Silva de Souza | Build 2.0 / Vercel | HU-12 (`T-SUB-03`, `T-SUB-04`) | Atributo is_fragil não existe na base; endpoint de emissão de etiqueta e trava HTTP 428 não foram implementados. | Bloqueado por falta de modelo de subpedidos e emissão de etiquetas. |
-| **TC12** | Rastreamento, SLA de 7 Dias Úteis e Cancelamento por Atraso | ⛔ Bloqueado | 10/11/2026 | Pedro Vinicíus Silva de Souza | Build 2.0 / Vercel | HU-13 (`T-SLA-02`, `T-SLA-03`) | Status AGUARDANDO_POSTAGEM não existe no ciclo de vida; regra de SLA de 7 dias úteis e cancelamento com estorno ausentes. | Bloqueado por falta de rotinas de agendamento de SLA no backend. |
-| **TC13** | Custódia Financeira D+7 e Liquidação via Pix | ✅ Aprovado | 10/11/2026 | Luiz Henrique Souza da Conceição | Build 2.0 / Vercel | HU-14 (`T-CUS-02`, `T-CUS-03`) | Rotina de custódia validada: repasse retido até o 7º dia e liquidado via Pix com sucesso no 8º dia pós-entrega. | Aprovado oficialmente na rodada; código do job Pix necessita ser portado para a branch atual. |
-| **TC14** | Registro de Avaria em até 48h e Congelamento de Repasse | ✅ Aprovado | 10/11/2026 | Luiz Henrique Souza da Conceição | Build 2.0 / Vercel | HU-15 (`T-DIS-02`, `T-DIS-03`) | Sinistro registrado dentro de 48h; subpedido colocado em disputa e repasse Pix ao artesão congelado de imediato. | Aprovado oficialmente na rodada; telas de SAC e endpoints pendentes nesta branch. |
-| **TC15** | Exercício do Direito de Arrependimento em até 7 Dias | ✅ Aprovado | 09/11/2026 | Luiz Henrique Souza da Conceição | Build 2.0 / Vercel | HU-16 (`T-ARR-02`, `T-ARR-03`) | Devolução solicitada aos 5 dias de entrega com congelamento de repasse e emissão de código reverso Correios. | Aprovado oficialmente na rodada; código reverso pendente de integração nesta branch. |
-| **TC16** | Recuperação Segura de Senha e Proteção contra Enumeração | ⛔ Bloqueado | 09/11/2026 | Matheus de Freitas Oliveira | Build 2.0 / Vercel | HU-02 (`T-REC-02`, `T-REC-03`) | Fluxo de recuperação e botão 'Esqueci minha senha' ausentes na interface e sem envio de tokens por e-mail no deploy. | Bloqueado pela ausência de rotas de recuperação e serviço de e-mail. |
-| **TC17** | Tolerância a Falhas na Mensageria Assíncrona BullMQ | ❌ Reprovado | 10/11/2026 | Luiz Henrique Souza da Conceição | Build 2.0 / Vercel | HU-17 (`T-NOT-02`) | A retentativa da fila bloqueou o event loop síncrono, causando degradação e timeout na API durante instabilidade do gateway. | Requer reimplementação não bloqueante de fila BullMQ nesta branch. |
-| **TC18** | Moderação Curatorial e Auditoria Financeira do Fundo de Sinistros | ✅ Aprovado | 09/11/2026 | Matheus de Freitas Oliveira | Build 2.0 / Vercel | HU-18 (`T-ADM-02`, `T-ADM-03`) | Validado com sucesso no Painel Administrativo (/admin). Peça suspensa e ocultada imediatamente da vitrine pública. | Aprovado na interface; pendente de conexão com rotas administrativas do backend real. |
-| **TC-STRESS-01** | Teste de Estresse e Alta Concorrência na Reserva de Peça Única | ❌ Reprovado | 09/11/2026 | Vinicius Gabriel dos Santos Braz | Build 2.0 / Vercel | HU-09 (`T-RES-02`) | Uso de FakeAPI para requisições concorrentes. Não houve venda duplicada física, mas não retornou HTTP 409 para as 49 requisições. | Requer transação com lock pessimista no PostgreSQL para retornar HTTP 409 em concorrência. |
+| **TC01** | Login bloqueado após 5 tentativas (Força Bruta) | ❌ Reprovado | 09/11/2026 | Vinicius Gabriel dos Santos Braz | Geral da rodada (Build 2.0 / Vercel) | HU-01 (`T-CAD-03`) | Não há o bloqueio de novas tentativas após inserir a senha inválida 5 vezes para o mesmo email. | Endpoint `/auth/login` ainda não existe no Express desta branch; teste permanece reprovado. |
+| **TC02** | Blindagem de acesso financeiro por Curador (Invariante 5.5) | ⛔ Bloqueado | 10/11/2026 | Cauã dos Santos Nascimento | Geral da rodada (Deploy / Vercel) | HU-03 (`T-ART-02`, `T-ART-03`) | Endpoint de atualização de Chave Pix e o papel CURADOR não se encontram implementados, retornando HTTP 404 antes de alcançar a regra esperada (HTTP 403). | Bloqueado pela ausência de tabela `artesaos` e middleware RBAC no backend. |
+| **TC03** | Parametrização Atômica de Ateliê e Endereço de Expedição | ⛔ Bloqueado | 10/11/2026 | Cauã dos Santos Nascimento | Geral da rodada (Deploy / Vercel) | HU-04 (`T-ATE-01`, `T-ATE-02`) | Endpoint de cadastro e relação 1:1 entre ateliê e endereço não existem no roteador nem no banco no deploy atual, resultando em HTTP 404. | Bloqueado pela ausência de endpoint `POST /atelies` e schema relacional no Supabase. |
+| **TC04** | Validação de Cubagem Física e Peso Mínimo de 50g | ❌ Reprovado | 10/11/2026 | Eduardo Henrique Albuquerque Pessoa de Andrade | Docker Local comprovado (branch `refactor-core`, commit `3d036f3`, PostgreSQL 16) | HU-05 (`T-PEC-01`, `T-PEC-02`) | Executado pela rota POST /api/v1/produtos sem autenticação; peças com 30g e altura 0cm retornaram 201 Created em vez de 422, pois a API ignora cubagem. | Formulário no frontend e backend continuam omitindo cubagem nesta branch; teste permanece reprovado. |
+| **TC05** | Desmembramento exato de pedido consolidado multi-origem | ✅ Aprovado | 09/11/2026 | Vinicius Gabriel dos Santos Braz | Geral da rodada (Build 2.0 / Vercel — relato cita evento no banco) | HU-12 (`T-SUB-01`, `T-SUB-02`) | Evento de "Pagamento Aprovado" ocorreu e gerou 3 subpedidos independentes no banco. | Teste aprovado oficialmente na rodada; contudo, o código de particionamento ainda não foi integrado à branch atual. |
+| **TC06** | Busca Textual Cultural FTS com Índices GIN e Filtros Regionais | ❌ Reprovado | 10/11/2026 | Eduardo Henrique Albuquerque Pessoa de Andrade | Ambiente individual não registrado (nota original duplicou TC04; ambiente geral: Build 2.0 / Vercel) | HU-07 (`T-VIT-01`, `T-VIT-02`) | *Observação documental da equipe:* Registrado como ❌ Reprovado. O texto da observação no relatório original duplicou acidentalmente a nota do caso TC04 (cubagem física via `POST /api/v1/produtos`), constituindo uma falha de lançamento documental da squad. A evidência de execução específica não foi registrada no documento oficial. | A reprovação oficial é mantida integralmente (❌ Reprovado). No diagnóstico do código atual desta branch, confirma-se que a busca textual FTS, os índices GIN em banco e o endpoint `GET /catalogo` com suporte a busca textual não foram desenvolvidos. |
+| **TC07** | Storytelling e Isolamento de Catálogo do Mestre Artesão | ✅ Aprovado | 09/11/2026 | Matheus de Freitas Oliveira | Interface Web / Componente de Portfólio (Vercel) | HU-08 (`T-MES-02`, `T-MES-03`) | Validado com sucesso via interface e portfólio. Storytelling completo e catálogo mantém isolamento estrito por mestre, sem vazamento. | Aprovado na interface; pendente de conexão com endpoint `GET /artesaos/:id` do backend real. |
+| **TC08** | Carrinho Multi-Origem e Reserva Concorrente de 15 Minutos | ⛔ Bloqueado | 10/11/2026 | Pedro Vinicíus Silva de Souza | Geral da rodada (Build 2.0 / Vercel) | HU-09 (`T-RES-01`, `T-RES-02`) | Ciclo de vida com estado RESERVADA e expiração não existem no banco; rotina em background de 15 minutos não desenvolvida. | Bloqueado pela ausência da tabela `reservas` e lógica de lock no backend. |
+| **TC09** | Checkout Unificado e Webhook com Idempotência | ⛔ Bloqueado | 10/11/2026 | Cauã dos Santos Nascimento | Geral da rodada (Deploy / Vercel) | HU-10 (`T-PAG-02`, `T-PAG-03`) | Rota de webhook e middleware com cabeçalho Idempotency-Key ausentes na API e sem tabela de transações no deploy atual. | Bloqueado pela ausência de webhook no backend e persistência de pedidos. |
+| **TC10** | Livro de Endereços e Preservação Histórica | ⛔ Bloqueado | 09/11/2026 | Matheus de Freitas Oliveira | Interface Web / Perfil (/conta no deploy / Vercel) | HU-11 (`T-END-01`, `T-END-03`) | Interface `/conta` possui apenas edição básica de Nome/E-mail. Livro de múltiplos endereços e snapshot em pedidos ausentes. | Bloqueado por ausência de livro de endereços no frontend e backend. |
+| **TC11** | Desmembramento Logístico e Trava de Peças Frágeis | ⛔ Bloqueado | 10/11/2026 | Pedro Vinicíus Silva de Souza | Geral da rodada (Deploy / Vercel) | HU-12 (`T-SUB-03`, `T-SUB-04`) | Atributo is_fragil não existe na base; endpoint de emissão de etiqueta e trava HTTP 428 não foram implementados. | Bloqueado por falta de modelo de subpedidos e emissão de etiquetas. |
+| **TC12** | Rastreamento, SLA de 7 Dias Úteis e Cancelamento por Atraso | ⛔ Bloqueado | 10/11/2026 | Pedro Vinicíus Silva de Souza | Geral da rodada (Deploy / Vercel) | HU-13 (`T-SLA-02`, `T-SLA-03`) | Status AGUARDANDO_POSTAGEM não existe no ciclo de vida; regra de SLA de 7 dias úteis e cancelamento com estorno ausentes. | Bloqueado por falta de rotinas de agendamento de SLA no backend. |
+| **TC13** | Custódia Financeira D+7 e Liquidação via Pix | ✅ Aprovado | 10/11/2026 | Luiz Henrique Souza da Conceição | Geral da rodada (Build 2.0 / Vercel — rotina de custódia / Pix) | HU-14 (`T-CUS-02`, `T-CUS-03`) | Rotina de custódia validada: repasse retido até o 7º dia e liquidado via Pix com sucesso no 8º dia pós-entrega. | Aprovado oficialmente na rodada; código do job Pix necessita ser portado para a branch atual. |
+| **TC14** | Registro de Avaria em até 48h e Congelamento de Repasse | ✅ Aprovado | 10/11/2026 | Luiz Henrique Souza da Conceição | Geral da rodada (Build 2.0 / Vercel — sinistro / disputa) | HU-15 (`T-DIS-02`, `T-DIS-03`) | Sinistro registrado dentro de 48h; subpedido colocado em disputa e repasse Pix ao artesão congelado de imediato. | Aprovado oficialmente na rodada; telas de SAC e endpoints pendentes nesta branch. |
+| **TC15** | Exercício do Direito de Arrependimento em até 7 Dias | ✅ Aprovado | 09/11/2026 | Luiz Henrique Souza da Conceição | Geral da rodada (Build 2.0 / Vercel — arrependimento) | HU-16 (`T-ARR-02`, `T-ARR-03`) | Devolução solicitada aos 5 dias de entrega com congelamento de repasse e emissão de código reverso Correios. | Aprovado oficialmente na rodada; código reverso pendente de integração nesta branch. |
+| **TC16** | Recuperação Segura de Senha e Proteção contra Enumeração | ⛔ Bloqueado | 09/11/2026 | Matheus de Freitas Oliveira | Interface Web / Perfil (/conta no deploy / Vercel) | HU-02 (`T-REC-02`, `T-REC-03`) | Fluxo de recuperação e botão 'Esqueci minha senha' ausentes na interface e sem envio de tokens por e-mail no deploy. | Bloqueado pela ausência de rotas de recuperação e serviço de e-mail. |
+| **TC17** | Tolerância a Falhas na Mensageria Assíncrona BullMQ | ❌ Reprovado | 10/11/2026 | Luiz Henrique Souza da Conceição | Geral da rodada (Build 2.0 / Vercel — mensageria BullMQ) | HU-17 (`T-NOT-02`) | A retentativa da fila bloqueou o event loop síncrono, causando degradação e timeout na API durante instabilidade do gateway. | Requer reimplementação não bloqueante de fila BullMQ nesta branch. |
+| **TC18** | Moderação Curatorial e Auditoria Financeira do Fundo de Sinistros | ✅ Aprovado | 09/11/2026 | Matheus de Freitas Oliveira | Interface Web / Painel Administrativo (/admin no deploy / Vercel) | HU-18 (`T-ADM-02`, `T-ADM-03`) | Validado com sucesso no Painel Administrativo (/admin). Peça suspensa e ocultada imediatamente da vitrine pública. | Aprovado na interface; pendente de conexão com rotas administrativas do backend real. |
+| **TC-STRESS-01** | Teste de Estresse e Alta Concorrência na Reserva de Peça Única | ❌ Reprovado | 09/11/2026 | Vinicius Gabriel dos Santos Braz | FakeAPI comprovada / Script de requisições concorrentes | HU-09 (`T-RES-02`) | Uso de FakeAPI para requisições concorrentes. Não houve venda duplicada física, mas não retornou HTTP 409 para as 49 requisições. | Requer transação com lock pessimista no PostgreSQL para retornar HTTP 409 em concorrência. |
 
 ---
 
@@ -860,13 +875,16 @@ Todos os 19 casos de teste executados oficialmente pela equipe foram preservados
   - Reprovados: **5** (26,3%)
   - Bloqueados: **8** (42,1%)
 
-### 6.2. Regras de Transição de Estado no Jira
-Para não violar o `AGENTS.md` nem falsear o progresso real perante a disciplina, o ChatGPT Work deve adotar estritamente as seguintes regras:
-1. **Nenhuma issue deve ser criada com status "Done" ou "Closed":** Nenhuma história possui integração full stack concluída e validada nesta branch.
-2. **Issues Não Iniciadas:** Devem ser importadas no status **`Backlog`** ou **`To Do`**.
-3. **Issues Parcialmente Implementadas:** Devem ser importadas no status **`In Progress`** com comentário descritivo apontando as pendências no código (ex.: `T-PEC-04` com comentário de que faltam os campos de cubagem física).
-4. **Issues Implementadas na Interface (`T-POR-03` e `T-ADM-03`):** Devem ser importadas no status **`In Review`** ou **`In Progress`** com label `pendente-api-real`, aguardando a conexão aos endpoints do backend.
-5. **Issues Bloqueadas por Dependência:** Devem ser marcadas no Jira com a flag de impedimento (*Flagged/Blocked*) indicando a dependência externa (ex.: `Bloqueado por Banco Supabase`).
+### 6.2. Regras de Transição e Status Operacional no Jira
+Para não violar o `AGENTS.md` nem falsear o progresso real perante a disciplina, o ChatGPT Work deve adotar estritamente as seguintes regras de estado:
+
+1. **Nenhuma issue deve ser criada com status "Done" ou "Closed":** Nenhuma história de usuário possui integração full stack concluída e validada de ponta a ponta nesta branch de trabalho.
+2. **Status Operacional Inicial no Workflow (`Backlog` / `To Do`):** Todas as 64 tarefas SMART e 18 histórias devem ser importadas no status operacional inicial **`Backlog`** ou **`To Do`**. Nenhuma issue deve ser inserida como `In Progress` no ato da migração, uma vez que não há desenvolvedores com alocação ativa em sprint aberta no momento da importação.
+3. **Registro do Estado Técnico Auditado (via Labels e Descrição):** O diagnóstico técnico detalhado apurado na auditoria (Etapa 6.1.1) deve ser fielmente refletido no campo `Description` (seção *"Estado Técnico Pré-Existente"*) e nas labels de cada issue, garantindo total transparência sem corromper o fluxo Kanban:
+   - **55 Tarefas Não Iniciadas:** Recebem a label `status-nao-iniciada`.
+   - **7 Tarefas Parcialmente Implementadas** (`T-CAD-04`, `T-ATE-03`, `T-PEC-04`, `T-LOT-03`, `T-RES-04`, `T-END-02`, `T-IA-01`): Recebem a label `status-parcial` e descrição com o diagnóstico exato dos componentes de interface existentes e das lacunas de backend/banco a implementar.
+   - **2 Tarefas com Interface Concluída** (`T-MES-03` e `T-ADM-03`): Recebem a label `status-ui-concluida` e a label `pendente-api-real`, registrando que a interface foi homologada com sucesso e aguarda exclusivamente a vinculação aos endpoints reais do backend Express.
+4. **Impedimentos Técnicos (Flagged / Blocked):** Issues que dependem de infraestrutura ou artefatos ainda inexistentes devem ser sinalizadas no Jira com a flag de impedimento (*Flagged/Blocked*), indicando explicitamente a trava técnica (ex.: `Bloqueado por Banco Supabase` ou `Bloqueado por EPIC-01 Autenticação`).
 
 ---
 
@@ -941,12 +959,13 @@ Para cada issue criada, preencher sistematicamente:
 - **Labels:** 
   - Camada: `camada-banco`, `camada-backend`, `camada-frontend`, `camada-ia`.
   - Invariantes: `invariante-1-reserva`, `invariante-2-cubagem`, `invariante-3-subpedidos`, `invariante-4-custodia`.
-  - Status inicial: `status-nao-iniciada`, `status-parcial`, `status-ui-concluida`.
-  - Testes: `teste-tc01` a `teste-tc18`.
+  - Status inicial: `status-nao-iniciada`, `status-parcial`, `status-ui-concluida`, `pendente-api-real`.
+  - Testes: `teste-tc01` a `teste-tc18` e `teste-tc-stress-01`.
 - **Original Estimate:** Preencher o campo de estimativa de tempo com o timebox das tasks SMART (ex.: `3h`, `4h`, `5h`).
 
-### 8.3. Ordem Sequencial de Importação (Dependency Order)
-Para manter a integridade referencial dos links no Jira, o ChatGPT Work deve executar a criação estritamente na seguinte ordem:
+### 8.3. Ordem Sequencial de Importação Idempotente (Dependency Order)
+Para manter a integridade referencial dos links no Jira e evitar qualquer duplicidade, o ChatGPT Work deve executar a criação estritamente na seguinte ordem:
+0. **Passo 0 — Verificação Idempotente de Pré-Existência:** Antes de emitir qualquer comando de criação, executar uma busca JQL no Jira (`project = "<KEY>" AND summary ~ "[ID-NORMATIVO]"`) para cada identificador (`EPIC-01` a `EPIC-10`, `HU-01` a `HU-18`, e as 64 tarefas `T-XXX-YY`). Caso o item já exista no projeto, mapear sua chave existente e ignorar a criação duplicada, assegurando a criação estrita de exatamente **92 itens normativos**.
 1. **Passo 1 — Descoberta de Metadados:** Consultar os Issue Types, Fields e Workflows disponíveis no Jira conectado.
 2. **Passo 2 — Criação dos 10 Épicos:** Criar `EPIC-01` a `EPIC-10` e guardar os IDs internos gerados pelo Jira.
 3. **Passo 3 — Criação das 18 Histórias:** Criar `HU-01` a `HU-18`, associando cada uma ao ID do seu Épico correspondente.
@@ -956,13 +975,15 @@ Para manter a integridade referencial dos links no Jira, o ChatGPT Work deve exe
    - Vincular tarefas de frontend às tarefas de backend correspondentes.
 
 ### 8.4. Checklist de Conferência Pós-Importação (Total 92 Issues)
-Ao término da criação pelo ChatGPT Work, deve ser realizada a conferência quantitativa estrita:
+Ao término da criação pelo ChatGPT Work, deve ser realizada a conferência quantitativa e qualitativa estrita:
+- [ ] Verificação idempotente executada sem geração de issues duplicadas?
 - [ ] Exatamente 10 Épicos criados e nomeados conforme a Seção 2?
 - [ ] Exatamente 18 Histórias de Usuário criadas e vinculadas aos 10 Épicos?
 - [ ] Exatamente 64 Tarefas SMART criadas com estimativas de horas e DoDs?
 - [ ] A soma total de issues no projeto Jira é rigorosamente igual a **92**?
-- [ ] Nenhuma issue foi criada com status de concluída (*Done*)?
-- [ ] Todos os 19 casos de teste estão referenciados nas descrições ou labels das issues?
+- [ ] Nenhuma issue foi criada com status de concluída (*Done*) ou em andamento (*In Progress*) sem desenvolvedor alocado?
+- [ ] Todas as issues foram importadas no status operacional inicial **`Backlog`** ou **`To Do`**, com o progresso técnico preservado em labels e descrição?
+- [ ] Todos os 19 casos de teste (`teste-tc01` a `teste-tc18` e `teste-tc-stress-01`) estão referenciados nas descrições ou labels das issues?
 
 ---
 
