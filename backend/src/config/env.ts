@@ -17,7 +17,7 @@ const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {
   console.error('❌ Erro na validação das variáveis de ambiente:');
-  console.error(_env.error.format());
+  console.error(_env.error.issues);
   process.exit(1);
 }
 
