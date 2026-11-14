@@ -60,13 +60,16 @@ export function ArtisanProfile() {
     )
   }
 
-  const products = catalogProducts.filter((product) => product.artisan === artisan.name)
-  const yearsActive = typeof artisan.since === 'number' ? new Date().getFullYear() - artisan.since : '—'
+  const products = catalogProducts.filter((product) =>
+    product.artisanId ? product.artisanId === artisan.id : product.artisan === artisan.name,
+  )
 
   const goToTechnique = () => {
     selectTechnique(artisan.technique)
     router.push('/#vitrine')
   }
+
+  const hasSince = typeof artisan.since === 'number' && artisan.since > 0
 
   return (
     <main id="main-content" className="pb-16 sm:pb-24">
@@ -114,19 +117,23 @@ export function ArtisanProfile() {
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 border-t border-border pt-4 sm:w-auto sm:border-0 sm:pt-0 sm:text-right">
-            <div className="flex flex-col">
-              <span className="text-lg font-semibold text-ink">{yearsActive}</span>
-              <span className="text-xs text-ink-soft">anos de ofício</span>
-            </div>
+          <div className="flex flex-wrap items-center gap-6 border-t border-border pt-4 sm:w-auto sm:border-0 sm:pt-0 sm:text-right sm:gap-8">
+            {hasSince && (
+              <div className="flex flex-col">
+                <span className="text-lg font-semibold text-ink">{new Date().getFullYear() - (artisan.since as number)}</span>
+                <span className="text-xs text-ink-soft">anos de ofício</span>
+              </div>
+            )}
             <div className="flex flex-col">
               <span className="text-lg font-semibold text-ink">{products.length}</span>
               <span className="text-xs text-ink-soft">{products.length === 1 ? 'peça na loja' : 'peças na loja'}</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-lg font-semibold text-ink">{artisan.since}</span>
-              <span className="text-xs text-ink-soft">início do ofício</span>
-            </div>
+            {hasSince && (
+              <div className="flex flex-col">
+                <span className="text-lg font-semibold text-ink">{artisan.since}</span>
+                <span className="text-xs text-ink-soft">início do ofício</span>
+              </div>
+            )}
           </div>
         </div>
 
