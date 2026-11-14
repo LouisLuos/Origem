@@ -61,7 +61,7 @@ export function ArtisanProfile() {
   }
 
   const products = catalogProducts.filter((product) => product.artisan === artisan.name)
-  const yearsActive = new Date().getFullYear() - artisan.since
+  const yearsActive = typeof artisan.since === 'number' ? new Date().getFullYear() - artisan.since : '—'
 
   const goToTechnique = () => {
     selectTechnique(artisan.technique)

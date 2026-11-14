@@ -6,11 +6,12 @@ export interface Artisan {
   hub: string
   technique: string
   bio: string
-  since: number
+  since?: number | null
   photoUrl: string
   photoAlt: string
   coverUrl: string
   coverAlt: string
+  email?: string | null
 }
 
 interface ArtisanListResponse {

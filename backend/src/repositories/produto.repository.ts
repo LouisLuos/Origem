@@ -6,12 +6,13 @@ export interface ProdutoPublico {
   id: string;
   title: string;
   artisan: string;
+  artisanId: string;
   hub: string;
   technique: string;
   price: number;
   stock: number;
   active: boolean;
-  ownerEmail: string;
+  ownerEmail?: string | null;
   imageUrl: string;
   imageAlt: string;
 }
@@ -76,16 +77,18 @@ export class ProdutoRepository {
   }
 
   private mapRawToPublic(item: RawProdutoIA): ProdutoPublico {
+    const trimmedArtisan = item.artesao.trim();
+    const artisanId = `art-${slugify(trimmedArtisan)}`;
     return {
       id: item.id,
       title: item.nome,
-      artisan: item.artesao,
+      artisan: trimmedArtisan,
+      artisanId,
       hub: item.polo,
       technique: TECHNIQUE_MAP[item.tecnica] ?? item.tecnica,
       price: item.preco,
       stock: item.estoque,
       active: true,
-      ownerEmail: `${slugify(item.artesao)}@artesaos.origem.com`,
       imageUrl: '',
       imageAlt: item.nome,
     };
