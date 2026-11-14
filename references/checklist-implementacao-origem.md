@@ -36,21 +36,21 @@ Este documento consolida o **plano mestre de conformidade e acompanhamento da im
 
 | ID | Requisito | Fonte Normativa | Classificação Normativa | Estado Atual | Ação Necessária |
 |---|---|---|---|---|---|
-| **REQ-STK-001** | Runtime Node.js | PI — Backend esperado (L329) | Exigência da Disciplina (Obrigatório) | Não atendido | Inicializar projeto Node.js no backend (v20+ requerida pelo front) |
-| **REQ-STK-002** | TypeScript Estrito no Backend | PI — Níveis de avaliação (L478) | Exigência da Disciplina (Obrigatório) | Não atendido | Configurar `tsconfig.json` com tipagem rigorosa no backend |
-| **REQ-STK-003** | Framework Web Express | PI — Backend esperado (L330) | Exigência da Disciplina (Obrigatório) | Não atendido | Configurar servidor Express com pipeline de middlewares |
-| **REQ-STK-004** | Prisma ORM | PI — Backend esperado (L331) | Exigência da Disciplina (Obrigatório) | Não atendido | Configurar Prisma Client, schema e migrations |
+| **REQ-STK-001** | Runtime Node.js | PI — Backend esperado (L329) | Exigência da Disciplina (Obrigatório) | **Atendido** | Módulo `backend/` inicializado com Node.js v22 LTS e `package.json` |
+| **REQ-STK-002** | TypeScript Estrito no Backend | PI — Níveis de avaliação (L478) | Exigência da Disciplina (Obrigatório) | **Atendido** | `backend/tsconfig.json` configurado com tipagem rigorosa NodeNext ESM |
+| **REQ-STK-003** | Framework Web Express | PI — Backend esperado (L330) | Exigência da Disciplina (Obrigatório) | **Atendido** | Servidor Express 5 configurado com pipeline de middlewares e rotas |
+| **REQ-STK-004** | Prisma ORM | PI — Backend esperado (L331) | Exigência da Disciplina (Obrigatório) | **Parcialmente atendido** | Prisma 7 configurado com `prisma.config.ts`, `schema.prisma`, `@prisma/adapter-pg` e client gerado |
 | **REQ-STK-005** | Banco PostgreSQL Relacional | PI — Escopo mínimo (L292) | Exigência da Disciplina (Obrigatório) | Não atendido | Conectar banco PostgreSQL e estruturar tabelas normalizadas |
 | **REQ-STK-006** | Mecanismo de Cache de Dados | PI — Backend esperado (L335) | Exigência da Disciplina (Obrigatório) | Não atendido | Implementar cache em catálogo/produtos (Redis é recomendado/exemplo) |
 | **REQ-STK-007** | Processamento Assíncrono | PI — Backend esperado (L336) | Exigência da Disciplina (Obrigatório) | Não atendido | Implementar fila/worker desacoplado da resposta HTTP |
-| **REQ-STK-008** | Variáveis de Ambiente | PI — Checklist AV2 (L446) | Exigência da Disciplina (Obrigatório) | Parcialmente atendido | Criar `backend/.env.example` e tipagem centralizada em `env.ts` |
-| **REQ-ARC-001** | Separação em Camadas | PI — Modelo de organização (L490, L731) | Exigência da Disciplina (Obrigatório) | Não atendido | Estruturar backend em camadas (árvore exata é recomendação) |
-| **REQ-ARC-002** | Isolamento de Rotas | PI — Responsabilidades (L855) | Recomendação Arquitetural | Não atendido | Mapear rotas REST isoladas de regras de negócio |
-| **REQ-ARC-003** | Controllers Enxutos | PI — Responsabilidades (L856) | Recomendação Arquitetural | Não atendido | Controllers manipulando apenas entrada/saída HTTP |
+| **REQ-STK-008** | Variáveis de Ambiente | PI — Checklist AV2 (L446) | Exigência da Disciplina (Obrigatório) | **Atendido** | `backend/.env.example`, `.env` e validação tipada em tempo de execução via Zod em `env.ts` |
+| **REQ-ARC-001** | Separação em Camadas | PI — Modelo de organização (L490, L731) | Exigência da Disciplina (Obrigatório) | **Atendido** | Estrutura em camadas `routes/`, `controllers/`, `services/`, `repositories/`, `middlewares/`, etc. |
+| **REQ-ARC-002** | Isolamento de Rotas | PI — Responsabilidades (L855) | Recomendação Arquitetural | **Atendido** | Rotas isoladas sob `/api/v1` em `backend/src/routes/` delegando a controllers |
+| **REQ-ARC-003** | Controllers Enxutos | PI — Responsabilidades (L856) | Recomendação Arquitetural | **Atendido** | Controllers manipulando apenas I/O HTTP (`HealthController`) |
 | **REQ-ARC-004** | Services de Domínio | PI — Responsabilidades (L857) | Recomendação Arquitetural | Não atendido | Encapsular regras de negócio e transações nos services |
 | **REQ-ARC-005** | Repositories de Dados | PI — Responsabilidades (L858) | Recomendação Arquitetural | Não atendido | Isolar queries Prisma e locks pessimistas nos repositories |
-| **REQ-ARC-006** | Middlewares Centrais | PI — Responsabilidades (L859) | Recomendação Arquitetural | Não atendido | Criar middlewares de autenticação, RBAC, validação e erro |
-| **REQ-ARC-007** | Padronização de Respostas | PI — Regras esperadas (L882) | Recomendação Arquitetural | Não atendido | Implementar classe `AppError` e envelope JSON padronizado |
+| **REQ-ARC-006** | Middlewares Centrais | PI — Responsabilidades (L859) | Recomendação Arquitetural | **Parcialmente atendido** | Middlewares `requestLogger` e `errorHandler` criados; pendente auth JWT e RBAC |
+| **REQ-ARC-007** | Padronização de Respostas | PI — Regras esperadas (L882) | Recomendação Arquitetural | **Atendido** | Implementada classe `AppError` e envelope JSON `{ "erro": string }` validado |
 | **REQ-DAT-001** | Persistência Real de Negócio | PI — Persistência (L983) | Exigência da Disciplina (Obrigatório) | Não atendido | Substituir mocks/localStorage de dados de negócio por PostgreSQL |
 | **REQ-DAT-002** | Migrations Versionadas | PI — Checklist AV2 (L422) | Exigência da Disciplina (Obrigatório) | Não atendido | Versionar migrações do banco com Prisma Migrate |
 | **REQ-DAT-003** | Entidade Usuario e Papéis | Backlog — HU-01 (L112) | Regra de Negócio do Backlog (Must Have) | Não atendido | Modelar tabela `usuarios` com papéis `COMPRADOR`, `ARTESAO`, etc. |
@@ -123,56 +123,56 @@ Este documento consolida o **plano mestre de conformidade e acompanhamento da im
 - **Fonte:** Projeto Integrador Origem — *Backend esperado na Avaliação 2* (L329)
 - **Exigência Original:** Uso de Node.js como runtime oficial do backend na stack de referência da disciplina.
 - **Classificação Normativa:** **Exigência da Disciplina (Obrigatório)** para o uso de Node.js. A restrição de versão `v20+` (LTS) decorre do ambiente do frontend (`frontend/package.json` L34: `"node": ">=20.9.0"`), sendo uma restrição de compatibilidade do repositório, não uma imposição do texto do PI.
-- **Estado atual:** Não atendido
-- **Evidência:** Inexistência de runtime ou manifesto `package.json` para o backend nesta branch.
-- **Ação necessária:** Inicializar o módulo `backend/` com `npm init` compatível com o runtime do ambiente.
+- **Estado atual:** **Atendido**
+- **Evidência:** Módulo `backend/` criado com `package.json` (Node.js v22 LTS) e scripts de execução (`dev`, `build`, `start`, `typecheck`).
+- **Ação necessária:** Manter dependências atualizadas e scripts funcionais.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** Node.js configurado e operacional no backend com scripts de execução validados.
 - **Dependências:** Nenhuma.
-- [ ] Implementar
-- [ ] Validar
-- [ ] Documentar
+- [x] Implementar
+- [x] Validar
+- [x] Documentar
 
 #### REQ-STK-002 — TypeScript Estrito no Backend
 - **Fonte:** Projeto Integrador Origem — *Níveis de avaliação* (L478) e *TypeScript* (L935-L950)
 - **Exigência Original:** Tipagem estrita de entidades, props, DTOs e retornos; o não uso de TypeScript acarreta conceito "Não entregue" (nota zero no critério).
 - **Classificação Normativa:** **Exigência da Disciplina (Obrigatório)**.
-- **Estado atual:** Não atendido
-- **Evidência:** Inexistência de `tsconfig.json` para o backend na branch.
-- **Ação necessária:** Criar `backend/tsconfig.json` com `strict: true` e `noImplicitAny: true`.
+- **Estado atual:** **Atendido**
+- **Evidência:** `backend/tsconfig.json` configurado com `strict: true`, `noImplicitAny: true`, resolução `NodeNext` ESM, compilando com 0 erros via `npm run typecheck` (`tsc --noEmit`).
+- **Ação necessária:** Manter tipagem estrita em novos módulos e services.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** Compilação com `tsc --noEmit` sem erros de tipagem estrita.
 - **Dependências:** REQ-STK-001.
-- [ ] Implementar
-- [ ] Validar
-- [ ] Documentar
+- [x] Implementar
+- [x] Validar
+- [x] Documentar
 
 #### REQ-STK-003 — Framework Web Express
 - **Fonte:** Projeto Integrador Origem — *Backend esperado na Avaliação 2* (L330)
 - **Exigência Original:** Express como framework web HTTP de referência da disciplina.
 - **Classificação Normativa:** **Exigência da Disciplina (Obrigatório)**.
-- **Estado atual:** Não atendido
-- **Evidência:** Inexistência de servidor Express nesta branch.
-- **Ação necessária:** Configurar Express em `backend/src/app.ts` com pipeline de middlewares e inicializador em `server.ts`.
+- **Estado atual:** **Atendido**
+- **Evidência:** Servidor Express 5 configurado em `backend/src/app.ts` e `backend/src/server.ts`, com CORS, JSON parser, logger e rotas sob `/api/v1`. Validado respondendo HTTP 200 em `GET /api/v1/health` e 404 padronizado em rotas inexistentes.
+- **Ação necessária:** Mapear rotas de negócio adicionais conforme os domínios forem implementados.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** Servidor Express respondendo requisições HTTP na porta configurada com tratamento de CORS e JSON parser.
 - **Dependências:** REQ-STK-001, REQ-STK-002.
-- [ ] Implementar
-- [ ] Validar
-- [ ] Documentar
+- [x] Implementar
+- [x] Validar
+- [x] Documentar
 
 #### REQ-STK-004 — Prisma ORM
 - **Fonte:** Projeto Integrador Origem — *Backend esperado na Avaliação 2* (L331)
 - **Exigência Original:** Prisma ORM como ferramenta de mapeamento objeto-relacional e migrações na stack de referência da disciplina.
 - **Classificação Normativa:** **Exigência da Disciplina (Obrigatório)**.
-- **Estado atual:** Não atendido
-- **Evidência:** Ausência de schema Prisma e dependências do Prisma no repositório.
-- **Ação necessária:** Inicializar Prisma (`prisma init`), estruturar `schema.prisma` e gerar Prisma Client.
+- **Estado atual:** **Parcialmente atendido**
+- **Evidência:** Prisma 7 configurado com `prisma.config.ts`, `backend/prisma/schema.prisma` com gerador `provider = "prisma-client"` e output em `src/generated/prisma/`, driver adapter `@prisma/adapter-pg` com pool PostgreSQL em `backend/src/config/database.ts`, gerado com sucesso via `npm run prisma:generate`. Pendente modelagem das entidades de negócio e execução de migrations.
+- **Ação necessária:** Modelar os modelos de dados no schema e executar `prisma migrate dev`.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** Prisma Client gerado e integrado às camadas de repositories.
 - **Dependências:** REQ-STK-005.
-- [ ] Implementar
-- [ ] Validar
+- [x] Implementar
+- [x] Validar
 - [ ] Documentar
 
 #### REQ-STK-005 — Banco de Dados Relacional PostgreSQL
@@ -221,15 +221,15 @@ Este documento consolida o **plano mestre de conformidade e acompanhamento da im
 - **Fonte:** Projeto Integrador Origem — *Checklist AV2* (L446) e *Entregáveis* (L462)
 - **Exigência Original:** Centralização de credenciais e parâmetros em arquivo `.env.example` documentado, sem segredos reais expostos no repositório.
 - **Classificação Normativa:** **Exigência da Disciplina (Obrigatório)**.
-- **Estado atual:** Parcialmente atendido (Inspeção estática)
-- **Evidência:** Existe `frontend/.env.example` apontando para `NEXT_PUBLIC_API_URL`, mas inexiste para o backend.
-- **Ação necessária:** Criar `backend/.env.example` com `DATABASE_URL`, `JWT_SECRET`, `PORT`, `CORS_ORIGIN`, e módulo tipado `config/env.ts`.
+- **Estado atual:** **Atendido**
+- **Evidência:** `backend/.env.example` e `backend/.env` criados com parâmetros documentados (`PORT`, `NODE_ENV`, `DATABASE_URL`, `CORS_ORIGIN`, `JWT_SECRET`, `IA_RECOMENDADOR_URL`), com validação tipada em tempo de execução via Zod em `backend/src/config/env.ts`.
+- **Ação necessária:** Expandir variáveis conforme novos serviços ou credenciais forem adicionados.
 - **Módulo:** `backend/`, `frontend/`
 - **Critério de conclusão:** Aplicação valida variáveis de ambiente no startup e aborta com mensagem clara caso alguma variável obrigatória falte.
 - **Dependências:** REQ-STK-001.
-- [ ] Implementar
-- [ ] Validar
-- [ ] Documentar
+- [x] Implementar
+- [x] Validar
+- [x] Documentar
 
 ---
 
@@ -239,43 +239,43 @@ Este documento consolida o **plano mestre de conformidade e acompanhamento da im
 - **Fonte:** Projeto Integrador Origem — *Organização do código* (L484-L491) e *Modelo de organização do backend* (L730-L737)
 - **Exigência Original:** O documento exige: "A equipe deverá manter o projeto organizado, com separação clara entre responsabilidades... entre frontend, backend, documentação, serviços, tipos, regras de negócio e camadas de acesso a dados" (L486-L491). Declara expressamente: "A estrutura abaixo é uma referência recomendada. A equipe poderá adaptá-la de acordo com as regras de negócios escolhida" (L490).
 - **Classificação Normativa:** A separação em camadas com responsabilidades claras é **Exigência da Disciplina (Obrigatório)**; a árvore de pastas exata (`routes`, `controllers`, `services`, `repositories`, `database`, `cache`, etc.) é **Recomendação Arquitetural**.
-- **Estado atual:** Não atendido
-- **Evidência:** Código do backend ausente na branch.
-- **Ação necessária:** Criar a estrutura em camadas sob `backend/src/`.
+- **Estado atual:** **Atendido**
+- **Evidência:** Estrutura de diretórios criada e operacional em `backend/src/` com separação rigorosa: `routes/`, `controllers/`, `services/`, `repositories/`, `middlewares/`, `config/`, `utils/`, `prisma/`.
+- **Ação necessária:** Manter o isolamento entre camadas nos próximos desenvolvimentos de domínios.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** Camadas com responsabilidades isoladas e respeitadas rigorosamente em todos os módulos da API.
 - **Dependências:** REQ-STK-001.
-- [ ] Implementar
-- [ ] Validar
-- [ ] Documentar
+- [x] Implementar
+- [x] Validar
+- [x] Documentar
 
 #### REQ-ARC-002 — Isolamento de Rotas (`routes/`)
 - **Fonte:** Projeto Integrador Origem — *Responsabilidade das principais pastas* (L855) e *Regras esperadas* (L878)
 - **Exigência Original:** Definição das rotas e ligação com controllers; proibido concentrar regra de negócio diretamente nas rotas.
 - **Classificação Normativa:** **Recomendação Arquitetural**.
-- **Estado atual:** Não atendido
-- **Evidência:** Ausência de rotas de backend na branch.
-- **Ação necessária:** Mapear rotas REST por recurso (`produtos.routes.ts`, `artesaos.routes.ts`, `pedidos.routes.ts`, etc.).
+- **Estado atual:** **Atendido**
+- **Evidência:** Rotas montadas sob o prefixo `/api/v1` em `backend/src/routes/` (`index.ts` e `health.routes.ts`) delegando exclusivamente a controllers e middlewares.
+- **Ação necessária:** Mapear rotas REST por recurso conforme as entidades forem modeladas.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** Rotas simples delegando exclusivamente a controllers e middlewares.
 - **Dependências:** REQ-ARC-001.
-- [ ] Implementar
-- [ ] Validar
-- [ ] Documentar
+- [x] Implementar
+- [x] Validar
+- [x] Documentar
 
 #### REQ-ARC-003 — Controllers Enxutos (`controllers/`)
 - **Fonte:** Projeto Integrador Origem — *Responsabilidade das principais pastas* (L856) e *Regras esperadas* (L879, L890)
 - **Exigência Original:** Entrada das requisições; controllers recebem dados, chamam services e devolvem respostas, sem acesso direto ao banco de dados.
 - **Classificação Normativa:** **Recomendação Arquitetural**.
-- **Estado atual:** Não atendido
-- **Evidência:** Ausência de controllers na branch.
-- **Ação necessária:** Implementar controllers com manipulação exclusiva de entrada e saída HTTP.
+- **Estado atual:** **Atendido**
+- **Evidência:** `HealthController` em `backend/src/controllers/health.controller.ts` manipulando exclusivamente I/O HTTP sem chamadas de persistência ou regras acopladas.
+- **Ação necessária:** Preservar a natureza enxuta nos controllers de catálogo, pedidos e autenticação.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** Zero queries Prisma dentro dos controllers.
 - **Dependências:** REQ-ARC-001.
-- [ ] Implementar
-- [ ] Validar
-- [ ] Documentar
+- [x] Implementar
+- [x] Validar
+- [x] Documentar
 
 #### REQ-ARC-004 — Services de Domínio (`services/`)
 - **Fonte:** Projeto Integrador Origem — *Responsabilidade das principais pastas* (L857) e *Exemplo de fluxo* (L914, L929)
@@ -309,29 +309,29 @@ Este documento consolida o **plano mestre de conformidade e acompanhamento da im
 - **Fonte:** Projeto Integrador Origem — *Responsabilidade das principais pastas* (L859) e *Regras esperadas* (L893)
 - **Exigência Original:** Lógicas intermediárias para autenticação, autorização, validação e tratamento global de erros.
 - **Classificação Normativa:** **Recomendação Arquitetural**.
-- **Estado atual:** Não atendido
-- **Evidência:** Ausência de middlewares de backend na branch.
-- **Ação necessária:** Implementar `auth.middleware.ts`, `role.middleware.ts`, `validation.middleware.ts` e `error.middleware.ts`.
+- **Estado atual:** **Parcialmente atendido**
+- **Evidência:** `requestLogger.ts` e `errorHandler.ts` criados e integrados ao pipeline global do Express em `backend/src/app.ts`. Pendente autenticação JWT (`authMiddleware`) e papéis RBAC (`roleMiddleware`).
+- **Ação necessária:** Implementar `authMiddleware` e `roleMiddleware` na etapa de Autenticação.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** Falhas tratadas globalmente retornando payloads de erro consistentes.
 - **Dependências:** REQ-ARC-001.
-- [ ] Implementar
-- [ ] Validar
+- [x] Implementar
+- [x] Validar
 - [ ] Documentar
 
 #### REQ-ARC-007 — Padronização de Respostas e Tratamento de Exceções
 - **Fonte:** Projeto Integrador Origem — *Regras esperadas* (L882, L883) e *Contratos da API* (`contratos-api.md`)
 - **Exigência Original:** Respostas padronizadas da API: coleções em `{ dados: [...], meta: {...} }` e erros de negócio em `{ erro: "mensagem" }` via classe customizada `AppError`.
 - **Classificação Normativa:** **Recomendação Arquitetural**.
-- **Estado atual:** Não atendido
-- **Evidência:** Ausência de classes utilitárias de erro no backend.
-- **Ação necessária:** Implementar classe `AppError` e helpers em `backend/src/utils/`.
+- **Estado atual:** **Atendido**
+- **Evidência:** Classe `AppError` em `backend/src/utils/AppError.ts` e middleware `errorHandler.ts` formatando retornos no envelope `{ "erro": string }`, validado em testes de rotas inexistentes (404) e 100% compatível com a linha 23 de `frontend/src/services/api.ts`.
+- **Ação necessária:** Utilizar `AppError` para todas as validações de regra de negócio dos services futuros.
 - **Módulo:** `backend/`
 - **Critério de conclusão:** 100% dos retornos da API aderentes ao contrato consumido pelos services do frontend.
 - **Dependências:** REQ-ARC-001.
-- [ ] Implementar
-- [ ] Validar
-- [ ] Documentar
+- [x] Implementar
+- [x] Validar
+- [x] Documentar
 
 ---
 
@@ -1270,9 +1270,9 @@ Este documento consolida o **plano mestre de conformidade e acompanhamento da im
 As decisões técnicas abaixo representam alternativas de engenharia formuladas para cumprir os requisitos normativos. **Nenhuma delas está aprovada automaticamente** e nenhuma implementação deve ser iniciada antes do consentimento explícito do desenvolvedor:
 
 ### Decisão 01: Modelo de Repositório (Monorepo) e Limpeza de Artefatos Legados
-- **Contexto:** A branch `feat/frontend-next` possui a pasta `frontend/`, mas a raiz contém arquivos legados do Maven (`pom.xml`, `mvnw`, `mvnw.cmd`) desprovidos de código Java sob `src/`.
-- **Proposta Técnica:** Adotar a estrutura monorepo permitida pela disciplina (`projeto-origem/frontend` e `projeto-origem/backend`), criando a pasta `backend/` na raiz e removendo os arquivos órfãos do Maven (`pom.xml`, `mvnw`, `mvnw.cmd`) para sanar o ruído estrutural.
-- **Status Atual:** **Pendente de Decisão / Não Aprovado**
+- **Contexto:** A branch `feat/frontend-next` possui a pasta `frontend/`, mas a raiz continha arquivos legados do Maven (`pom.xml`, `mvnw`, `mvnw.cmd`) e binários em `target/` com relatórios de FCCPD.
+- **Proposta Técnica:** Adotar a estrutura monorepo permitida pela disciplina (`frontend/` e `backend/`), salvaguardando previamente os 28 relatórios acadêmicos do Surefire em `docs/03-computacao-concorrente-distribuida/surefire-reports/`, criando a pasta `backend/` e removendo com segurança os artefatos legados Java/Maven.
+- **Status Atual:** **Aprovada e Executada** (Fundação do backend concluída em 14/11/2026).
 
 ### Decisão 02: Arquitetura de Cache e Filas Assíncronas
 - **Contexto:** O PI exige cache e processamento assíncrono. O documento cita Redis e BullMQ a título exemplificativo, permitindo expressamente tecnologias equivalentes que façam sentido (`projeto-integrador-origem.md` L335-L336).
