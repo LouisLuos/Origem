@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1'
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'
 
 /**
  * Chamada à API do Origem. Rejeita com `Error` e mensagem em português: a enviada pelo servidor
