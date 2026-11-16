@@ -43,7 +43,7 @@ Cada smell recebe quatro classificações:
 | :-: | :--- | :--- | :-: | :-: | :--- |
 | CS-01 | Duplicated Code | Dispensables | Backend | Média | ✅ **Já refatorado** (resíduo em CS-15) |
 | CS-02 | Divergent Change | Change Preventers | Frontend | Média | ✅ Refatorado |
-| CS-03 | Feature Envy / Shotgun Surgery (mock Picsum) | Couplers | Frontend | Média | Refatorar *ou* não refatorar |
+| CS-03 | Feature Envy / Shotgun Surgery (mock Picsum) | Couplers | Frontend | Média | ✅ Refatorado (`utils/media.ts`) |
 | CS-04 | Primitive Obsession (técnica/polo) | Bloaters | Full stack | Média | Depende de CS-05 |
 | **CS-05** | **Duplicated Knowledge divergente (taxonomia)** | Change Preventers | Full stack + IA | **Alta** | Refatorar (com decisão do grupo) |
 | CS-06 | Duplicated Code (paginação e filtros) | Dispensables | Backend | Média | Refatorar |
@@ -87,18 +87,12 @@ Cada smell recebe quatro classificações:
 
 **Limitação conhecida:** `adjustStock` mantém o fluxo cliente de leitura e escrita, sujeito a condição de corrida. A atomicidade da reserva depende da implementação do backend. Ambos os pontos ficam fora do escopo desta refatoração frontend e precisam ser tratados junto às rotas de escrita.
 
-### CS-03 — Regex do Picsum dentro de `ProductDetail`
-**Estado atual:** confirmado em [ProductDetail.tsx:18-23](../../../frontend/src/views/ProductDetail.tsx#L18-L23). O conhecimento sobre o Picsum está espalhado em **5 arquivos**, o que caracteriza também *Shotgun Surgery*:
+### CS-03 — Regex do Picsum dentro de `ProductDetail` ✅
+**Estado atual:** refatorado em [`frontend/src/utils/media.ts`](../../../frontend/src/utils/media.ts), com relatório individual em [`CS-03-picsum-media-coupling.md`](integrantes/CS-03-picsum-media-coupling.md). A função `getGalleryImages` (agora `getProductGalleryImages`) e o `import type { Product }` não utilizado foram removidos de `ProductDetail.tsx`, e os helpers dinâmicos do Picsum em `utils/avatar.ts`, `views/ArtisanPanel.tsx` e `views/Login.tsx` passaram a consumir `utils/media.ts`.
 
-| Arquivo | Uso |
-| :--- | :--- |
-| [views/ProductDetail.tsx:19](../../../frontend/src/views/ProductDetail.tsx#L19) | regex para gerar galeria |
-| [utils/avatar.ts:6](../../../frontend/src/utils/avatar.ts#L6) | regex para gerar avatar quadrado |
-| [views/ArtisanPanel.tsx:117](../../../frontend/src/views/ArtisanPanel.tsx#L117) | URL de fallback da peça |
-| [views/Login.tsx:64-66](../../../frontend/src/views/Login.tsx#L64-L66) | URLs de foto e capa do artesão |
-| [components/CategoryShowcase.tsx:10-15](../../../frontend/src/components/CategoryShowcase.tsx#L10-L15) | imagens fixas das categorias |
+**Ponto mantido intencionalmente:** [components/CategoryShowcase.tsx:10-15](../../../frontend/src/components/CategoryShowcase.tsx#L10-L15) mantém o dicionário estático `categoryImages` por se tratar de mapa fixo de UI sem construção dinâmica de seed/regex.
 
-**Fato relevante:** o backend devolve `imageUrl: ''` e `photoUrl: ''` ([produto.repository.ts:38](../../../backend/src/repositories/produto.repository.ts#L38), [artesao.repository.ts:43](../../../backend/src/repositories/artesao.repository.ts#L43)). Com dados reais, as regexes nunca casam. Isso reforça os dois lados: extrair agora é barato, mas o código será descartado quando o armazenamento de mídia existir.
+**Fato relevante:** o backend ainda devolve `imageUrl: ''` e `photoUrl: ''` ([produto.repository.ts:38](../../../backend/src/repositories/produto.repository.ts#L38), [artesao.repository.ts:43](../../../backend/src/repositories/artesao.repository.ts#L43)), de modo que `getProductGalleryImages` cai no fallback `[imageUrl]` até a integração do storage real de mídia.
 
 ### CS-04 — Primitive Obsession em técnica/polo
 **Estado atual:** confirmado. O problema é maior do que o catalogado: as listas de valores **já divergem** entre camadas (ver CS-05). Tipar com união literal sem antes unificar a fonte de verdade apenas congelaria a divergência. **Depende de CS-05.**

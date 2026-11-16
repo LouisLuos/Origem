@@ -11,6 +11,7 @@ import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCatalogAction } from '@/hooks/useCatalogAction'
 import { errorMessage } from '@/utils/errors'
+import { buildPlaceholderProductImageUrl } from '@/utils/media'
 import type { CatalogItem, CatalogItemInput } from '@/context/CatalogContext'
 
 const LOW_STOCK = 3
@@ -113,8 +114,7 @@ export function ArtisanPanel() {
       price,
       stock,
       imageUrl:
-        form.imageUrl.trim() ||
-        `https://picsum.photos/seed/origem-${encodeURIComponent(form.title.trim())}/800/800`,
+        form.imageUrl.trim() || buildPlaceholderProductImageUrl(form.title.trim()),
       imageAlt: form.title.trim(),
       description: form.description.trim(),
       active: true,

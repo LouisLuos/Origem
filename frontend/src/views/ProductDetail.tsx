@@ -6,21 +6,14 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { ChevronRight, Heart, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react'
 import { Badge, Button, ButtonLink, Container, ProductCard, currency } from '@/design-system'
-import type { Product } from '@/design-system'
 import { getAvatarUrl } from '@/utils/avatar'
+import { getProductGalleryImages } from '@/utils/media'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
 import { availableQuantity, useCart } from '@/context/CartContext'
 import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
-
-function getGalleryImages(product: Product): string[] {
-  const match = product.imageUrl.match(/^(https:\/\/picsum\.photos\/seed\/)([^/]+)(\/.+)$/)
-  if (!match) return [product.imageUrl]
-  const [, prefix, seed, suffix] = match
-  return [product.imageUrl, `${prefix}${seed}-detalhe${suffix}`, `${prefix}${seed}-ambiente${suffix}`]
-}
 
 function DetailSection({ title, children, defaultOpen }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   return (
@@ -90,7 +83,7 @@ export function ProductDetail() {
   const discountPercent = hasDiscount
     ? Math.round(100 - (product.price / (product.compareAtPrice as number)) * 100)
     : 0
-  const gallery = getGalleryImages(product)
+  const gallery = getProductGalleryImages(product.imageUrl)
   const maxQuantity = Math.max(1, availableQuantity(product))
   const artisan = artisans.find((item) => item.name === product.artisan)
   const relatedProducts = products

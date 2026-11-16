@@ -10,6 +10,7 @@ import { culturalHubs, techniques } from '@/design-system/tokens'
 import { useAuth } from '@/context/AuthContext'
 import { artisanService } from '@/services/artisanService'
 import { errorMessage } from '@/utils/errors'
+import { buildPlaceholderArtisanMedia } from '@/utils/media'
 
 type Mode = 'login' | 'register'
 
@@ -54,16 +55,18 @@ export function Login() {
       result = await register(name, email, password, isArtisan ? 'artisan' : 'buyer')
       if (!result && isArtisan) {
         try {
+          const normalizedEmail = email.trim().toLowerCase()
+          const placeholderMedia = buildPlaceholderArtisanMedia(normalizedEmail)
           await artisanService.create({
             name: name.trim(),
-            email: email.trim().toLowerCase(),
+            email: normalizedEmail,
             hub: artisanHub,
             technique: artisanTechnique,
             bio: artisanBio.trim(),
             since: new Date().getFullYear(),
-            photoUrl: `https://picsum.photos/seed/artesao-${encodeURIComponent(email.trim().toLowerCase())}/600/700`,
+            photoUrl: placeholderMedia.photoUrl,
             photoAlt: `Retrato de ${name.trim()}`,
-            coverUrl: `https://picsum.photos/seed/atelie-${encodeURIComponent(email.trim().toLowerCase())}/1600/500`,
+            coverUrl: placeholderMedia.coverUrl,
             coverAlt: `Ateliê de ${name.trim()}`,
           })
         } catch (reason) {
