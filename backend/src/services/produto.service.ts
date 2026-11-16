@@ -1,5 +1,7 @@
 import { produtoRepository } from '../repositories/produto.repository.js';
 import type { ProdutoPublico } from '../repositories/produto.repository.js';
+import { paginate } from '../utils/pagination.util.js';
+import type { PaginatedResult } from '../utils/pagination.util.js';
 
 export interface ListarProdutosQuery {
   page?: number;
@@ -8,47 +10,27 @@ export interface ListarProdutosQuery {
   hub?: string;
 }
 
-export interface ListarProdutosResultado {
-  dados: ProdutoPublico[];
-  meta: {
-    totalItens: number;
-    paginaAtual: number;
-    totalPaginas: number;
-    itensPorPagina: number;
-  };
-}
+export type ListarProdutosResultado = PaginatedResult<ProdutoPublico>;
 
 export class ProdutoService {
   async listar(options: ListarProdutosQuery = {}): Promise<ListarProdutosResultado> {
     let produtos = await produtoRepository.findAll();
 
     if (options.technique) {
-      const techLower = options.technique.toLowerCase();
+      const techLower = options.technique.trim().toLowerCase();
       produtos = produtos.filter((p) => p.technique.toLowerCase() === techLower);
     }
 
     if (options.hub) {
-      const hubLower = options.hub.toLowerCase();
+      const hubLower = options.hub.trim().toLowerCase();
       produtos = produtos.filter((p) => p.hub.toLowerCase() === hubLower);
     }
 
-    const totalItens = produtos.length;
-    const page = Math.max(1, Number(options.page) || 1);
-    const limit = options.limit !== undefined ? Math.max(1, Number(options.limit)) : 10;
-    const totalPaginas = Math.ceil(totalItens / limit) || 1;
-
-    const inicio = (page - 1) * limit;
-    const dados = produtos.slice(inicio, inicio + limit);
-
-    return {
-      dados,
-      meta: {
-        totalItens,
-        paginaAtual: page,
-        totalPaginas,
-        itensPorPagina: limit,
-      },
-    };
+    return paginate(produtos, {
+      page: options.page,
+      limit: options.limit,
+      defaultLimit: 10,
+    });
   }
 
   async buscarPorId(id: string): Promise<ProdutoPublico | null> {

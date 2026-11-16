@@ -288,7 +288,7 @@ A tabela a seguir deve ser utilizada para formalizar a alocação de cada integr
 | *[Integrante 1 — CS-01]* | **CS-01** | Backend — Repositórios | Refatoração (Extract Module / Function) | **Validado** (Aguardando commit) | [`CS-01-duplicated-code.md`](integrantes/CS-01-duplicated-code.md) | *Pendente (a ser commitado)* |
 | Pedro Vinicius | **CS-03** | Frontend — Views & Utils | Refatoração (Extract Module / Function) | **Refatorado e Validado** (Aguardando commit) | [`CS-03-picsum-media-coupling.md`](integrantes/CS-03-picsum-media-coupling.md) | *Pendente (a ser commitado)* |
 | Luiz Henrique | **CS-07** | Backend — Controllers & Validators | Refatoração (Extract Module / Function + Zod) | **Refatorado e Validado** (Aguardando commit) | [`CS-07-query-parsing-duplication.md`](integrantes/CS-07-query-parsing-duplication.md) | *Pendente (a ser commitado)* |
-| *[Nome do Integrante 4]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
+| Marcos Antônio | **CS-06** | Backend — Services & Utils | Refatoração (Extract Function / Interface) | **Refatorado e Validado** | [`CS-06-pagination-duplication.md`](integrantes/CS-06-pagination-duplication.md) | *A ser commitado* |
 | *[Nome do Integrante 5]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
 
 > [!IMPORTANT]

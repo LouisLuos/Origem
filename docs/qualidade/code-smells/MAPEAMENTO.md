@@ -46,7 +46,7 @@ Cada smell recebe quatro classificações:
 | CS-03 | Feature Envy / Shotgun Surgery (mock Picsum) | Couplers | Frontend | Média | ✅ Refatorado (`utils/media.ts`) |
 | CS-04 | Primitive Obsession (técnica/polo) | Bloaters | Full stack | Média | Depende de CS-05 |
 | **CS-05** | **Duplicated Knowledge divergente (taxonomia)** | Change Preventers | Full stack + IA | **Alta** | Refatorar (com decisão do grupo) |
-| CS-06 | Duplicated Code (paginação e filtros) | Dispensables | Backend | Média | Refatorar |
+| CS-06 | Duplicated Code (paginação e filtros) | Dispensables | Backend | Média | ✅ Refatorado (`utils/pagination.util.ts`) |
 | CS-07 | Duplicated Code (parsing de query nos controllers) | Dispensables | Backend | Baixa | ✅ Refatorado (`validators/`) |
 | CS-08 | Speculative Generality (Prisma, JWT, IA_URL) | Dispensables | Backend | Baixa | **Não refatorar** |
 | CS-09 | Large Class / Long Method (`Header`) | Bloaters | Frontend | Média | Refatorar com cautela |
@@ -122,18 +122,15 @@ Cada smell recebe quatro classificações:
 
 ---
 
-### CS-06 — Paginação e filtros duplicados nos services do backend
+### CS-06 — Paginação e filtros duplicados nos services do backend ✅
 - **Canônico:** Duplicated Code · **Categoria:** Dispensables · **Severidade:** Média · **Camada:** Backend
 
-**Localização:** [produto.service.ts:11-51](../../../backend/src/services/produto.service.ts#L11-L51) e [artesao.service.ts:12-63](../../../backend/src/services/artesao.service.ts#L12-L63).
+**Estado atual:** refatorado em [`backend/src/utils/pagination.util.ts`](../../../backend/src/utils/pagination.util.ts), com relatório individual em [`CS-06-pagination-duplication.md`](integrantes/CS-06-pagination-duplication.md). A função utilitária pura `paginate<T>()` e as interfaces genéricas `PaginatedResult<T>` e `PaginationMeta` foram extraídas e compartilhadas entre [produto.service.ts](../../../backend/src/services/produto.service.ts) e [artesao.service.ts](../../../backend/src/services/artesao.service.ts).
 
-O cálculo de `page`/`limit`/`totalPaginas`/`slice` e o tipo `meta` são cópias quase literais. As cópias **já divergiram**:
-- `artesao.service` aplica `.trim()` nos filtros e `produto.service` não. `?hub=Bezerros%20` filtra artesãos, mas não produtos.
-- O limite padrão é 20 em um e 10 no outro, sem justificativa documentada.
-
-**Impactos:** a próxima entidade paginada (pedidos, avaliações) vai copiar o bloco pela terceira vez.
-**Recomendação:** refatorar com *Extract Function* (`paginate<T>(items, page, limit)`) e *Extract Interface* (`PaginatedResult<T>`). Risco baixo; validar comparando as respostas JSON antes e depois, como foi feito no CS-01.
-⚠️ Unificar o `.trim()` **muda comportamento** de `/produtos`. Documentar se for feito.
+**Correção e melhorias na intervenção:**
+- Extração de 36 linhas de lógica duplicada para o módulo genérico `pagination.util.ts`, eliminando a necessidade de replicação para novas entidades paginadas (pedidos, avaliações).
+- Correção da divergência de sanitização: `produto.service.ts` passou a aplicar `.trim().toLowerCase()` nos filtros de `hub` e `technique`, alinhando-se ao comportamento de `artesao.service.ts` (requisições como `?hub=Bezerros%20` agora funcionam de forma consistente em ambos os recursos).
+- Preservação dos limites padrões intencionais de cada entidade via parâmetro `defaultLimit` (10 para produtos, 20 para artesãos) com 100% de retrocompatibilidade de contrato.
 
 ---
 

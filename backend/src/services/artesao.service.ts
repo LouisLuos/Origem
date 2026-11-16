@@ -1,5 +1,7 @@
 import { artesaoRepository } from '../repositories/artesao.repository.js';
 import type { ArtesaoPublico } from '../repositories/artesao.repository.js';
+import { paginate } from '../utils/pagination.util.js';
+import type { PaginatedResult } from '../utils/pagination.util.js';
 
 export interface ListarArtesaosQuery {
   page?: number;
@@ -9,15 +11,7 @@ export interface ListarArtesaosQuery {
   technique?: string;
 }
 
-export interface ListarArtesaosResultado {
-  dados: ArtesaoPublico[];
-  meta: {
-    totalItens: number;
-    paginaAtual: number;
-    totalPaginas: number;
-    itensPorPagina: number;
-  };
-}
+export type ListarArtesaosResultado = PaginatedResult<ArtesaoPublico>;
 
 export class ArtesaoService {
   async listar(options: ListarArtesaosQuery = {}): Promise<ListarArtesaosResultado> {
@@ -25,7 +19,7 @@ export class ArtesaoService {
 
     // Filtro por busca textual (nome, polo ou técnica)
     if (options.q) {
-      const termo = options.q.toLowerCase().trim();
+      const termo = options.q.trim().toLowerCase();
       artesaos = artesaos.filter(
         (a) =>
           a.name.toLowerCase().includes(termo) ||
@@ -35,32 +29,20 @@ export class ArtesaoService {
     }
 
     if (options.hub) {
-      const hubLower = options.hub.toLowerCase().trim();
+      const hubLower = options.hub.trim().toLowerCase();
       artesaos = artesaos.filter((a) => a.hub.toLowerCase() === hubLower);
     }
 
     if (options.technique) {
-      const techLower = options.technique.toLowerCase().trim();
+      const techLower = options.technique.trim().toLowerCase();
       artesaos = artesaos.filter((a) => a.technique.toLowerCase() === techLower);
     }
 
-    const totalItens = artesaos.length;
-    const page = Math.max(1, Number(options.page) || 1);
-    const limit = options.limit !== undefined ? Math.max(1, Number(options.limit)) : 20;
-    const totalPaginas = Math.ceil(totalItens / limit) || 1;
-
-    const inicio = (page - 1) * limit;
-    const dados = artesaos.slice(inicio, inicio + limit);
-
-    return {
-      dados,
-      meta: {
-        totalItens,
-        paginaAtual: page,
-        totalPaginas,
-        itensPorPagina: limit,
-      },
-    };
+    return paginate(artesaos, {
+      page: options.page,
+      limit: options.limit,
+      defaultLimit: 20,
+    });
   }
 
   async buscarPorId(id: string): Promise<ArtesaoPublico | null> {
