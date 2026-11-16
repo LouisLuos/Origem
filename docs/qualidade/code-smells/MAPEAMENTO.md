@@ -57,7 +57,7 @@ Cada smell recebe quatro classificações:
 | CS-14 | Inappropriate Intimacy (tipo de domínio no Design System) | Couplers | Frontend | Média | Refatorar |
 | CS-15 | Dead Code (re-export de `slugify`) | Dispensables | Backend | Baixa | Refatorar (trivial) |
 | CS-16 | Comments desatualizados | Dispensables | Frontend | Baixa | Refatorar (trivial) |
-| CS-17 | Primitive Obsession (identificação do artesão por nome) | Bloaters / Couplers | Frontend | Média | Refatorar |
+| CS-17 | Primitive Obsession (identificação do artesão por nome) | Bloaters / Couplers | Frontend | Média | ✅ Resolvido via `findArtisanOf()` |
 | CS-18 | Boilerplate repetido nos Contexts (`useX` + `throw`) | Dispensables | Frontend | Baixa | **Não refatorar** |
 | CS-19 | Error Code em vez de exceção (`recomendar`) | OO Abusers | IA | Baixa | **Não refatorar** |
 
@@ -239,10 +239,16 @@ A dependência está invertida: o serviço HTTP depende de um componente visual.
 
 ### CS-17 — Artesão identificado pelo nome em vez do id
 - **Canônico:** Primitive Obsession + Duplicated Code divergente · **Categoria:** Bloaters / Couplers · **Severidade:** Média · **Camada:** Frontend
+- **Estado atual:** ✅ **Resolvido**
 
-**Localização:** [ProductDetail.tsx:95](../../../frontend/src/views/ProductDetail.tsx#L95) busca `artisans.find(a => a.name === product.artisan)`, enquanto [ArtisanProfile.tsx:64](../../../frontend/src/views/ArtisanProfile.tsx#L64) usa `artisanId`, com o nome só como fallback. O backend já fornece `artisanId` estável ([produto.repository.ts:32](../../../backend/src/repositories/produto.repository.ts#L32)).
+**Localização original:** [ProductDetail.tsx:95](../../../frontend/src/views/ProductDetail.tsx#L95) buscava `artisans.find(a => a.name === product.artisan)`, enquanto [ArtisanProfile.tsx:64](../../../frontend/src/views/ArtisanProfile.tsx#L64) usava `artisanId`, com o nome só como fallback. O backend já fornece `artisanId` estável ([produto.repository.ts:32](../../../backend/src/repositories/produto.repository.ts#L32)).
 Dois artesãos com o mesmo nome, ou uma diferença de espaço ou acento, quebram o link "Ver perfil completo".
-**Recomendação:** *Extract Function* `findArtisanOf(product, artisans)`, usada nas duas telas e priorizando `artisanId`. Refatoração pequena com ganho de corretude.
+
+**Refatoração aplicada:** extração de `findArtisanOf(product, artisans)` em [frontend/src/utils/artisanMatch.ts](../../../frontend/src/utils/artisanMatch.ts), com prioridade de `artisanId` e fallback de normalização de nome. A lógica foi reutilizada em [ProductDetail.tsx](../../../frontend/src/views/ProductDetail.tsx) e [ArtisanProfile.tsx](../../../frontend/src/views/ArtisanProfile.tsx) para manter uma única regra de resolução.
+
+**Benefícios:** elimina a dependência de comparação textual frágil, reduz duplicação de regra entre telas e torna o vínculo produto ↔ artesão estável mesmo com nomes parecidos.
+
+**Validação:** `cd frontend && npm run build` com sucesso após a refatoração.
 
 ---
 

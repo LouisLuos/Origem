@@ -11,6 +11,7 @@ import { useCatalog } from '@/context/CatalogContext'
 import { useCart } from '@/context/CartContext'
 import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
+import { findArtisanOf } from '@/utils/artisanMatch'
 
 export function ArtisanProfile() {
   const { id } = useParams<{ id: string }>()
@@ -48,9 +49,7 @@ export function ArtisanProfile() {
     )
   }
 
-  const products = catalogProducts.filter((product) =>
-    product.artisanId ? product.artisanId === artisan.id : product.artisan === artisan.name,
-  )
+  const products = catalogProducts.filter((product) => findArtisanOf(product, artisans)?.id === artisan.id)
 
   const goToTechnique = () => {
     selectTechnique(artisan.technique)

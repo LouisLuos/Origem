@@ -14,6 +14,7 @@ import { useCatalog } from '@/context/CatalogContext'
 import { availableQuantity, useCart } from '@/context/CartContext'
 import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
+import { findArtisanOf } from '@/utils/artisanMatch'
 
 function DetailSection({ title, children, defaultOpen }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   return (
@@ -79,7 +80,7 @@ export function ProductDetail() {
     : 0
   const gallery = getProductGalleryImages(product.imageUrl)
   const maxQuantity = Math.max(1, availableQuantity(product))
-  const artisan = artisans.find((item) => item.name === product.artisan)
+  const artisan = findArtisanOf(product, artisans)
   const relatedProducts = products
     .filter((item) => item.technique === product.technique && item.id !== product.id)
     .slice(0, 4)
