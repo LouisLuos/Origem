@@ -287,7 +287,7 @@ A tabela a seguir deve ser utilizada para formalizar a alocação de cada integr
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | *[Integrante 1 — CS-01]* | **CS-01** | Backend — Repositórios | Refatoração (Extract Module / Function) | **Validado** (Aguardando commit) | [`CS-01-duplicated-code.md`](integrantes/CS-01-duplicated-code.md) | *Pendente (a ser commitado)* |
 | Pedro Vinicius | **CS-03** | Frontend — Views & Utils | Refatoração (Extract Module / Function) | **Refatorado e Validado** (Aguardando commit) | [`CS-03-picsum-media-coupling.md`](integrantes/CS-03-picsum-media-coupling.md) | *Pendente (a ser commitado)* |
-| *[Nome do Integrante 3]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
+| Luiz Henrique | **CS-07** | Backend — Controllers & Validators | Refatoração (Extract Module / Function + Zod) | **Refatorado e Validado** (Aguardando commit) | [`CS-07-query-parsing-duplication.md`](integrantes/CS-07-query-parsing-duplication.md) | *Pendente (a ser commitado)* |
 | *[Nome do Integrante 4]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
 | *[Nome do Integrante 5]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
 
@@ -336,6 +336,7 @@ Este espaço é reservado para consolidar os resultados de testes e validações
 | **CS-02** | **Refatorado** | `npm run build` e ESLint focado nos arquivos alterados | **Aprovados**; lint global ainda encontra 214 erros em `frontend/dist` gerado | Build e tipos aprovados; navegação manual não executada |
 | **CS-03** | Refatoração Modular (`frontend/src/utils/media.ts`) | `tsc --noEmit`, ESLint focado nos 5 arquivos e `npm run build` (Next 16.4.5) | **Aprovado** (0 erros no typecheck/ESLint focado; 10/10 rotas compiladas no `next build`) | **Zero Regressão** |
 | **CS-04** | *Aguardando execução* | Validação de tipos do compilador | *Aguardando* | *Sem regressão* |
+| **CS-07** | Refatoração Modular (`backend/src/validators/` + Zod) | `tsc --noEmit` + script comparativo de 20 endpoints válidos e 14 casos de borda | **Aprovado** (0 erros nos módulos alterados; 20/20 rotas válidas idênticas e 400 padronizado em inválidas) | **Zero Regressão** |
 
 ---
 
@@ -343,16 +344,16 @@ Este espaço é reservado para consolidar os resultados de testes e validações
 
 Tabela de acompanhamento para garantir que nenhum critério obrigatório da atividade acadêmica seja esquecido pela equipe:
 
-| Critério Obrigatório da Atividade | Integrante 1 (CS-01) | Pedro Vinicius (CS-03) | Integrante 3 | Integrante 4 | Integrante 5 |
+| Critério Obrigatório da Atividade | Integrante 1 (CS-01) | Pedro Vinicius (CS-03) | Luiz Henrique (CS-07) | Integrante 4 | Integrante 5 |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| 1. Code Smell formalmente identificado e localizado | [X] | [X] | [ ] | [ ] | [ ] |
-| 2. Diagnóstico técnico detalhado (coesão, acoplamento, etc.) | [X] | [X] | [ ] | [ ] | [ ] |
-| 3. Avaliação crítica da necessidade de refatoração | [X] | [X] | [ ] | [ ] | [ ] |
-| 4. Refatoração aplicada OU Justificativa dissertativa robusta | [X] | [X] | [ ] | [ ] | [ ] |
-| 5. Comportamento funcional preservado e validado | [X] | [X] | [ ] | [ ] | [ ] |
-| 6. Relatório individual em Markdown preenchido | [X] | [X] | [ ] | [ ] | [ ] |
+| 1. Code Smell formalmente identificado e localizado | [X] | [X] | [X] | [ ] | [ ] |
+| 2. Diagnóstico técnico detalhado (coesão, acoplamento, etc.) | [X] | [X] | [X] | [ ] | [ ] |
+| 3. Avaliação crítica da necessidade de refatoração | [X] | [X] | [X] | [ ] | [ ] |
+| 4. Refatoração aplicada OU Justificativa dissertativa robusta | [X] | [X] | [X] | [ ] | [ ] |
+| 5. Comportamento funcional preservado e validado | [X] | [X] | [X] | [ ] | [ ] |
+| 6. Relatório individual em Markdown preenchido | [X] | [X] | [X] | [ ] | [ ] |
 | 7. Commit individual com identificação clara no Git | [ ] | [ ] | [ ] | [ ] | [ ] |
-| 8. Preparação para apresentação oral concluída | [X] | [X] | [ ] | [ ] | [ ] |
+| 8. Preparação para apresentação oral concluída | [X] | [X] | [X] | [ ] | [ ] |
 
 ---
 
@@ -368,8 +369,9 @@ Tabela de acompanhamento para garantir que nenhum critério obrigatório da ativ
 - [x] **Preservação Comportamental Comprovada:** 12/12 rotas HTTP testadas com payloads estritamente idênticos à linha de base pré-refatoração; typecheck com 0 erros.
 - [x] **Relatório Individual CS-01 Concluído:** Registrado formalmente em `integrantes/CS-01-duplicated-code.md`.
 - [x] **Execução, Validação e Relatório do CS-03 Concluídos:** Lógica de galeria e placeholders do Picsum extraída para `frontend/src/utils/media.ts`, validada via `tsc --noEmit`, ESLint focado e `next build`, e documentada em `integrantes/CS-03-picsum-media-coupling.md`.
+- [x] **Execução, Validação e Relatório do CS-07 Concluídos:** Parsing e validação de query strings e `:id` extraídos para `backend/src/validators/request.validator.ts` e `catalog.validator.ts`, validados via `tsc --noEmit` e bateria HTTP antes/depois (20 rotas válidas idênticas e correção do bug de `NaN` em `limit`), e documentados em `integrantes/CS-07-query-parsing-duplication.md`.
 
 ### Próximos Passos
-1. Realização dos commits individuais referentes ao CS-01 e ao CS-03 na branch `feat/frontend-next`.
+1. Realização dos commits individuais referentes ao CS-01 e ao CS-07 na branch `feat/frontend-next`.
 2. Demais integrantes realizarem a seleção de seus respectivos candidatos (ex.: CS-04 a CS-19) na Seção E.
 3. Elaboração dos relatórios e intervenções individuais dos demais colegas utilizando o modelo padronizado.

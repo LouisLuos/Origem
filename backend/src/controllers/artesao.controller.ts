@@ -1,17 +1,16 @@
 import type { Request, Response, NextFunction } from 'express';
 import { artesaoService } from '../services/artesao.service.js';
 import { AppError } from '../utils/AppError.js';
+import {
+  artesaoIdParamSchema,
+  listarArtesaosQuerySchema,
+} from '../validators/catalog.validator.js';
 
 export const artesaoController = {
   async listar(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const page = req.query.page ? Number(req.query.page) : undefined;
-      const limit = req.query.limit ? Number(req.query.limit) : undefined;
-      const q = typeof req.query.q === 'string' ? req.query.q : typeof req.query.nome === 'string' ? req.query.nome : undefined;
-      const hub = typeof req.query.hub === 'string' ? req.query.hub : undefined;
-      const technique = typeof req.query.technique === 'string' ? req.query.technique : undefined;
-
-      const resultado = await artesaoService.listar({ page, limit, q, hub, technique });
+      const query = listarArtesaosQuerySchema.parse(req.query);
+      const resultado = await artesaoService.listar(query);
       res.status(200).json(resultado);
     } catch (err) {
       next(err);
@@ -20,12 +19,7 @@ export const artesaoController = {
 
   async detalhar(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-
-      if (!id) {
-        throw new AppError('Identificador do artesão é obrigatório.', 400);
-      }
-
+      const { id } = artesaoIdParamSchema.parse(req.params);
       const artesao = await artesaoService.buscarPorId(id);
 
       if (!artesao) {

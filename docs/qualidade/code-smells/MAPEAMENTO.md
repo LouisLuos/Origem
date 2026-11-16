@@ -47,7 +47,7 @@ Cada smell recebe quatro classificações:
 | CS-04 | Primitive Obsession (técnica/polo) | Bloaters | Full stack | Média | Depende de CS-05 |
 | **CS-05** | **Duplicated Knowledge divergente (taxonomia)** | Change Preventers | Full stack + IA | **Alta** | Refatorar (com decisão do grupo) |
 | CS-06 | Duplicated Code (paginação e filtros) | Dispensables | Backend | Média | Refatorar |
-| CS-07 | Duplicated Code (parsing de query nos controllers) | Dispensables | Backend | Baixa | Refatorar |
+| CS-07 | Duplicated Code (parsing de query nos controllers) | Dispensables | Backend | Baixa | ✅ Refatorado (`validators/`) |
 | CS-08 | Speculative Generality (Prisma, JWT, IA_URL) | Dispensables | Backend | Baixa | **Não refatorar** |
 | CS-09 | Large Class / Long Method (`Header`) | Bloaters | Frontend | Média | Refatorar com cautela |
 | CS-10 | Large Class / Long Method (`ArtisanPanel`) | Bloaters | Frontend | Média | Refatorar com cautela |
@@ -137,13 +137,12 @@ O cálculo de `page`/`limit`/`totalPaginas`/`slice` e o tipo `meta` são cópias
 
 ---
 
-### CS-07 — Parsing de query string duplicado nos controllers
+### CS-07 — Parsing de query string duplicado nos controllers ✅
 - **Canônico:** Duplicated Code · **Categoria:** Dispensables · **Severidade:** Baixa · **Camada:** Backend
 
-**Localização:** [produto.controller.ts:8-11](../../../backend/src/controllers/produto.controller.ts#L8-L11), [artesao.controller.ts:8-12](../../../backend/src/controllers/artesao.controller.ts#L8-L12) e as linhas 22-27 de ambos (extração de `id`).
+**Estado atual:** refatorado em [`backend/src/validators/request.validator.ts`](../../../backend/src/validators/request.validator.ts) e [`backend/src/validators/catalog.validator.ts`](../../../backend/src/validators/catalog.validator.ts), com relatório individual em [`CS-07-query-parsing-duplication.md`](integrantes/CS-07-query-parsing-duplication.md). Os controllers [produto.controller.ts](../../../backend/src/controllers/produto.controller.ts) e [artesao.controller.ts](../../../backend/src/controllers/artesao.controller.ts) passaram a delegar a validação de `req.query` e `req.params.id` aos schemas Zod, ativando o tratamento de `ZodError` em [errorHandler.ts:19-25](../../../backend/src/middlewares/errorHandler.ts#L19-L25).
 
-O padrão `typeof req.query.x === 'string' ? req.query.x : undefined` se repete. `Number('abc')` gera `NaN`, que só é corrigido mais adiante no service. O projeto já tem **Zod** como dependência e o `errorHandler` já trata `ZodError` ([errorHandler.ts:19-25](../../../backend/src/middlewares/errorHandler.ts#L19-L25)), mas o Zod não é usado na entrada HTTP.
-**Recomendação:** refatorar com *Replace Inline Code with Function Call* usando um schema Zod por rota. Benefício: a validação fica num lugar só e o caminho de erro existente passa a ser usado.
+**Bug corrigido na intervenção:** o padrão anterior (`Number('abc')` → `NaN` no service) fazia `Math.max(1, NaN)` resultar em `NaN`, devolvendo `200 OK` com `dados: []` e `itensPorPagina: null` para `?limit=abc` ou `?limit=1&limit=2`. Com os schemas Zod, todas as chamadas válidas mantêm resposta idêntica e entradas inválidas passam a retornar `400 Bad Request` (com teto de `limit <= 100` e preservação do fallback `q ?? nome` mesmo quando `q=` vem vazio).
 
 ---
 
