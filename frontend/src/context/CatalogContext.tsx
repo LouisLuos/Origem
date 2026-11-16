@@ -4,8 +4,10 @@ import { createContext, useCallback, useContext, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useResource } from '@/hooks/useResource'
 import type { ResourceStatus } from '@/hooks/useResource'
+import { artisanCatalogService } from '@/services/artisanCatalogService'
 import { catalogService } from '@/services/catalogService'
-import type { CatalogItem, CatalogItemInput, Owner } from '@/services/catalogService'
+import type { CatalogItem, CatalogItemInput, Owner } from '@/services/catalogTypes'
+import { stockService } from '@/services/stockService'
 
 export type { CatalogItem, CatalogItemInput }
 
@@ -47,13 +49,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       reload,
       getProduct: (id) => products.find((item) => item.id === id),
       addItem: async (owner, input) => {
-        const created = await catalogService.create(owner, input)
+        const created = await artisanCatalogService.create(owner, input)
         setData((prev) => [created, ...prev])
       },
-      updateItem: async (id, patch) => replaceItem(await catalogService.update(id, patch)),
-      adjustStock: async (id, delta) => replaceItem(await catalogService.adjustStock(id, delta)),
+      updateItem: async (id, patch) => replaceItem(await artisanCatalogService.update(id, patch)),
+      adjustStock: async (id, delta) => replaceItem(await stockService.adjustStock(id, delta)),
       removeItem: async (id) => {
-        await catalogService.remove(id)
+        await artisanCatalogService.remove(id)
         setData((prev) => prev.filter((item) => item.id !== id))
       },
       replaceAll: (next) => setData(next),

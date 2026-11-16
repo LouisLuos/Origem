@@ -3,7 +3,7 @@
 > **Branch analisada:** `feat/frontend-next` (commit `6de103f`)
 > **Data:** 16/11/2026
 > **Escopo:** `backend/src` (exceto `generated/`), `frontend/src`, `ia-recomendador/`
-> **Natureza:** análise estática. Nenhum arquivo de código foi alterado por este documento.
+> **Natureza:** análise estática e registro da refatoração de CS-02.
 
 Este mapeamento complementa o [README.md](README.md) (catálogo CS-01 a CS-04). Os IDs já existentes foram mantidos e reconferidos no código; os novos candidatos começam em **CS-05**.
 
@@ -42,7 +42,7 @@ Cada smell recebe quatro classificações:
 | ID | Smell (canônico) | Categoria | Camada | Severidade | Recomendação |
 | :-: | :--- | :--- | :-: | :-: | :--- |
 | CS-01 | Duplicated Code | Dispensables | Backend | Média | ✅ **Já refatorado** (resíduo em CS-15) |
-| CS-02 | Divergent Change | Change Preventers | Frontend | Média | Depende |
+| CS-02 | Divergent Change | Change Preventers | Frontend | Média | ✅ Refatorado |
 | CS-03 | Feature Envy / Shotgun Surgery (mock Picsum) | Couplers | Frontend | Média | Refatorar *ou* não refatorar |
 | CS-04 | Primitive Obsession (técnica/polo) | Bloaters | Full stack | Média | Depende de CS-05 |
 | **CS-05** | **Duplicated Knowledge divergente (taxonomia)** | Change Preventers | Full stack + IA | **Alta** | Refatorar (com decisão do grupo) |
@@ -73,9 +73,19 @@ Cada smell recebe quatro classificações:
 **Resíduo:** o re-export "para compatibilidade" em [artesao.repository.ts:5-6](../../../backend/src/repositories/artesao.repository.ts#L5-L6) não tem consumidores → ver **CS-15**.
 
 ### CS-02 — `catalogService` com responsabilidades misturadas
-**Estado atual:** confirmado em [catalogService.ts:38-83](../../../frontend/src/services/catalogService.ts#L38-L83). Observação que muda a análise: apenas `list` e `get` têm endpoint no backend ([routes/produto.routes.ts](../../../backend/src/routes/produto.routes.ts)). `create`, `update`, `remove`, `adjustStock` e `reserveStock` chamam rotas inexistentes e recebem 404.
-**Reclassificação sugerida:** severidade **Média** (não Alta). Com 83 linhas, o arquivo não é uma *Large Class*; o smell real é *Divergent Change*. Dividir o serviço antes de existirem os endpoints de escrita é uma decisão especulativa, por isso **"Depende"**. É um bom candidato para uma justificativa de **não refatorar agora**.
-**Nota:** `adjustStock` faz leitura-e-escrita no cliente (condição de corrida). Isso é **defeito de projeto**, não smell, e deve ser resolvido no backend quando o endpoint existir.
+**Diagnóstico:** confirmado em `frontend/src/services/catalogService.ts`: o mesmo objeto reunia consultas públicas, mutações de catálogo e operações de estoque. Com apenas 83 linhas, não era uma *Large Class*; o smell era *Divergent Change*. Severidade **Média**.
+
+**Refatoração aplicada:** separação por responsabilidade, mantendo contratos, rotas e payloads:
+
+- `catalogService.ts`: consultas públicas `list` e `get`.
+- `artisanCatalogService.ts`: `create`, `update` e `remove`.
+- `stockService.ts`: `adjustStock` e `reserveStock`.
+- `catalogTypes.ts` e `catalogRequest.ts`: tipos e chamada HTTP compartilhados, sem duplicação do wrapper de API.
+- Consumidores atualizados em `CatalogContext.tsx` e `orderService.ts`.
+
+**Validação de integração:** o backend em `backend/src/routes/produto.routes.ts` implementa apenas `GET /produtos` e `GET /produtos/:id`. Os métodos de escrita continuam apontando para rotas ainda não implementadas; essa refatoração não cria endpoints nem altera esse comportamento preexistente.
+
+**Limitação conhecida:** `adjustStock` mantém o fluxo cliente de leitura e escrita, sujeito a condição de corrida. A atomicidade da reserva depende da implementação do backend. Ambos os pontos ficam fora do escopo desta refatoração frontend e precisam ser tratados junto às rotas de escrita.
 
 ### CS-03 — Regex do Picsum dentro de `ProductDetail`
 **Estado atual:** confirmado em [ProductDetail.tsx:18-23](../../../frontend/src/views/ProductDetail.tsx#L18-L23). O conhecimento sobre o Picsum está espalhado em **5 arquivos**, o que caracteriza também *Shotgun Surgery*:
@@ -276,10 +286,11 @@ Cada candidato abaixo é independente e tem antes/depois demonstrável:
 
 | Perfil da intervenção | Candidatos |
 | :--- | :--- |
+| Refatoração no frontend já concluída | CS-02 |
 | Refatoração no backend, validável por comparação de JSON | CS-06, CS-07 |
 | Refatoração no frontend, validável por `next build` + navegação | CS-12, CS-14, CS-17, CS-13 |
 | Refatoração maior (exige cuidado com o design) | CS-09, CS-10, CS-11 |
-| Justificativa de **não refatorar** (dissertativa) | CS-08, CS-18, CS-19, CS-02 |
+| Justificativa de **não refatorar** (dissertativa) | CS-08, CS-18, CS-19 |
 | Exige decisão do grupo antes de começar | CS-05 (+ CS-04) |
 
-**Validação disponível hoje:** não há suíte de testes no backend nem no frontend (nenhum script `test` em `package.json`). O único teste automatizado é `ia-recomendador/tests/test_recomendador.py` (pytest). Para as refatorações, a evidência mínima é `npm run typecheck` (backend), `npm run build` + `npm run lint` (frontend) e a comparação das respostas HTTP antes e depois, como no CS-01.
+**Validação disponível hoje:** não há suíte de testes no backend nem no frontend (nenhum script `test` em `package.json`). O único teste automatizado é `ia-recomendador/tests/test_recomendador.py` (pytest). Para CS-02, `npm run build` e ESLint focado nos arquivos alterados passaram; o lint global ainda encontra 214 erros nos arquivos gerados em `frontend/dist`, e não foi feita navegação manual. Para outras refatorações, usar `npm run typecheck` (backend), `npm run build` + `npm run lint` (frontend) e comparação de respostas HTTP antes e depois, como no CS-01.

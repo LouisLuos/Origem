@@ -1,5 +1,5 @@
-import { catalogService } from './catalogService'
-import type { CatalogItem } from './catalogService'
+import type { CatalogItem } from './catalogTypes'
+import { stockService } from './stockService'
 import { readStorage, simulateLatency, writeStorage } from './storage'
 
 export const FREE_SHIPPING_THRESHOLD = 250
@@ -68,7 +68,7 @@ export const orderService = {
   async create(data: NewOrder): Promise<{ order: Order; catalog: CatalogItem[] }> {
     // Simula a aprovação do pagamento.
     await simulateLatency(1000)
-    const catalog = await catalogService.reserveStock(data.lines.map((line) => ({ productId: line.productId, quantity: line.quantity })))
+    const catalog = await stockService.reserveStock(data.lines.map((line) => ({ productId: line.productId, quantity: line.quantity })))
     const order: Order = {
       ...data,
       id: `OR-${Date.now().toString(36).toUpperCase()}`,

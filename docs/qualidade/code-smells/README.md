@@ -15,7 +15,7 @@
 - [C. Catálogo de Possíveis Code Smells](#c-catálogo-de-possíveis-code-smells)
 - [D. Análise Técnica Detalhada dos Candidatos](#d-análise-técnica-detalhada-dos-candidatos)
   - [CS-01: Código Duplicado e Acoplamento Estrutural em Repositórios](#cs-01-código-duplicado-e-acoplamento-estrutural-em-repositórios)
-  - [CS-02: Acúmulo de Responsabilidades no Serviço de Catálogo](#cs-02-acúmulo-de-responsabilidades-no-serviço-de-catálogo)
+  - [CS-02: Mudança Divergente no Serviço de Catálogo](#cs-02-mudança-divergente-no-serviço-de-catálogo)
   - [CS-03: Componente de Visualização com Lógica de Mock e Múltiplas Responsabilidades](#cs-03-componente-de-visualização-com-lógica-de-mock-e-múltiplas-responsabilidades)
   - [CS-04: Obsessão por Primitivos na Taxonomia e Filtragem Cultural](#cs-04-obsessão-por-primitivos-na-taxonomia-e-filtragem-cultural)
 - [E. Distribuição de Responsabilidades da Equipe](#e-distribuição-de-responsabilidades-da-equipe)
@@ -72,7 +72,7 @@ A auditoria identificou **4 candidatos principais a Code Smells**, cobrindo tant
 | ID | Nome / Classificação Canônica | Arquivo(s) Afetado(s) | Camada | Impacto Principal | Gravidade | Recomendação Inicial |
 | :---: | :--- | :--- | :---: | :--- | :---: | :--- |
 | **CS-01** | **Código Duplicado / Shotgun Surgery** (*Duplicated Code*) | `backend/src/repositories/produto.repository.ts`<br>`backend/src/repositories/artesao.repository.ts` | Backend | Violação de DRY, risco de divergência de regras ao evoluir caminhos e técnicas | **Média** | **Refatorado e Validado** (Extract Module e Extract Function aplicados com sucesso) |
-| **CS-02** | **Classe Grande / Mudança Divergente** (*Divergent Change / Large Class*) | `frontend/src/services/catalogService.ts` | Frontend | Acúmulo de vitrine pública, mutações administrativas e concorrência de estoque | **Alta** | **Refatoração com Cautela** ou **Justificativa de Transição** (Impacta múltiplos fluxos de tela) |
+| **CS-02** | **Mudança Divergente** (*Divergent Change*) | `frontend/src/services/catalogService.ts` | Frontend | Consultas públicas, gestão cadastral e operações de estoque no mesmo serviço | **Média** | **Refatorado:** responsabilidades segregadas em serviços de consulta, gestão e estoque |
 | **CS-03** | **Inveja de Recursos / Intimidade Inapropriada** (*Feature Envy / Inappropriate Intimacy*) | `frontend/src/views/ProductDetail.tsx` | Frontend | View acoplada a heurística de regex para fotos mockadas do Picsum | **Média** | **Justificativa de Manutenção** ou **Extração de Helper** (Depende de serviço real de mídia) |
 | **CS-04** | **Obsessão por Primitivos** (*Primitive Obsession*) | `backend/src/services/produto.service.ts`<br>`frontend/src/context/ProductFilterContext.tsx` | Full Stack | Tratamento de termos culturais como `string` solta sem tipos ou enums nominais | **Baixa/Média** | **Refatoração Semântica** (Enriquecimento com tipos e uniões literais TypeScript) |
 
@@ -162,65 +162,37 @@ Nas Etapas 7.1 e 7.2 foi necessária a rápida integração de dados a partir do
 
 ---
 
-### CS-02: Acúmulo de Responsabilidades no Serviço de Catálogo
+### CS-02: Mudança Divergente no Serviço de Catálogo
 
 - **Identificador:** `CS-02`
-- **Nome Canônico:** Classe Grande (*Large Class*) / Mudança Divergente (*Divergent Change*)
-- **Localização Exata:** `frontend/src/services/catalogService.ts` (linhas 38-83)
+- **Nome Canônico:** Mudança Divergente (*Divergent Change*)
+- **Localização Original:** `frontend/src/services/catalogService.ts`
+- **Estado:** Refatorado, com preservação dos contratos existentes.
 
-#### Trecho do Código Original
+#### Diagnóstico e intervenção
 
-```typescript
-export const catalogService = {
-  // 1. Operações de Leitura Pública da Vitrine
-  async list(): Promise<CatalogItem[]> { ... },
-  async get(id: string): Promise<CatalogItem> { ... },
+O objeto original reunia três grupos de mudanças independentes: consultas da vitrine (`list`/`get`), manutenção cadastral (`create`/`update`/`remove`) e operações de estoque (`adjustStock`/`reserveStock`). O arquivo não caracterizava uma *Large Class* pelo tamanho; a classificação adequada era *Divergent Change*, com severidade **Média**.
 
-  // 2. Operações de Administração de Cadastro pelo Artesão
-  async create(owner: Owner, input: CatalogItemInput): Promise<CatalogItem> { ... },
-  async update(id: string, patch: Partial<CatalogItemInput>): Promise<CatalogItem> { ... },
-  async remove(id: string): Promise<void> { ... },
+A responsabilidade foi dividida em:
 
-  // 3. Gestão e Ajuste Manual de Saldo de Estoque
-  async adjustStock(id: string, delta: number): Promise<CatalogItem> {
-    const current = await catalogService.get(id)
-    return request<CatalogItem>(`/produtos/${encodeURIComponent(id)}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ stock: Math.max(0, current.stock + delta) }),
-    })
-  },
+- `frontend/src/services/catalogService.ts`: consultas públicas.
+- `frontend/src/services/artisanCatalogService.ts`: mutações do catálogo pelo fluxo de gestão.
+- `frontend/src/services/stockService.ts`: ajuste e reserva de estoque.
+- `frontend/src/services/catalogTypes.ts` e `frontend/src/services/catalogRequest.ts`: tipos e wrapper HTTP compartilhados.
 
-  // 4. Reserva Atômica de Estoque para Checkout de Compras
-  async reserveStock(lines: StockReservation[]): Promise<CatalogItem[]> {
-    const response = await request<ProductListResponse>('/estoque/reservas', {
-      method: 'POST',
-      body: JSON.stringify({ lines }),
-    })
-    return response.dados
-  },
-}
-```
-
-#### Diagnóstico Técnico
-O objeto singleton `catalogService` concentra responsabilidades de três domínios funcionais completamente distintos:
-1. Navegação pública de produtos da vitrine (consumidores anônimos).
-2. Manutenção cadastral de catálogo (painel do artesão autenticado).
-3. Gestão transacional e reserva de inventário (fluxo de finalização de compra / checkout).
-
-Além disso, o método `adjustStock` implementa uma lógica no cliente (`read-then-write`) suscetível a condições de corrida (*Race Conditions*), calculando saldo no navegador em vez de delegar ao backend.
+`CatalogContext.tsx` e `orderService.ts` agora importam a operação do serviço correspondente. As URLs, métodos HTTP, corpos das requisições e mensagens de erro foram mantidos.
 
 #### Impactos na Qualidade de Software
-- **Coesão:** Baixa coesão. Uma alteração no contrato de reserva de estoque no checkout força modificações no mesmo arquivo que atende a vitrine pública.
-- **Acoplamento:** Alto acoplamento entre contextos de navegação e fluxos transacionais.
-- **Manutenibilidade:** Dificuldade em rastrear quem consome quais métodos do serviço.
+- **Coesão:** cada serviço reúne operações do mesmo contexto funcional.
+- **Acoplamento:** vitrine, gestão do artesão e checkout dependem apenas dos serviços que consomem.
+- **Manutenibilidade:** alterações podem ser localizadas no serviço responsável sem ampliar o objeto de consultas públicas.
 
 #### Gravidade e Justificativa
-**Alta.** A violação do Princípio da Responsabilidade Única (SRP) gera riscos reais de efeitos colaterais em telas críticas (como o Checkout) durante manutenções corriqueiras na vitrine de produtos.
+**Média.** O serviço não era grande; a concentração de responsabilidades aumentava o custo e o risco de mudanças coordenadas entre fluxos diferentes.
 
-#### Alternativas de Intervenção
-1. **Segregação de Serviços:** Dividir em `catalogService.ts` (apenas leitura pública: `list`, `get`), `artisanCatalogService.ts` (operações autenticadas: `create`, `update`, `remove`) e `stockReservationService.ts` (operações transacionais de estoque: `reserveStock`).
-2. **Preservação Justificada:** Manter a fachada única no frontend enquanto o backend ainda não possui os respectivos endpoints de checkout e autenticação implementados, documentando o plano de transição para a Fase 2 do projeto.
+#### Validação e limites
 
+O backend atualmente implementa somente `GET /produtos` e `GET /produtos/:id` em `backend/src/routes/produto.routes.ts`. Portanto, as chamadas de escrita permanecem sem rotas correspondentes e esta intervenção não as torna funcionais. `adjustStock` ainda calcula o saldo no cliente, o que mantém a condição de corrida existente; garantir atomicidade requer suporte transacional no backend. A refatoração preserva o comportamento em vez de alterar esses contratos ou responsabilidades de outra camada.
 ---
 
 ### CS-03: Componente de Visualização com Lógica de Mock e Múltiplas Responsabilidades
@@ -361,7 +333,7 @@ Este espaço é reservado para consolidar os resultados de testes e validações
 | ID | Tipo de Intervenção | Comando de Teste Utilizado | Resultado Observado | Status de Regressão |
 | :---: | :--- | :--- | :--- | :---: |
 | **CS-01** | Refatoração Modular (Extract Module/Function) | `npm run build` && `tsc` && script de 12 endpoints HTTP | **Aprovado** (0 erros de compilação, 12/12 rotas com payloads 100% idênticos) | **Zero Regressão** |
-| **CS-02** | *Aguardando execução* | Teste de navegação e tipagem | *Aguardando* | *Sem regressão* |
+| **CS-02** | **Refatorado** | `npm run build` e ESLint focado nos arquivos alterados | **Aprovados**; lint global ainda encontra 214 erros em `frontend/dist` gerado | Build e tipos aprovados; navegação manual não executada |
 | **CS-03** | *Aguardando execução* | Inspeção visual no navegador | *Aguardando* | *Sem regressão* |
 | **CS-04** | *Aguardando execução* | Validação de tipos do compilador | *Aguardando* | *Sem regressão* |
 
