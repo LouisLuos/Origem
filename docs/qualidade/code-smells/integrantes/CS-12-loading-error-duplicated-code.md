@@ -28,7 +28,7 @@
 
 ## 3. Localização e Código Original
 
-O [MAPEAMENTO.md](../MAPEAMENTO.md) registrava o padrão em 4 telas. Na reconferência do código (commit `84e36da`), a duplicação era maior: **9 blocos em 6 arquivos**.
+O [MAPEAMENTO.md](../MAPEAMENTO.md) registrava o padrão em 4 telas. Na reconferência do código (base `98e33ef`), a duplicação era maior: **9 blocos em 6 arquivos**.
 
 | Arquivo | Linhas (antes) | Blocos | Espaçamento |
 | :--- | :-: | :-: | :--- |
@@ -240,6 +240,7 @@ O projeto não tem suíte de testes de frontend (não há script `test` no `fron
   ![Estado de erro da página de peça renderizado pelo ResourceGate](evidencias/cs-12-estado-erro-produto.png)
 
 - **Não executado:** o ESLint focado nos arquivos alterados não foi rodado nesta validação.
+- **Observação sobre a base:** o build acima foi executado quando a branch ainda continha a refatoração do CS-09, depois retirada do remoto pelo grupo. O commit do CS-12 foi então reaplicado sobre `98e33ef`. Os 7 arquivos alterados pelo CS-12 são idênticos nas duas bases (só o `Header` e os arquivos do CS-09 diferem).
 
 ---
 
@@ -260,7 +261,7 @@ O projeto não tem suíte de testes de frontend (não há script `test` no `fron
 
 ## 11. Rastreabilidade Git
 
-- **Hash do Commit Individual:** *[Pendente — preencher após o commit]*
+- **Hash do Commit Individual:** `19e9f52`
 - **Mensagem do Commit:** `refactor(frontend): extrai ResourceGate para estados de carregamento e erro das views (CS-12)`
 - **Branch:** `feat/frontend-next`
 - **Autor do Commit:** `duduhnrq`
