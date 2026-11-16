@@ -7,7 +7,7 @@ import { Navigate } from '@/components/Navigate'
 import { Button, Container, Input, cn, currency } from '@/design-system'
 import { culturalHubs, techniques } from '@/design-system/tokens'
 import { useAuth } from '@/context/AuthContext'
-import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { ResourceGate } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCatalogAction } from '@/hooks/useCatalogAction'
 import { errorMessage } from '@/utils/errors'
@@ -58,13 +58,7 @@ export function ArtisanPanel() {
   if (user.role !== 'artisan') return <Navigate to="/conta" />
 
   if (status !== 'ready') {
-    return (
-      <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
-        <Container>
-          {status === 'error' ? <ErrorBlock message={loadError} onRetry={reload} /> : <LoadingBlock label="Carregando catálogo…" />}
-        </Container>
-      </main>
-    )
+    return <ResourceGate status={status} label="Carregando catálogo…" error={loadError} onRetry={reload} />
   }
 
   const myItems = items.filter((item) => item.ownerEmail === user.email)

@@ -4,7 +4,7 @@ import { CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { ButtonLink, Container, currency } from '@/design-system'
-import { LoadingBlock } from '@/components/AsyncState'
+import { ResourceGate } from '@/components/AsyncState'
 import { paymentLabels, useOrders } from '@/context/OrderContext'
 
 export function OrderConfirmation() {
@@ -13,13 +13,7 @@ export function OrderConfirmation() {
   const order = getOrder(id)
 
   if (!order && status === 'loading') {
-    return (
-      <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
-        <Container>
-          <LoadingBlock label="Carregando pedido…" />
-        </Container>
-      </main>
-    )
+    return <ResourceGate status="loading" label="Carregando pedido…" />
   }
 
   if (!order) {

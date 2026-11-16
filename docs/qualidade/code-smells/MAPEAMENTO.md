@@ -52,7 +52,7 @@ Cada smell recebe quatro classificações:
 | CS-09 | Large Class / Long Method (`Header`) | Bloaters | Frontend | Média | Refatorar com cautela |
 | CS-10 | Large Class / Long Method (`ArtisanPanel`) | Bloaters | Frontend | Média | Refatorar com cautela |
 | CS-11 | Long Method + Data Clumps (`Login.handleSubmit`) | Bloaters | Frontend | Média | Refatorar |
-| CS-12 | Duplicated Code (bloco de carregamento/erro) | Dispensables | Frontend | Baixa | Refatorar |
+| CS-12 | Duplicated Code (bloco de carregamento/erro) | Dispensables | Frontend | Baixa | ✅ Refatorado (`ResourceGate`) |
 | CS-13 | Duplicated Code (subtotal, regex de e-mail, faixas de preço) | Dispensables | Frontend + IA | Média | Refatorar |
 | CS-14 | Inappropriate Intimacy (tipo de domínio no Design System) | Couplers | Frontend | Média | Refatorar |
 | CS-15 | Dead Code (re-export de `slugify`) | Dispensables | Backend | Baixa | Refatorar (trivial) |
@@ -186,8 +186,12 @@ O método valida, autentica, cadastra a conta, monta o perfil público com URLs 
 
 ---
 
-### CS-12 — Bloco de "carregando / erro" repetido nas views
+### CS-12 — Bloco de "carregando / erro" repetido nas views ✅
 - **Canônico:** Duplicated Code · **Categoria:** Dispensables · **Severidade:** Baixa · **Camada:** Frontend
+
+**Estado atual:** refatorado com relatório individual em [`CS-12-loading-error-duplicated-code.md`](integrantes/CS-12-loading-error-duplicated-code.md). A reconferência encontrou **9 blocos em 6 arquivos** (as 4 telas abaixo, mais `ArtisanProfile.tsx` e `OrderConfirmation.tsx`), substituídos pelo componente `ResourceGate` em [AsyncState.tsx](../../../frontend/src/components/AsyncState.tsx), com as variantes de espaçamento `page` e `detail` e o HTML preservado.
+
+**Diagnóstico original:**
 
 **Localização:** [ProductDetail.tsx:63-71](../../../frontend/src/views/ProductDetail.tsx#L63-L71), [ArtisanPanel.tsx:59-67](../../../frontend/src/views/ArtisanPanel.tsx#L59-L67), [Checkout.tsx:146-158](../../../frontend/src/views/Checkout.tsx#L146-L158) e [AdminPanel.tsx:69-94](../../../frontend/src/views/AdminPanel.tsx#L69-L94). Todos repetem `<main id="main-content" className="pb-16 pt-24 …"><Container>{status === 'error' ? <ErrorBlock/> : <LoadingBlock/>}</Container></main>`.
 **Recomendação:** *Extract Component* (`<ResourceGate status error onRetry label>`) em [AsyncState.tsx](../../../frontend/src/components/AsyncState.tsx). É uma refatoração pequena, de risco baixo e fácil de comparar antes e depois, o que a torna **boa para a apresentação**.

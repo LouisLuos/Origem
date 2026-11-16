@@ -8,7 +8,7 @@ import { ChevronRight, Heart, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, 
 import { Badge, Button, ButtonLink, Container, ProductCard, currency } from '@/design-system'
 import { getAvatarUrl } from '@/utils/avatar'
 import { getProductGalleryImages } from '@/utils/media'
-import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { ResourceGate } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
 import { availableQuantity, useCart } from '@/context/CartContext'
@@ -54,13 +54,7 @@ export function ProductDetail() {
   const [quantity, setQuantity] = useState(1)
 
   if (status !== 'ready' && !product) {
-    return (
-      <main id="main-content" className="pb-24 pt-32">
-        <Container>
-          {status === 'error' ? <ErrorBlock message={error} onRetry={reload} /> : <LoadingBlock label="Carregando peça…" />}
-        </Container>
-      </main>
-    )
+    return <ResourceGate status={status} label="Carregando peça…" error={error} onRetry={reload} spacing="detail" />
   }
 
   if (!product) {

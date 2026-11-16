@@ -6,7 +6,7 @@ import { Eye, EyeOff, LayoutDashboard, Package, ShoppingBag, Trash2, Users } fro
 import { Navigate } from '@/components/Navigate'
 import { Container, cn, currency } from '@/design-system'
 import { useAuth } from '@/context/AuthContext'
-import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { ResourceGate } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCatalogAction } from '@/hooks/useCatalogAction'
 import { paymentLabels, useOrders } from '@/context/OrderContext'
@@ -68,28 +68,19 @@ export function AdminPanel() {
 
   const statuses = [usersStatus, ordersStatus, catalogStatus]
   if (statuses.includes('loading')) {
-    return (
-      <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
-        <Container>
-          <LoadingBlock label="Carregando painel…" />
-        </Container>
-      </main>
-    )
+    return <ResourceGate status="loading" label="Carregando painel…" />
   }
   if (statuses.includes('error')) {
     return (
-      <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
-        <Container>
-          <ErrorBlock
-            message={usersError ?? ordersError ?? catalogError}
-            onRetry={() => {
-              reloadUsers()
-              reloadOrders()
-              reloadCatalog()
-            }}
-          />
-        </Container>
-      </main>
+      <ResourceGate
+        status="error"
+        error={usersError ?? ordersError ?? catalogError}
+        onRetry={() => {
+          reloadUsers()
+          reloadOrders()
+          reloadCatalog()
+        }}
+      />
     )
   }
 

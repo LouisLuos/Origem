@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Navigate } from '@/components/Navigate'
 import { Button, Container, Input, cn, currency } from '@/design-system'
-import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { ResourceGate } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
 import { addressService } from '@/services/addressService'
 import { errorMessage } from '@/utils/errors'
@@ -145,15 +145,7 @@ export function Checkout() {
 
   if (catalogStatus !== 'ready' && !isSubmitting) {
     return (
-      <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
-        <Container>
-          {catalogStatus === 'error' ? (
-            <ErrorBlock message={catalogError} onRetry={reloadCatalog} />
-          ) : (
-            <LoadingBlock label="Carregando seu pedido…" />
-          )}
-        </Container>
-      </main>
+      <ResourceGate status={catalogStatus} label="Carregando seu pedido…" error={catalogError} onRetry={reloadCatalog} />
     )
   }
 

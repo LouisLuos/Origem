@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Button, ButtonLink, Container, ProductCard } from '@/design-system'
 import { getAvatarUrl } from '@/utils/avatar'
-import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
+import { ErrorBlock, ResourceGate } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCart } from '@/context/CartContext'
@@ -25,23 +25,11 @@ export function ArtisanProfile() {
   const artisan = artisans.find((item) => item.id === id)
 
   if (artisansStatus === 'loading' || (artisan && catalogStatus === 'loading')) {
-    return (
-      <main id="main-content" className="pb-24 pt-32">
-        <Container>
-          <LoadingBlock label="Carregando perfil…" />
-        </Container>
-      </main>
-    )
+    return <ResourceGate status="loading" label="Carregando perfil…" spacing="detail" />
   }
 
   if (artisansStatus === 'error') {
-    return (
-      <main id="main-content" className="pb-24 pt-32">
-        <Container>
-          <ErrorBlock message={artisansError} onRetry={reloadArtisans} />
-        </Container>
-      </main>
-    )
+    return <ResourceGate status="error" error={artisansError} onRetry={reloadArtisans} spacing="detail" />
   }
 
   if (!artisan) {
