@@ -71,7 +71,7 @@ A auditoria identificou **4 candidatos principais a Code Smells**, cobrindo tant
 
 | ID | Nome / Classificação Canônica | Arquivo(s) Afetado(s) | Camada | Impacto Principal | Gravidade | Recomendação Inicial |
 | :---: | :--- | :--- | :---: | :--- | :---: | :--- |
-| **CS-01** | **Código Duplicado / Shotgun Surgery** (*Duplicated Code*) | `backend/src/repositories/produto.repository.ts`<br>`backend/src/repositories/artesao.repository.ts` | Backend | Violação de DRY, risco de divergência de regras ao evoluir caminhos e técnicas | **Média** | **Refatoração Recomendada** (Baixa complexidade, alta segurança e alto retorno didático) |
+| **CS-01** | **Código Duplicado / Shotgun Surgery** (*Duplicated Code*) | `backend/src/repositories/produto.repository.ts`<br>`backend/src/repositories/artesao.repository.ts` | Backend | Violação de DRY, risco de divergência de regras ao evoluir caminhos e técnicas | **Média** | **Refatorado e Validado** (Extract Module e Extract Function aplicados com sucesso) |
 | **CS-02** | **Classe Grande / Mudança Divergente** (*Divergent Change / Large Class*) | `frontend/src/services/catalogService.ts` | Frontend | Acúmulo de vitrine pública, mutações administrativas e concorrência de estoque | **Alta** | **Refatoração com Cautela** ou **Justificativa de Transição** (Impacta múltiplos fluxos de tela) |
 | **CS-03** | **Inveja de Recursos / Intimidade Inapropriada** (*Feature Envy / Inappropriate Intimacy*) | `frontend/src/views/ProductDetail.tsx` | Frontend | View acoplada a heurística de regex para fotos mockadas do Picsum | **Média** | **Justificativa de Manutenção** ou **Extração de Helper** (Depende de serviço real de mídia) |
 | **CS-04** | **Obsessão por Primitivos** (*Primitive Obsession*) | `backend/src/services/produto.service.ts`<br>`frontend/src/context/ProductFilterContext.tsx` | Full Stack | Tratamento de termos culturais como `string` solta sem tipos ou enums nominais | **Baixa/Média** | **Refatoração Semântica** (Enriquecimento com tipos e uniões literais TypeScript) |
@@ -313,7 +313,7 @@ A tabela a seguir deve ser utilizada para formalizar a alocação de cada integr
 
 | Integrante | Code Smell Selecionado | Camada / Módulo | Decisão Técnica | Status da Atividade | Arquivo Individual | Hash do Commit |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| *[Nome do Integrante 1]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
+| *[Integrante 1 — CS-01]* | **CS-01** | Backend — Repositórios | Refatoração (Extract Module / Function) | **Validado** (Aguardando commit) | [`CS-01-duplicated-code.md`](integrantes/CS-01-duplicated-code.md) | *Pendente (a ser commitado)* |
 | *[Nome do Integrante 2]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
 | *[Nome do Integrante 3]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
 | *[Nome do Integrante 4]* | *Pendente* | *Pendente* | *Pendente* | *Não Iniciado* | `integrantes/...` | *Pendente* |
@@ -360,7 +360,7 @@ Este espaço é reservado para consolidar os resultados de testes e validações
 
 | ID | Tipo de Intervenção | Comando de Teste Utilizado | Resultado Observado | Status de Regressão |
 | :---: | :--- | :--- | :--- | :---: |
-| **CS-01** | *Aguardando execução* | `npm run build` / `curl /api/v1/produtos` | *Aguardando* | *Sem regressão* |
+| **CS-01** | Refatoração Modular (Extract Module/Function) | `npm run build` && `tsc` && script de 12 endpoints HTTP | **Aprovado** (0 erros de compilação, 12/12 rotas com payloads 100% idênticos) | **Zero Regressão** |
 | **CS-02** | *Aguardando execução* | Teste de navegação e tipagem | *Aguardando* | *Sem regressão* |
 | **CS-03** | *Aguardando execução* | Inspeção visual no navegador | *Aguardando* | *Sem regressão* |
 | **CS-04** | *Aguardando execução* | Validação de tipos do compilador | *Aguardando* | *Sem regressão* |
@@ -371,31 +371,32 @@ Este espaço é reservado para consolidar os resultados de testes e validações
 
 Tabela de acompanhamento para garantir que nenhum critério obrigatório da atividade acadêmica seja esquecido pela equipe:
 
-| Critério Obrigatório da Atividade | Integrante 1 | Integrante 2 | Integrante 3 | Integrante 4 | Integrante 5 |
+| Critério Obrigatório da Atividade | Integrante 1 (CS-01) | Integrante 2 | Integrante 3 | Integrante 4 | Integrante 5 |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| 1. Code Smell formalmente identificado e localizado | [ ] | [ ] | [ ] | [ ] | [ ] |
-| 2. Diagnóstico técnico detalhado (coesão, acoplamento, etc.) | [ ] | [ ] | [ ] | [ ] | [ ] |
-| 3. Avaliação crítica da necessidade de refatoração | [ ] | [ ] | [ ] | [ ] | [ ] |
-| 4. Refatoração aplicada OU Justificativa dissertativa robusta | [ ] | [ ] | [ ] | [ ] | [ ] |
-| 5. Comportamento funcional preservado e validado | [ ] | [ ] | [ ] | [ ] | [ ] |
-| 6. Relatório individual em Markdown preenchido | [ ] | [ ] | [ ] | [ ] | [ ] |
+| 1. Code Smell formalmente identificado e localizado | [X] | [ ] | [ ] | [ ] | [ ] |
+| 2. Diagnóstico técnico detalhado (coesão, acoplamento, etc.) | [X] | [ ] | [ ] | [ ] | [ ] |
+| 3. Avaliação crítica da necessidade de refatoração | [X] | [ ] | [ ] | [ ] | [ ] |
+| 4. Refatoração aplicada OU Justificativa dissertativa robusta | [X] | [ ] | [ ] | [ ] | [ ] |
+| 5. Comportamento funcional preservado e validado | [X] | [ ] | [ ] | [ ] | [ ] |
+| 6. Relatório individual em Markdown preenchido | [X] | [ ] | [ ] | [ ] | [ ] |
 | 7. Commit individual com identificação clara no Git | [ ] | [ ] | [ ] | [ ] | [ ] |
-| 8. Preparação para apresentação oral concluída | [ ] | [ ] | [ ] | [ ] | [ ] |
+| 8. Preparação para apresentação oral concluída | [X] | [ ] | [ ] | [ ] | [ ] |
 
 ---
 
 ## I. Estado Atual e Próximos Passos
 
-### O Que Foi Concluído Nesta Etapa (Auditoria Inicial)
+### O Que Foi Concluído
 - [x] Inspeção exaustiva do código-fonte na branch `feat/frontend-next`.
 - [x] Identificação e catalogação de 4 candidatos consistentes a Code Smells.
 - [x] Criação da estrutura de documentação versionável em `docs/qualidade/code-smells/`.
-- [x] Elaboração deste Documento Mestre (`README.md`).
+- [x] Elaboração do Documento Mestre (`README.md`).
 - [x] Criação do modelo reutilizável individual (`integrantes/MODELO_INDIVIDUAL.md`).
-- [x] Preservação estrita das restrições: nenhum arquivo de código-fonte foi alterado, nenhum commit ou push foi executado.
+- [x] **Execução e Validação da Intervenção CS-01:** Refatoração modular de `produto.repository.ts` e `artesao.repository.ts`, com extração de `string.util.ts`, `taxonomy.ts` e `catalogLoader.ts`.
+- [x] **Preservação Comportamental Comprovada:** 12/12 rotas HTTP testadas com payloads estritamente idênticos à linha de base pré-refatoração; typecheck com 0 erros.
+- [x] **Relatório Individual CS-01 Concluído:** Registrado formalmente em `integrantes/CS-01-duplicated-code.md`.
 
-### Próximos Passos Imediatos
-1. Apresentar os documentos gerados à equipe e ao orientador/professor.
-2. Cada integrante deve escolher um candidato na seção [Distribuição de Responsabilidades](#e-distribuição-de-responsabilidades-da-equipe).
-3. Cada integrante deve copiar o arquivo `integrantes/MODELO_INDIVIDUAL.md` para `integrantes/<seu-nome>.md`.
-4. Prosseguir para as etapas de execução individual (intervenção no código ou redação da justificativa).
+### Próximos Passos
+1. Realização do commit individual referente ao CS-01 pelo integrante responsável na branch `feat/frontend-next`.
+2. Demais integrantes realizarem a seleção de seus respectivos candidatos (CS-02, CS-03 ou CS-04) na Seção E.
+3. Elaboração dos relatórios e intervenções individuais dos demais colegas utilizando o modelo padronizado.
