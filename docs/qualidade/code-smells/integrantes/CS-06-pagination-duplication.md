@@ -11,7 +11,7 @@
 ## 1. Identificação do Integrante
 
 - **Nome Completo:** Marcos Antônio
-- **Matrícula / E-mail Institucional:** *[Preencher]*
+- **Matrícula / E-mail Institucional:** matf@cesar.school
 - **Papel no Projeto:** Desenvolvedor Full Stack / Engenheiro de Software
 - **Branch de Trabalho:** `feat/frontend-next`
 - **Data da Conclusão:** 16/11/2026
