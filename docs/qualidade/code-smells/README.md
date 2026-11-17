@@ -186,6 +186,7 @@ Nas Etapas 7.1 e 7.2 foi necessária a rápida integração de dados a partir do
 - **Nome Canônico:** Mudança Divergente (*Divergent Change*)
 - **Localização Original:** `frontend/src/services/catalogService.ts`
 - **Estado:** Refatorado, com preservação dos contratos existentes.
+- **Relatório individual:** [`CS-02-divergent-change-catalog-service.md`](integrantes/CS-02-divergent-change-catalog-service.md).
 
 #### Diagnóstico e intervenção
 
@@ -338,11 +339,12 @@ O registro abaixo reflete os relatórios individuais existentes no repositório.
 | Integrante | Code Smell Selecionado | Camada / Módulo | Decisão Técnica | Status da Atividade | Arquivo Individual | Hash do Commit |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
 | *Nome não informado no relatório* | **CS-01** | Backend — Repositórios | Refatoração (Extract Module / Function) | Refatorado e validado; relatório preenchido | [`CS-01-duplicated-code.md`](integrantes/CS-01-duplicated-code.md) | Pendente no relatório |
+| `gitviini` (nome completo/matrícula a confirmar) | **CS-02** | Frontend — Serviços de catálogo e estoque | Refatoração (separação por responsabilidade) | Refatorado; build/typecheck e lint focado registrados | [`CS-02-divergent-change-catalog-service.md`](integrantes/CS-02-divergent-change-catalog-service.md) | `ecf69db` |
 | Pedro Vinicius Silva de Souza | **CS-03** | Frontend — Views & Utils | Refatoração (Extract Module / Function) | Refatorado e validado; relatório preenchido | [`CS-03-picsum-media-coupling.md`](integrantes/CS-03-picsum-media-coupling.md) | Pendente no relatório |
 | Luiz Henrique | **CS-07** | Backend — Controllers & Validators | Refatoração (Extract Module / Function + Zod) | Refatorado e validado; relatório preenchido | [`CS-07-query-parsing-duplication.md`](integrantes/CS-07-query-parsing-duplication.md) | Pendente no relatório |
 | Marcos Antônio | **CS-06** | Backend — Services & Utils | Refatoração (Extract Function / Interface) | Refatorado e validado; relatório preenchido | [`CS-06-pagination-duplication.md`](integrantes/CS-06-pagination-duplication.md) | Não informado no relatório |
 | Eduardo Henrique | **CS-12** | Frontend — Views e componente compartilhado | Refatoração (`ResourceGate`) | Refatorado e validado; relatório preenchido | [`CS-12-loading-error-duplicated-code.md`](integrantes/CS-12-loading-error-duplicated-code.md) | `19e9f52` |
-| *Não atribuído* | **CS-02, CS-04, CS-05, CS-08 a CS-11, CS-13 a CS-16, CS-18, CS-19** | Conforme catálogo | Pendente de escolha/decisão | Sem relatório individual registrado | — | — |
+| *Não atribuído* | **CS-04, CS-05, CS-08 a CS-11, CS-13 a CS-16, CS-18, CS-19** | Conforme catálogo | Pendente de escolha/decisão | Sem relatório individual registrado | — | — |
 | *Sem relatório individual localizado* | **CS-17** | Frontend — associação produto/artesão | Resolvido no código por `findArtisanOf()` | Build registrado no mapeamento; relatório individual não localizado | — | Não informado |
 
 > [!IMPORTANT]
