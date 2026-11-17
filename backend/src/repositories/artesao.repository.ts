@@ -1,9 +1,6 @@
 import { formatTechnique } from '../constants/taxonomy.js';
-import { buildArtisanId, slugify } from '../utils/string.util.js';
+import { buildArtisanId } from '../utils/string.util.js';
 import { loadCatalogPayload } from './catalogLoader.js';
-
-// Re-exporta slugify para compatibilidade retroativa
-export { slugify };
 
 export interface ArtesaoPublico {
   id: string;

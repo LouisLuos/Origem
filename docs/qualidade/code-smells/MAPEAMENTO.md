@@ -41,7 +41,7 @@ Cada smell recebe quatro classificações:
 
 | ID | Smell (canônico) | Categoria | Camada | Severidade | Recomendação |
 | :-: | :--- | :--- | :-: | :-: | :--- |
-| CS-01 | Duplicated Code | Dispensables | Backend | Média | ✅ **Já refatorado** (resíduo em CS-15) |
+| CS-01 | Duplicated Code | Dispensables | Backend | Média | ✅ **Já refatorado** |
 | CS-02 | Divergent Change | Change Preventers | Frontend | Média | ✅ Refatorado |
 | CS-03 | Feature Envy / Shotgun Surgery (mock Picsum) | Couplers | Frontend | Média | ✅ Refatorado (`utils/media.ts`) |
 | CS-04 | Primitive Obsession (técnica/polo) | Bloaters | Full stack | Média | Depende de CS-05 |
@@ -55,7 +55,7 @@ Cada smell recebe quatro classificações:
 | CS-12 | Duplicated Code (bloco de carregamento/erro) | Dispensables | Frontend | Baixa | ✅ Refatorado (`ResourceGate`) |
 | CS-13 | Duplicated Code (subtotal, regex de e-mail, faixas de preço) | Dispensables | Frontend + IA | Média | Refatorar |
 | CS-14 | Inappropriate Intimacy (tipo de domínio no Design System) | Couplers | Frontend | Média | Refatorar |
-| CS-15 | Dead Code (re-export de `slugify`) | Dispensables | Backend | Baixa | Refatorar (trivial) |
+| CS-15 | Dead Code (re-export de `slugify`) | Dispensables | Backend | Baixa | ✅ Refatorado |
 | CS-16 | Comments desatualizados | Dispensables | Frontend | Baixa | Refatorar (trivial) |
 | CS-17 | Primitive Obsession (identificação do artesão por nome) | Bloaters / Couplers | Frontend | Média | ✅ Resolvido via `findArtisanOf()` |
 | CS-18 | Boilerplate repetido nos Contexts (`useX` + `throw`) | Dispensables | Frontend | Baixa | **Não refatorar** |
@@ -70,7 +70,7 @@ Cada smell recebe quatro classificações:
 
 ### CS-01 — Duplicated Code nos repositórios ✅
 **Estado atual:** refatoração confirmada. [catalogLoader.ts](../../../backend/src/repositories/catalogLoader.ts), [taxonomy.ts](../../../backend/src/constants/taxonomy.ts) e [string.util.ts](../../../backend/src/utils/string.util.ts) existem e são usados pelos dois repositórios.
-**Resíduo:** o re-export "para compatibilidade" em [artesao.repository.ts:5-6](../../../backend/src/repositories/artesao.repository.ts#L5-L6) não tem consumidores → ver **CS-15**.
+**Resíduo (CS-15):** removido o re-export de `slugify`, que não tinha consumidores.
 
 ### CS-02 — `catalogService` com responsabilidades misturadas
 **Diagnóstico:** confirmado em `frontend/src/services/catalogService.ts`: o mesmo objeto reunia consultas públicas, mutações de catálogo e operações de estoque. Com apenas 83 linhas, não era uma *Large Class*; o smell era *Divergent Change*. Severidade **Média**.
@@ -220,8 +220,8 @@ A dependência está invertida: o serviço HTTP depende de um componente visual.
 ### CS-15 — Re-export sem consumidores (resíduo do CS-01)
 - **Canônico:** Dead Code · **Categoria:** Dispensables · **Severidade:** Baixa · **Camada:** Backend
 
-**Localização:** [artesao.repository.ts:5-6](../../../backend/src/repositories/artesao.repository.ts#L5-L6). `grep -rn slugify backend/src` não encontra nenhum importador via repositório.
-**Recomendação:** *Remove Dead Code*. É trivial; serve como complemento do CS-01, mas é fraco como intervenção individual isolada.
+**Localização antes da refatoração:** [artesao.repository.ts](../../../backend/src/repositories/artesao.repository.ts), linhas 5-6. A busca global no repositório não encontrou consumidores do re-export.
+**Resolução:** removidos o re-export e a importação local usada exclusivamente por ele. A implementação original permanece em [string.util.ts](../../../backend/src/utils/string.util.ts), sem alteração.
 
 ---
 
