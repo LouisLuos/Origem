@@ -5,7 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import nextPlugin from '@next/eslint-plugin-next'
 
 export default [
-  { ignores: ['.next', 'next-env.d.ts'] },
+  { ignores: ['.next/**', 'dist/**', 'out/**', 'next-env.d.ts'] },
   js.configs.recommended,
   {
     files: ['**/*.{ts,tsx}'],

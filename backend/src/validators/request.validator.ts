@@ -41,7 +41,7 @@ export function optionalPositiveIntQuery(fieldName: string, max?: number) {
       ? `O parâmetro '${fieldName}' deve ser um número inteiro entre 1 e ${max}.`
       : `O parâmetro '${fieldName}' deve ser um número inteiro maior ou igual a 1.`;
 
-  return z.unknown().transform((val, ctx): number | undefined => {
+  return z.unknown().optional().transform((val, ctx): number | undefined => {
     const raw = extractOptionalQueryString(val, ctx, rangeMsg);
     if (raw === INVALID_QUERY_VALUE) {
       return z.NEVER;
@@ -71,7 +71,7 @@ export function optionalPositiveIntQuery(fieldName: string, max?: number) {
 export function optionalTextQuery(fieldName: string) {
   const typeMsg = `O parâmetro '${fieldName}' deve ser um texto único.`;
 
-  return z.unknown().transform((val, ctx): string | undefined => {
+  return z.unknown().optional().transform((val, ctx): string | undefined => {
     const raw = extractOptionalQueryString(val, ctx, typeMsg);
     return raw === INVALID_QUERY_VALUE ? z.NEVER : raw;
   });

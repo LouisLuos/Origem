@@ -709,9 +709,7 @@ describe('Etapa C4 — Aplicação real (app.ts): não regressão e modo fail-cl
       const produtoP01Body = (await resProdutoP01.json()) as { id: string };
       assert.equal(produtoP01Body.id, 'p01');
 
-      // Mantém query params explícitos vazios por conta de bug pré-existente de Zod v4
-      // em `backend/src/validators/request.validator.ts` (commit 98e33ef, fora do escopo da HU-03).
-      const resProdutos = await fetch(`${baseUrl}/api/v1/produtos?page=&limit=&technique=&hub=`);
+      const resProdutos = await fetch(`${baseUrl}/api/v1/produtos`);
       assert.equal(resProdutos.status, 200);
       const produtosBody = (await resProdutos.json()) as {
         dados: unknown[];
@@ -720,12 +718,33 @@ describe('Etapa C4 — Aplicação real (app.ts): não regressão e modo fail-cl
       assert.equal(produtosBody.meta.totalItens, 14);
       assert.equal(produtosBody.dados.length, 10);
 
-      const resArtesaos = await fetch(
-        `${baseUrl}/api/v1/artesaos?page=&limit=&q=&nome=&hub=&technique=`,
-      );
+      const resProdutosLimit = await fetch(`${baseUrl}/api/v1/produtos?limit=100`);
+      assert.equal(resProdutosLimit.status, 200);
+      const produtosLimitBody = (await resProdutosLimit.json()) as {
+        dados: unknown[];
+        meta: { totalItens: number; itensPorPagina: number };
+      };
+      assert.equal(produtosLimitBody.meta.totalItens, 14);
+      assert.equal(produtosLimitBody.meta.itensPorPagina, 100);
+      assert.equal(produtosLimitBody.dados.length, 14);
+
+      const resArtesaos = await fetch(`${baseUrl}/api/v1/artesaos`);
       assert.equal(resArtesaos.status, 200);
-      const artesaosBody = (await resArtesaos.json()) as { dados: Array<{ id: string }> };
+      const artesaosBody = (await resArtesaos.json()) as {
+        dados: Array<{ id: string }>;
+        meta: { totalItens: number };
+      };
+      assert.ok(artesaosBody.meta.totalItens >= 10);
       assert.equal(artesaosBody.dados.length, 10);
+
+      const resArtesaosLimit = await fetch(`${baseUrl}/api/v1/artesaos?limit=100`);
+      assert.equal(resArtesaosLimit.status, 200);
+      const artesaosLimitBody = (await resArtesaosLimit.json()) as {
+        dados: Array<{ id: string }>;
+        meta: { totalItens: number; itensPorPagina: number };
+      };
+      assert.equal(artesaosLimitBody.meta.itensPorPagina, 100);
+      assert.equal(artesaosLimitBody.dados.length, artesaosLimitBody.meta.totalItens);
 
       const resMestre = await fetch(`${baseUrl}/api/v1/artesaos/art-mestre-severino`);
       assert.equal(resMestre.status, 200);
