@@ -1,20 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Eye, EyeOff, Minus, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Lock, Minus, Pencil, Plus, ShieldAlert, Trash2, Users } from 'lucide-react'
 import { Navigate } from '@/components/Navigate'
-import { Button, Container, Input, cn, currency } from '@/design-system'
+import { Badge, Button, Container, Input, cn, currency } from '@/design-system'
 import { culturalHubs, techniques } from '@/design-system/tokens'
 import { useAuth } from '@/context/AuthContext'
-import { ResourceGate } from '@/components/AsyncState'
+import { ErrorBlock, LoadingBlock, ResourceGate } from '@/components/AsyncState'
+import { CuratorManagementSection } from '@/components/CuratorManagementSection'
+import { FinancialPixSection } from '@/components/FinancialPixSection'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCatalogAction } from '@/hooks/useCatalogAction'
+import {
+  atelierGovernanceService,
+  classifyGovernanceError,
+  type AtelierAccessContext,
+  type GovernanceErrorKind,
+} from '@/services/atelierGovernanceService'
 import { errorMessage } from '@/utils/errors'
 import { buildPlaceholderProductImageUrl } from '@/utils/media'
 import type { CatalogItem, CatalogItemInput } from '@/context/CatalogContext'
 
 const LOW_STOCK = 3
+
+type PanelTab = 'catalog' | 'curators' | 'financial'
 
 interface FormState {
   title: string
@@ -46,6 +56,7 @@ function stockTone(stock: number) {
 }
 
 export function ArtisanPanel() {
+  const atelierSelectId = useId()
   const { user } = useAuth()
   const { items, status, error: loadError, reload, addItem, updateItem, adjustStock, removeItem } = useCatalog()
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
@@ -54,11 +65,103 @@ export function ArtisanPanel() {
   const [isSaving, setIsSaving] = useState(false)
   const { actionError, run } = useCatalogAction()
 
-  if (!user) return <Navigate to="/entrar?from=/painel" />
-  if (user.role !== 'artisan') return <Navigate to="/conta" />
+  const [activeTab, setActiveTab] = useState<PanelTab>('catalog')
+  const [atelierLinks, setAtelierLinks] = useState<AtelierAccessContext[]>([])
+  const [selectedAtelieId, setSelectedAtelieId] = useState('')
+  const [governanceStatus, setGovernanceStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading')
+  const [governanceIssue, setGovernanceIssue] = useState<{
+    kind: GovernanceErrorKind
+    message: string
+  } | null>(null)
+  const [governanceReloadTick, setGovernanceReloadTick] = useState(0)
 
-  if (status !== 'ready') {
-    return <ResourceGate status={status} label="Carregando catálogo…" error={loadError} onRetry={reload} />
+  const userEmail = user?.email ?? null
+
+  useEffect(() => {
+    if (!userEmail) {
+      return
+    }
+
+    let cancelled = false
+    async function loadAtelierLinks() {
+      setGovernanceStatus('loading')
+      setGovernanceIssue(null)
+      try {
+        const links = await atelierGovernanceService.listMyAtelierLinks()
+        if (cancelled) return
+        setAtelierLinks(links)
+        setSelectedAtelieId((current) =>
+          links.some((item) => item.atelieId === current) ? current : (links[0]?.atelieId ?? ''),
+        )
+        setGovernanceStatus('ready')
+      } catch (reason) {
+        if (cancelled) return
+        const classified = classifyGovernanceError(
+          reason,
+          'Não foi possível verificar suas permissões de ateliê.',
+        )
+        setAtelierLinks([])
+        setSelectedAtelieId('')
+        setGovernanceIssue({ kind: classified.kind, message: classified.message })
+        setGovernanceStatus('unavailable')
+      }
+    }
+
+    loadAtelierLinks()
+    return () => {
+      cancelled = true
+    }
+  }, [userEmail, governanceReloadTick])
+
+  if (!user) return <Navigate to="/entrar?from=/painel" />
+
+  // Aguarda verificação contextual antes de redirecionar quem não tem papel legado de artesão (ex.: Curador)
+  if (user.role !== 'artisan' && governanceStatus === 'loading') {
+    return <ResourceGate status="loading" label="Verificando vínculos do ateliê…" />
+  }
+
+  if (user.role !== 'artisan' && atelierLinks.length === 0) {
+    return <Navigate to="/conta" />
+  }
+
+  const selectedAtelier =
+    atelierLinks.find((item) => item.atelieId === selectedAtelieId) ?? atelierLinks[0] ?? null
+
+  // Permissões reais derivadas EXCLUSIVAMENTE da resposta do backend (nunca de localStorage)
+  const canManageCurators = Boolean(
+    selectedAtelier?.permissoes.includes('GERENCIAR_CURADORES'),
+  )
+  const canViewFinancial = Boolean(
+    selectedAtelier?.permissoes.includes('CONSULTAR_DADOS_FINANCEIROS'),
+  )
+  const canUpdatePix = Boolean(
+    selectedAtelier?.permissoes.includes('ALTERAR_CHAVE_PIX'),
+  )
+  const canAccessFinancialTab = canViewFinancial || canUpdatePix
+  const isSuspendedForCurator = Boolean(
+    selectedAtelier &&
+      selectedAtelier.papelNoAtelie === 'CURADOR' &&
+      selectedAtelier.statusAtelie === 'SUSPENSO',
+  )
+
+  const resolvedTab: PanelTab =
+    activeTab === 'curators' && canManageCurators
+      ? 'curators'
+      : activeTab === 'financial' && canAccessFinancialTab
+        ? 'financial'
+        : 'catalog'
+
+  const handleSelectAtelier = (nextAtelieId: string) => {
+    setSelectedAtelieId(nextAtelieId)
+    const nextCtx = atelierLinks.find((item) => item.atelieId === nextAtelieId)
+    if (
+      (activeTab === 'curators' && !nextCtx?.permissoes.includes('GERENCIAR_CURADORES')) ||
+      (activeTab === 'financial' &&
+        !nextCtx?.permissoes.includes('CONSULTAR_DADOS_FINANCEIROS') &&
+        !nextCtx?.permissoes.includes('ALTERAR_CHAVE_PIX'))
+    ) {
+      setActiveTab('catalog')
+    }
   }
 
   const myItems = items.filter((item) => item.ownerEmail === user.email)
@@ -145,228 +248,417 @@ export function ArtisanPanel() {
   return (
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
       <Container>
-        <div className="flex flex-wrap items-end justify-between gap-4 pb-8">
+        <div className="flex flex-wrap items-end justify-between gap-4 pb-6">
           <div>
-            <p className="text-sm text-ink-soft">Painel do artesão</p>
-            <h1 className="text-2xl font-semibold text-ink sm:text-3xl">Meu catálogo</h1>
+            <p className="text-sm text-ink-soft">Painel do ateliê</p>
+            <h1 className="text-2xl font-semibold text-ink sm:text-3xl">
+              {resolvedTab === 'catalog'
+                ? 'Meu catálogo'
+                : resolvedTab === 'curators'
+                  ? 'Gestão de curadores'
+                  : 'Dados financeiros e Chave Pix'}
+            </h1>
           </div>
-          <Button variant="primary" size="md" onClick={() => openForm()}>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Nova peça
-          </Button>
-        </div>
-
-        <dl className="grid grid-cols-2 gap-4 pb-10 lg:grid-cols-4">
-          {summary.map(({ label, value }) => (
-            <div key={label} className="border border-border bg-aubergine-400/10 p-4">
-              <dt className="text-xs uppercase tracking-widest text-ink-soft">{label}</dt>
-              <dd className="pt-1 text-2xl font-semibold text-ink">{value}</dd>
-            </div>
-          ))}
-        </dl>
-
-        {editingId && (
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            aria-label={editingId === 'new' ? 'Nova peça' : 'Editar peça'}
-            className="mb-10 flex flex-col gap-4 border border-border bg-aubergine-400/10 p-6"
-          >
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-ink">
-              {editingId === 'new' ? 'Nova peça' : 'Editar peça'}
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Input
-                  label="Nome da peça"
-                  value={form.title}
-                  onChange={setField('title')}
-                  placeholder="Boneco de Barro “Casal de Feira”"
-                  className="py-2.5"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="panel-technique" className="text-sm font-medium text-ink-soft">
-                  Técnica
-                </label>
-                <select id="panel-technique" value={form.technique} onChange={setField('technique')} className={selectClass}>
-                  {techniques.map((technique) => (
-                    <option key={technique}>{technique}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="panel-hub" className="text-sm font-medium text-ink-soft">
-                  Polo cultural
-                </label>
-                <select id="panel-hub" value={form.hub} onChange={setField('hub')} className={selectClass}>
-                  {culturalHubs.map((hub) => (
-                    <option key={hub}>{hub}</option>
-                  ))}
-                </select>
-              </div>
-              <Input
-                label="Preço (R$)"
-                inputMode="decimal"
-                value={form.price}
-                onChange={setField('price')}
-                placeholder="189,00"
-                className="py-2.5"
-              />
-              <Input
-                label="Estoque (unidades)"
-                type="number"
-                min={0}
-                step={1}
-                value={form.stock}
-                onChange={setField('stock')}
-                className="py-2.5"
-              />
-              <div className="sm:col-span-2">
-                <Input
-                  label="URL da foto (opcional)"
-                  type="url"
-                  value={form.imageUrl}
-                  onChange={setField('imageUrl')}
-                  placeholder="https://…"
-                  className="py-2.5"
-                />
-              </div>
-              <div className="flex flex-col gap-1.5 sm:col-span-2">
-                <label htmlFor="panel-description" className="text-sm font-medium text-ink-soft">
-                  Descrição
-                </label>
-                <textarea
-                  id="panel-description"
-                  rows={3}
-                  value={form.description}
-                  onChange={setField('description')}
-                  placeholder="Conte como a peça é feita, materiais e medidas."
-                  className="w-full border border-border bg-surface px-5 py-2.5 text-base text-ink placeholder:text-ink-soft/60 transition-colors focus:border-terracota"
-                />
-              </div>
-            </div>
-
-            {error && (
-              <p role="alert" className="text-sm text-danger">
-                {error}
-              </p>
-            )}
-
-            <div className="flex gap-3">
-              <Button type="submit" variant="primary" size="md" disabled={isSaving} aria-busy={isSaving}>
-                {isSaving ? 'Salvando…' : editingId === 'new' ? 'Cadastrar peça' : 'Salvar alterações'}
-              </Button>
-              <Button type="button" variant="outline" size="md" onClick={closeForm}>
-                Cancelar
-              </Button>
-            </div>
-          </form>
-        )}
-
-        <h2 className="pb-4 text-sm font-semibold uppercase tracking-widest text-ink">Peças e estoque</h2>
-
-        {actionError && (
-          <p role="alert" className="pb-4 text-sm text-danger">
-            {actionError}
-          </p>
-        )}
-
-        {myItems.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 border border-dashed border-border py-14 text-center">
-            <p className="text-base font-medium text-ink">Seu catálogo está vazio</p>
-            <p className="text-sm text-ink-soft">Cadastre sua primeira peça para começar a controlar o estoque.</p>
+          {resolvedTab === 'catalog' && status === 'ready' && (
             <Button variant="primary" size="md" onClick={() => openForm()}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
               Nova peça
             </Button>
-          </div>
-        ) : (
-          <ul className="flex flex-col">
-            {myItems.map((item) => (
-              <li
-                key={item.id}
-                className={cn(
-                  'flex flex-wrap items-center gap-4 border-b border-border py-4 first:pt-0',
-                  !item.active && 'opacity-60',
-                )}
+          )}
+        </div>
+
+        {/* Barra de governança contextual (HU-03): exibe apenas vínculos confirmados pelo backend */}
+        <section
+          aria-label="Contexto de acesso ao ateliê"
+          className="mb-8 border border-border bg-surface p-5"
+        >
+          {governanceStatus === 'loading' && (
+            <p role="status" className="text-sm text-ink-soft">
+              Consultando permissões contextuais no servidor…
+            </p>
+          )}
+
+          {governanceStatus === 'unavailable' && governanceIssue && (
+            <div role="status" className="flex flex-wrap items-center justify-between gap-4 text-sm">
+              <div className="flex items-start gap-3">
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-warning" aria-hidden="true" />
+                <div>
+                  <p className="font-semibold text-ink">
+                    {governanceIssue.kind === 'unauthenticated' ||
+                    governanceIssue.kind === 'auth_unavailable'
+                      ? 'Governança financeira e de curadores aguardando autenticação real (HU-01)'
+                      : governanceIssue.kind === 'persistence_unavailable'
+                        ? 'Governança financeira e de curadores aguardando banco de dados (T-ART-01)'
+                        : 'Não foi possível confirmar o vínculo contextual no servidor'}
+                  </p>
+                  <p className="pt-1 text-ink-soft">
+                    {governanceIssue.message} O controle legado de catálogo continua disponível
+                    abaixo. Seções financeiras e de curadores permanecem ocultas por segurança.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setGovernanceReloadTick((tick) => tick + 1)}
               >
-                <img src={item.imageUrl} alt="" className="h-16 w-16 shrink-0 object-cover" />
+                Verificar novamente
+              </Button>
+            </div>
+          )}
 
-                <div className="flex min-w-48 flex-1 flex-col">
-                  <span className="font-medium text-ink">{item.title}</span>
-                  <span className="text-xs text-ink-soft">
-                    {item.technique} · {item.hub}
+          {governanceStatus === 'ready' && atelierLinks.length === 0 && (
+            <p role="status" className="text-sm text-ink-soft">
+              Nenhum ateliê vinculado foi encontrado para sua conta autenticada. As seções de
+              curadores e Chave Pix permanecem ocultas até que o vínculo seja confirmado pelo servidor.
+            </p>
+          )}
+
+          {governanceStatus === 'ready' && selectedAtelier && (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-medium text-ink">
+                    {selectedAtelier.nomeComercial ?? `Ateliê ${selectedAtelier.atelieId}`}
                   </span>
-                  <span className="text-xs text-ink-soft">
-                    {currency.format(item.price)}
-                    {!item.active && ' · Pausada'}
-                  </span>
+                  <Badge
+                    tone={selectedAtelier.papelNoAtelie === 'TITULAR' ? 'terracota' : 'aubergine'}
+                  >
+                    {selectedAtelier.papelNoAtelie === 'TITULAR'
+                      ? 'Titular do ateliê'
+                      : 'Curador vinculado'}
+                  </Badge>
+                  <Badge tone={selectedAtelier.statusAtelie === 'ATIVO' ? 'oliva' : 'neutral'}>
+                    {selectedAtelier.statusAtelie === 'ATIVO' ? 'Ativo' : 'Suspenso'}
+                  </Badge>
                 </div>
 
-                <div className="flex flex-col items-start gap-1">
-                  <div className="flex h-9 items-center border border-border">
-                    <button
-                      type="button"
-                      onClick={() => run(() => adjustStock(item.id, -1))}
-                      disabled={item.stock === 0}
-                      aria-label={`Diminuir estoque de ${item.title}`}
-                      className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
+                {atelierLinks.length > 1 && (
+                  <div className="flex items-center gap-2">
+                    <label htmlFor={atelierSelectId} className="text-xs font-medium text-ink-soft">
+                      Ateliê ativo:
+                    </label>
+                    <select
+                      id={atelierSelectId}
+                      value={selectedAtelier.atelieId}
+                      onChange={(event) => handleSelectAtelier(event.target.value)}
+                      className="border border-border bg-surface px-3 py-1.5 text-sm text-ink focus:border-terracota"
                     >
-                      <Minus className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
-                    <span aria-live="polite" className={cn('w-10 text-center text-sm font-semibold', stockTone(item.stock))}>
-                      {item.stock}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => run(() => adjustStock(item.id, 1))}
-                      aria-label={`Aumentar estoque de ${item.title}`}
-                      className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
-                    >
-                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                    </button>
+                      {atelierLinks.map((ctx) => (
+                        <option key={ctx.atelieId} value={ctx.atelieId}>
+                          {(ctx.nomeComercial ?? ctx.atelieId)} (
+                          {ctx.papelNoAtelie === 'TITULAR' ? 'Titular' : 'Curador'})
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <span className={cn('text-[11px] uppercase tracking-widest', stockTone(item.stock))}>
-                    {item.stock === 0 ? 'Esgotada' : item.stock <= LOW_STOCK ? 'Estoque baixo' : 'Em estoque'}
-                  </span>
-                </div>
+                )}
+              </div>
 
-                <div className="flex items-center gap-1">
+              {selectedAtelier.papelNoAtelie === 'CURADOR' && (
+                <p className="text-xs text-ink-soft">
+                  {isSuspendedForCurator
+                    ? 'Este ateliê está suspenso: o acesso operacional de curadores foi bloqueado pelo servidor.'
+                    : 'Você atua como curador operacional neste ateliê (permissões restritas a catálogo e etiquetas). Informações financeiras e Chave Pix permanecem inacessíveis.'}
+                </p>
+              )}
+
+              <div role="tablist" aria-label="Seções do ateliê" className="flex flex-wrap gap-2 border-t border-border pt-4">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={resolvedTab === 'catalog'}
+                  onClick={() => setActiveTab('catalog')}
+                  className={cn(
+                    'cursor-pointer border px-4 py-2 text-sm font-medium transition-colors',
+                    resolvedTab === 'catalog'
+                      ? 'border-terracota bg-terracota text-creme-50'
+                      : 'border-border text-ink-soft hover:text-ink',
+                  )}
+                >
+                  Catálogo
+                </button>
+
+                {canManageCurators && (
                   <button
                     type="button"
-                    onClick={() => run(() => updateItem(item.id, { active: !item.active }))}
-                    aria-label={item.active ? `Pausar ${item.title}` : `Reativar ${item.title}`}
-                    className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
+                    role="tab"
+                    aria-selected={resolvedTab === 'curators'}
+                    onClick={() => setActiveTab('curators')}
+                    className={cn(
+                      'inline-flex cursor-pointer items-center gap-2 border px-4 py-2 text-sm font-medium transition-colors',
+                      resolvedTab === 'curators'
+                        ? 'border-terracota bg-terracota text-creme-50'
+                        : 'border-border text-ink-soft hover:text-ink',
+                    )}
                   >
-                    {item.active ? <Eye className="h-4 w-4" aria-hidden="true" /> : <EyeOff className="h-4 w-4" aria-hidden="true" />}
+                    <Users className="h-4 w-4" aria-hidden="true" />
+                    Curadores
                   </button>
+                )}
+
+                {canAccessFinancialTab && (
                   <button
                     type="button"
-                    onClick={() => openForm(item)}
-                    aria-label={`Editar ${item.title}`}
-                    className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
+                    role="tab"
+                    aria-selected={resolvedTab === 'financial'}
+                    onClick={() => setActiveTab('financial')}
+                    className={cn(
+                      'inline-flex cursor-pointer items-center gap-2 border px-4 py-2 text-sm font-medium transition-colors',
+                      resolvedTab === 'financial'
+                        ? 'border-terracota bg-terracota text-creme-50'
+                        : 'border-border text-ink-soft hover:text-ink',
+                    )}
                   >
-                    <Pencil className="h-4 w-4" aria-hidden="true" />
+                    <Lock className="h-4 w-4" aria-hidden="true" />
+                    Dados financeiros
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (window.confirm(`Remover “${item.title}” do catálogo?`)) run(() => removeItem(item.id))
-                    }}
-                    aria-label={`Remover ${item.title}`}
-                    className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-danger"
-                  >
-                    <Trash2 className="h-4 w-4" aria-hidden="true" />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+
+        {resolvedTab === 'curators' && selectedAtelier && canManageCurators && (
+          <CuratorManagementSection
+            key={selectedAtelier.atelieId}
+            atelieId={selectedAtelier.atelieId}
+            canManageCurators={canManageCurators}
+          />
         )}
 
-        <p className="pt-6 text-xs text-ink-soft">
-          Simulação: os dados ficam salvos apenas neste navegador. Peças ativas aparecem na vitrine pública; peças pausadas ficam ocultas.
-        </p>
+        {resolvedTab === 'financial' && selectedAtelier && canAccessFinancialTab && (
+          <FinancialPixSection
+            key={selectedAtelier.atelieId}
+            atelieId={selectedAtelier.atelieId}
+            canViewFinancial={canViewFinancial}
+            canUpdatePix={canUpdatePix}
+          />
+        )}
+
+        {resolvedTab === 'catalog' && (
+          <>
+            {status === 'loading' ? (
+              <LoadingBlock label="Carregando catálogo…" />
+            ) : status === 'error' ? (
+              <ErrorBlock message={loadError} onRetry={reload} />
+            ) : (
+              <>
+                <dl className="grid grid-cols-2 gap-4 pb-10 lg:grid-cols-4">
+                  {summary.map(({ label, value }) => (
+                    <div key={label} className="border border-border bg-aubergine-400/10 p-4">
+                      <dt className="text-xs uppercase tracking-widest text-ink-soft">{label}</dt>
+                      <dd className="pt-1 text-2xl font-semibold text-ink">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+
+                {editingId && (
+                  <form
+                    onSubmit={handleSubmit}
+                    noValidate
+                    aria-label={editingId === 'new' ? 'Nova peça' : 'Editar peça'}
+                    className="mb-10 flex flex-col gap-4 border border-border bg-aubergine-400/10 p-6"
+                  >
+                    <h2 className="text-sm font-semibold uppercase tracking-widest text-ink">
+                      {editingId === 'new' ? 'Nova peça' : 'Editar peça'}
+                    </h2>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <Input
+                          label="Nome da peça"
+                          value={form.title}
+                          onChange={setField('title')}
+                          placeholder="Boneco de Barro “Casal de Feira”"
+                          className="py-2.5"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="panel-technique" className="text-sm font-medium text-ink-soft">
+                          Técnica
+                        </label>
+                        <select id="panel-technique" value={form.technique} onChange={setField('technique')} className={selectClass}>
+                          {techniques.map((technique) => (
+                            <option key={technique}>{technique}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="panel-hub" className="text-sm font-medium text-ink-soft">
+                          Polo cultural
+                        </label>
+                        <select id="panel-hub" value={form.hub} onChange={setField('hub')} className={selectClass}>
+                          {culturalHubs.map((hub) => (
+                            <option key={hub}>{hub}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <Input
+                        label="Preço (R$)"
+                        inputMode="decimal"
+                        value={form.price}
+                        onChange={setField('price')}
+                        placeholder="189,00"
+                        className="py-2.5"
+                      />
+                      <Input
+                        label="Estoque (unidades)"
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={form.stock}
+                        onChange={setField('stock')}
+                        className="py-2.5"
+                      />
+                      <div className="sm:col-span-2">
+                        <Input
+                          label="URL da foto (opcional)"
+                          type="url"
+                          value={form.imageUrl}
+                          onChange={setField('imageUrl')}
+                          placeholder="https://…"
+                          className="py-2.5"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5 sm:col-span-2">
+                        <label htmlFor="panel-description" className="text-sm font-medium text-ink-soft">
+                          Descrição
+                        </label>
+                        <textarea
+                          id="panel-description"
+                          rows={3}
+                          value={form.description}
+                          onChange={setField('description')}
+                          placeholder="Conte como a peça é feita, materiais e medidas."
+                          className="w-full border border-border bg-surface px-5 py-2.5 text-base text-ink placeholder:text-ink-soft/60 transition-colors focus:border-terracota"
+                        />
+                      </div>
+                    </div>
+
+                    {error && (
+                      <p role="alert" className="text-sm text-danger">
+                        {error}
+                      </p>
+                    )}
+
+                    <div className="flex gap-3">
+                      <Button type="submit" variant="primary" size="md" disabled={isSaving} aria-busy={isSaving}>
+                        {isSaving ? 'Salvando…' : editingId === 'new' ? 'Cadastrar peça' : 'Salvar alterações'}
+                      </Button>
+                      <Button type="button" variant="outline" size="md" onClick={closeForm}>
+                        Cancelar
+                      </Button>
+                    </div>
+                  </form>
+                )}
+
+                <h2 className="pb-4 text-sm font-semibold uppercase tracking-widest text-ink">Peças e estoque</h2>
+
+                {actionError && (
+                  <p role="alert" className="pb-4 text-sm text-danger">
+                    {actionError}
+                  </p>
+                )}
+
+                {myItems.length === 0 ? (
+                  <div className="flex flex-col items-center gap-4 border border-dashed border-border py-14 text-center">
+                    <p className="text-base font-medium text-ink">Seu catálogo está vazio</p>
+                    <p className="text-sm text-ink-soft">Cadastre sua primeira peça para começar a controlar o estoque.</p>
+                    <Button variant="primary" size="md" onClick={() => openForm()}>
+                      Nova peça
+                    </Button>
+                  </div>
+                ) : (
+                  <ul className="flex flex-col">
+                    {myItems.map((item) => (
+                      <li
+                        key={item.id}
+                        className={cn(
+                          'flex flex-wrap items-center gap-4 border-b border-border py-4 first:pt-0',
+                          !item.active && 'opacity-60',
+                        )}
+                      >
+                        <img src={item.imageUrl} alt="" className="h-16 w-16 shrink-0 object-cover" />
+
+                        <div className="flex min-w-48 flex-1 flex-col">
+                          <span className="font-medium text-ink">{item.title}</span>
+                          <span className="text-xs text-ink-soft">
+                            {item.technique} · {item.hub}
+                          </span>
+                          <span className="text-xs text-ink-soft">
+                            {currency.format(item.price)}
+                            {!item.active && ' · Pausada'}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col items-start gap-1">
+                          <div className="flex h-9 items-center border border-border">
+                            <button
+                              type="button"
+                              onClick={() => run(() => adjustStock(item.id, -1))}
+                              disabled={item.stock === 0}
+                              aria-label={`Diminuir estoque de ${item.title}`}
+                              className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                            <span aria-live="polite" className={cn('w-10 text-center text-sm font-semibold', stockTone(item.stock))}>
+                              {item.stock}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => run(() => adjustStock(item.id, 1))}
+                              aria-label={`Aumentar estoque de ${item.title}`}
+                              className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
+                            >
+                              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                            </button>
+                          </div>
+                          <span className={cn('text-[11px] uppercase tracking-widest', stockTone(item.stock))}>
+                            {item.stock === 0 ? 'Esgotada' : item.stock <= LOW_STOCK ? 'Estoque baixo' : 'Em estoque'}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => run(() => updateItem(item.id, { active: !item.active }))}
+                            aria-label={item.active ? `Pausar ${item.title}` : `Reativar ${item.title}`}
+                            className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
+                          >
+                            {item.active ? <Eye className="h-4 w-4" aria-hidden="true" /> : <EyeOff className="h-4 w-4" aria-hidden="true" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openForm(item)}
+                            aria-label={`Editar ${item.title}`}
+                            className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
+                          >
+                            <Pencil className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Remover “${item.title}” do catálogo?`)) run(() => removeItem(item.id))
+                            }}
+                            aria-label={`Remover ${item.title}`}
+                            className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-danger"
+                          >
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <p className="pt-6 text-xs text-ink-soft">
+                  Simulação: os dados do catálogo legado ainda não possuem persistência de sessão real neste ambiente. Peças ativas aparecem na vitrine pública; peças pausadas ficam ocultas.
+                </p>
+              </>
+            )}
+          </>
+        )}
       </Container>
     </main>
   )
