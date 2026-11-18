@@ -12,6 +12,7 @@ export function errorHandler(
   if (err instanceof AppError) {
     res.status(err.statusCode).json({
       erro: err.message,
+      ...(err.code ? { codigo: err.code } : {}),
     });
     return;
   }
@@ -24,7 +25,19 @@ export function errorHandler(
     return;
   }
 
-  console.error('❌ Erro inesperado capturado pelo errorHandler:', err);
+  // Log sanitizado: evita despejar objetos crus, payloads, tokens ou dados bancários
+  if (err instanceof Error) {
+    console.error('❌ Erro inesperado capturado pelo errorHandler:', {
+      correlationId: req.correlationId ?? null,
+      name: err.name,
+      message: err.message,
+    });
+  } else {
+    console.error('❌ Erro inesperado capturado pelo errorHandler:', {
+      correlationId: req.correlationId ?? null,
+      errorType: typeof err,
+    });
+  }
 
   res.status(500).json({
     erro: 'Ocorreu um erro interno no servidor. Tente novamente mais tarde.',
