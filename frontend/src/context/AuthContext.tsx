@@ -18,6 +18,8 @@ export interface AuthContextValue {
   register: (name: string, email: string, cpfCnpj: string, whatsapp: string, password: string) => Promise<string | null>
   logout: () => Promise<string | null>
   updateName: (name: string) => Promise<string | null>
+  /** Recarrega a sessão do servidor (ex.: após a habilitação de artesão alterar o papel). */
+  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -92,9 +94,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user],
   )
 
+  const refreshSession = useCallback(async () => {
+    try {
+      setUser(await authService.getSession())
+    } catch {
+      // Mantém a sessão atual se o servidor estiver indisponível.
+    }
+  }, [])
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, hydrated, initializationError, login, register, logout, updateName }),
-    [user, hydrated, initializationError, login, register, logout, updateName],
+    () => ({ user, hydrated, initializationError, login, register, logout, updateName, refreshSession }),
+    [user, hydrated, initializationError, login, register, logout, updateName, refreshSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

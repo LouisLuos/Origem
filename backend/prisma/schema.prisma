@@ -26,8 +26,126 @@ model Usuario {
   status          String         @default("ATIVO") @db.VarChar
   criadoEm        DateTime       @default(now()) @map("criado_em") @db.Timestamp(3)
   papeis          UsuarioPapel[]
+  artesao         Artesao?
+  curadorias      AtelieCurador[]
+  enderecos       Endereco[]
 
   @@map("usuarios")
+}
+
+enum StatusPeca {
+  DISPONIVEL
+  RESERVADA
+  VENDIDA
+  ARQUIVADA
+
+  @@map("StatusPeca")
+}
+
+/// HU-03 (T-ART-01): perfil de artesão titular com Chave Pix cifrada (AES-256-GCM).
+model Artesao {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuarioId             String   @unique @map("usuario_id") @db.Uuid
+  biografiaCultural     String   @map("biografia_cultural") @db.Text
+  tipoChavePix          String   @map("tipo_chave_pix") @db.VarChar
+  chavePixCriptografada String   @map("chave_pix_criptografada") @db.VarChar
+  criadoEm              DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
+  atualizadoEm          DateTime @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  usuario               Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  atelie                Atelie?
+
+  @@map("artesaos")
+}
+
+/// HU-04 (T-ATE-01): ateliê único por artesão titular no MVP.
+model Atelie {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  artesaoId     String          @unique @map("artesao_id") @db.Uuid
+  nomeComercial String          @map("nome_comercial") @db.VarChar
+  poloCultural  String          @map("polo_cultural") @db.VarChar
+  status        String          @default("ATIVO") @db.VarChar
+  criadoEm      DateTime        @default(now()) @map("criado_em") @db.Timestamp(3)
+  atualizadoEm  DateTime        @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  artesao       Artesao         @relation(fields: [artesaoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  endereco      Endereco?
+  curadores     AtelieCurador[]
+  pecas         Peca[]
+
+  @@map("atelies")
+}
+
+/// HU-03 (T-ART-01): vínculo associativo de curadores operacionais por ateliê.
+model AtelieCurador {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  atelieId  String   @map("atelie_id") @db.Uuid
+  usuarioId String   @map("usuario_id") @db.Uuid
+  criadoEm  DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
+  atelie    Atelie   @relation(fields: [atelieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([atelieId, usuarioId])
+  @@index([usuarioId])
+  @@map("atelies_curadores")
+}
+
+/// HU-04 (T-ATE-01): endereço de expedição (1:1 estrito com ateliê).
+model Endereco {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cep         String   @db.VarChar(8)
+  logradouro  String   @db.VarChar
+  numero      String   @db.VarChar
+  complemento String?  @db.VarChar
+  bairro      String   @db.VarChar
+  cidade      String   @db.VarChar
+  uf          String   @db.VarChar(2)
+  atelieId    String?  @unique @map("atelie_id") @db.Uuid
+  usuarioId   String?  @map("usuario_id") @db.Uuid
+  criadoEm    DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
+  atelie      Atelie?  @relation(fields: [atelieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([usuarioId])
+  @@map("enderecos")
+}
+
+/// HU-05 (T-PEC-01): peça do acervo com cubagem física (CHECKs na migration).
+model Peca {
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  atelieId          String     @map("atelie_id") @db.Uuid
+  titulo            String     @db.VarChar
+  descricao         String     @db.Text
+  tipologia         String     @db.VarChar
+  preco             Decimal    @db.Decimal(10, 2)
+  pesoGramas        Int        @map("peso_gramas")
+  comprimentoCm     Int        @map("comprimento_cm")
+  larguraCm         Int        @map("largura_cm")
+  alturaCm          Int        @map("altura_cm")
+  isFragil          Boolean    @default(false) @map("is_fragil")
+  quantidadeEstoque Int        @default(1) @map("quantidade_estoque")
+  status            StatusPeca @default(DISPONIVEL)
+  criadoEm          DateTime   @default(now()) @map("criado_em") @db.Timestamp(3)
+  atualizadoEm      DateTime   @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  atelie            Atelie     @relation(fields: [atelieId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  fotos             FotoPeca[]
+
+  @@index([atelieId])
+  @@index([status])
+  @@map("pecas")
+}
+
+/// HU-05 (T-PEC-01): fotos otimizadas da peça (no máximo uma principal por peça).
+model FotoPeca {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pecaId               String   @map("peca_id") @db.Uuid
+  url                  String   @db.VarChar
+  caminhoArmazenamento String   @map("caminho_armazenamento") @db.VarChar
+  isPrincipal          Boolean  @default(false) @map("is_principal")
+  ordem                Int
+  criadoEm             DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
+  peca                 Peca     @relation(fields: [pecaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([pecaId, ordem])
+  @@map("fotos_peca")
 }
 
 model UsuarioPapel {

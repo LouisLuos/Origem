@@ -6,6 +6,7 @@ import {
   HU03_ERROR_CODES,
   unconfiguredAtelieFinanceiroRepository,
 } from '../repositories/unconfiguredHu03.repository.js';
+import { prismaAtelieFinanceiroRepository } from '../repositories/prismaHu03.repository.js';
 import { AppError } from '../utils/AppError.js';
 import {
   PIX_CRYPTO_ERROR_CODES,
@@ -143,4 +144,6 @@ export function createAtelieFinanceiroService(
   };
 }
 
-export const atelieFinanceiroService: AtelieFinanceiroService = createAtelieFinanceiroService();
+export const atelieFinanceiroService: AtelieFinanceiroService = createAtelieFinanceiroService({
+  repository: prismaAtelieFinanceiroRepository,
+});

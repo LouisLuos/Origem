@@ -13,7 +13,7 @@ const PECA_VALIDA = {
   pesoGramas: 850,
   comprimentoCm: 30,
   larguraCm: 20,
-  alturaCm: 25.5,
+  alturaCm: 25,
   preco: 189.9,
 };
 
@@ -62,7 +62,7 @@ describe('HU-05 / T-PEC-02 (etapa 1) — Peso embalado (unitário)', () => {
   });
 
   it('[4] aceita peso superior a 50g', () => {
-    for (const peso of [50.5, 51, 12000]) {
+    for (const peso of [51, 850, 12000]) {
       assert.equal(validarCubagemEPreco({ ...PECA_VALIDA, pesoGramas: peso }).pesoGramas, peso);
     }
   });
@@ -112,16 +112,21 @@ describe('HU-05 / T-PEC-02 (etapa 1) — Dimensões físicas (unitário)', () =>
     });
   }
 
-  it('[9] aceita dimensões positivas, inclusive fracionárias', () => {
+  it('[9] aceita dimensões positivas inteiras', () => {
     const resultado = validarCubagemEPreco({
       ...PECA_VALIDA,
       comprimentoCm: 10,
-      larguraCm: 0.5,
+      larguraCm: 1,
       alturaCm: 10,
     });
     assert.equal(resultado.comprimentoCm, 10);
-    assert.equal(resultado.larguraCm, 0.5);
+    assert.equal(resultado.larguraCm, 1);
     assert.equal(resultado.alturaCm, 10);
+  });
+
+  it('rejeita dimensões fracionárias (colunas int em centímetros)', () => {
+    assertRejeitado422({ ...PECA_VALIDA, larguraCm: 0.5 }, 'A largura deve ser informado(a) em centímetros inteiros.');
+    assertRejeitado422({ ...PECA_VALIDA, alturaCm: 25.5 }, 'A altura deve ser informado(a) em centímetros inteiros.');
   });
 
   it('acumula as violações de todas as dimensões em uma única resposta', () => {
@@ -140,6 +145,15 @@ describe('HU-05 / T-PEC-02 (etapa 1) — Preço (unitário)', () => {
 
   it('[11] rejeita preço negativo com 422', () => {
     assertRejeitado422({ ...PECA_VALIDA, preco: -15 }, 'O preço deve ser maior que zero.');
+  });
+
+  it('rejeita peso fracionário acima do mínimo (coluna int em gramas)', () => {
+    assertRejeitado422({ ...PECA_VALIDA, pesoGramas: 50.5 }, 'O peso embalado deve ser informado em gramas inteiros.');
+  });
+
+  it('rejeita preço com mais de duas casas decimais ou acima do máximo de decimal(10,2)', () => {
+    assertRejeitado422({ ...PECA_VALIDA, preco: 10.999 }, 'O preço deve ter no máximo duas casas decimais.');
+    assertRejeitado422({ ...PECA_VALIDA, preco: 100_000_000 }, 'O preço excede o valor máximo permitido.');
   });
 
   it('[12] aceita preço positivo', () => {

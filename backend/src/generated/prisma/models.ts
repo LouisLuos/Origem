@@ -9,6 +9,12 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/Usuario.js'
+export type * from './models/Artesao.js'
+export type * from './models/Atelie.js'
+export type * from './models/AtelieCurador.js'
+export type * from './models/Endereco.js'
+export type * from './models/Peca.js'
+export type * from './models/FotoPeca.js'
 export type * from './models/UsuarioPapel.js'
 export type * from './models/AuthLoginAttempt.js'
 export type * from './commonInputTypes.js'

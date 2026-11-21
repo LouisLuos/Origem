@@ -11,6 +11,10 @@ import {
   unconfiguredAtelieAutorizacaoRepository,
   unconfiguredCuradorVinculoRepository,
 } from '../repositories/unconfiguredHu03.repository.js';
+import {
+  prismaAtelieAutorizacaoRepository,
+  prismaCuradorVinculoRepository,
+} from '../repositories/prismaHu03.repository.js';
 import { AppError } from '../utils/AppError.js';
 import type { AssociarCuradorValidatedInput } from '../validators/hu03.validator.js';
 
@@ -139,4 +143,7 @@ export function createCuradoriaService(deps?: CuradoriaServiceDeps): CuradoriaSe
   };
 }
 
-export const curadoriaService: CuradoriaService = createCuradoriaService();
+export const curadoriaService: CuradoriaService = createCuradoriaService({
+  curadorRepository: prismaCuradorVinculoRepository,
+  autorizacaoRepository: prismaAtelieAutorizacaoRepository,
+});

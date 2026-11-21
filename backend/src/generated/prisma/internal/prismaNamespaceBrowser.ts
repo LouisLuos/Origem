@@ -52,6 +52,12 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Usuario: 'Usuario',
+  Artesao: 'Artesao',
+  Atelie: 'Atelie',
+  AtelieCurador: 'AtelieCurador',
+  Endereco: 'Endereco',
+  Peca: 'Peca',
+  FotoPeca: 'FotoPeca',
   UsuarioPapel: 'UsuarioPapel',
   AuthLoginAttempt: 'AuthLoginAttempt'
 } as const
@@ -84,6 +90,93 @@ export const UsuarioScalarFieldEnum = {
 } as const
 
 export type UsuarioScalarFieldEnum = (typeof UsuarioScalarFieldEnum)[keyof typeof UsuarioScalarFieldEnum]
+
+
+export const ArtesaoScalarFieldEnum = {
+  id: 'id',
+  usuarioId: 'usuarioId',
+  biografiaCultural: 'biografiaCultural',
+  tipoChavePix: 'tipoChavePix',
+  chavePixCriptografada: 'chavePixCriptografada',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type ArtesaoScalarFieldEnum = (typeof ArtesaoScalarFieldEnum)[keyof typeof ArtesaoScalarFieldEnum]
+
+
+export const AtelieScalarFieldEnum = {
+  id: 'id',
+  artesaoId: 'artesaoId',
+  nomeComercial: 'nomeComercial',
+  poloCultural: 'poloCultural',
+  status: 'status',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type AtelieScalarFieldEnum = (typeof AtelieScalarFieldEnum)[keyof typeof AtelieScalarFieldEnum]
+
+
+export const AtelieCuradorScalarFieldEnum = {
+  id: 'id',
+  atelieId: 'atelieId',
+  usuarioId: 'usuarioId',
+  criadoEm: 'criadoEm'
+} as const
+
+export type AtelieCuradorScalarFieldEnum = (typeof AtelieCuradorScalarFieldEnum)[keyof typeof AtelieCuradorScalarFieldEnum]
+
+
+export const EnderecoScalarFieldEnum = {
+  id: 'id',
+  cep: 'cep',
+  logradouro: 'logradouro',
+  numero: 'numero',
+  complemento: 'complemento',
+  bairro: 'bairro',
+  cidade: 'cidade',
+  uf: 'uf',
+  atelieId: 'atelieId',
+  usuarioId: 'usuarioId',
+  criadoEm: 'criadoEm'
+} as const
+
+export type EnderecoScalarFieldEnum = (typeof EnderecoScalarFieldEnum)[keyof typeof EnderecoScalarFieldEnum]
+
+
+export const PecaScalarFieldEnum = {
+  id: 'id',
+  atelieId: 'atelieId',
+  titulo: 'titulo',
+  descricao: 'descricao',
+  tipologia: 'tipologia',
+  preco: 'preco',
+  pesoGramas: 'pesoGramas',
+  comprimentoCm: 'comprimentoCm',
+  larguraCm: 'larguraCm',
+  alturaCm: 'alturaCm',
+  isFragil: 'isFragil',
+  quantidadeEstoque: 'quantidadeEstoque',
+  status: 'status',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type PecaScalarFieldEnum = (typeof PecaScalarFieldEnum)[keyof typeof PecaScalarFieldEnum]
+
+
+export const FotoPecaScalarFieldEnum = {
+  id: 'id',
+  pecaId: 'pecaId',
+  url: 'url',
+  caminhoArmazenamento: 'caminhoArmazenamento',
+  isPrincipal: 'isPrincipal',
+  ordem: 'ordem',
+  criadoEm: 'criadoEm'
+} as const
+
+export type FotoPecaScalarFieldEnum = (typeof FotoPecaScalarFieldEnum)[keyof typeof FotoPecaScalarFieldEnum]
 
 
 export const UsuarioPapelScalarFieldEnum = {

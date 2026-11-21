@@ -18,9 +18,8 @@ import {
  * Escopo deliberadamente restrito às regras sem ambiguidade do backlog (Invariante 2):
  * peso embalado >= 50g, comprimento/largura/altura > 0 e preço > 0.
  *
- * Fora do escopo até decisão de modelagem: integralidade (int x decimal), casas decimais do
- * preço, limites máximos, coerção de strings (ex.: multipart na T-PEC-03), tipologia,
- * `is_fragil` e fotos.
+ * Formatos alinhados às colunas da modelagem oficial: peso e dimensões inteiros (`int`) e preço
+ * com até duas casas decimais (`decimal(10,2)`). Sem coerção de strings.
  */
 
 export const PESO_MINIMO_GRAMAS = 50;
@@ -34,7 +33,14 @@ interface RegraNumerica {
   readonly invalido: string;
   readonly aceita: (valor: number) => boolean;
   readonly violacao: string;
+  /** Regras aplicadas depois da regra principal (formato compatível com as colunas do banco). */
+  readonly complementares?: ReadonlyArray<{ readonly aceita: (valor: number) => boolean; readonly violacao: string }>;
 }
+
+/** Maior valor de uma coluna `int` do PostgreSQL. */
+const INT4_MAX = 2_147_483_647;
+/** Maior valor de uma coluna `decimal(10,2)`. */
+const PRECO_MAX = 99_999_999.99;
 
 /**
  * Campo numérico obrigatório: aceita apenas `number` finito (rejeita ausente, null, string,
@@ -57,6 +63,13 @@ function campoNumericoObrigatorio(regra: RegraNumerica) {
       return z.NEVER;
     }
 
+    for (const complementar of regra.complementares ?? []) {
+      if (!complementar.aceita(val)) {
+        ctx.addIssue({ code: 'custom', message: complementar.violacao });
+        return z.NEVER;
+      }
+    }
+
     return val;
   });
 }
@@ -67,6 +80,11 @@ function dimensaoPositiva(rotulo: string) {
     invalido: `${rotulo} deve ser um número válido em centímetros.`,
     aceita: (valor) => valor > 0,
     violacao: `${rotulo} deve ser maior que zero.`,
+    // Coluna `int` em centímetros (modelagem oficial: comprimento_cm/largura_cm/altura_cm int)
+    complementares: [
+      { aceita: Number.isInteger, violacao: `${rotulo} deve ser informado(a) em centímetros inteiros.` },
+      { aceita: (valor) => valor <= INT4_MAX, violacao: `${rotulo} excede o valor máximo permitido.` },
+    ],
   });
 }
 
@@ -80,6 +98,11 @@ export const cubagemPrecoFields = {
     invalido: 'O peso embalado deve ser um número válido em gramas.',
     aceita: (valor) => valor >= PESO_MINIMO_GRAMAS,
     violacao: MENSAGEM_PESO_MINIMO,
+    // Coluna `int` em gramas (modelagem oficial: peso_gramas int)
+    complementares: [
+      { aceita: Number.isInteger, violacao: 'O peso embalado deve ser informado em gramas inteiros.' },
+      { aceita: (valor) => valor <= INT4_MAX, violacao: 'O peso embalado excede o valor máximo permitido.' },
+    ],
   }),
   comprimentoCm: dimensaoPositiva('O comprimento'),
   larguraCm: dimensaoPositiva('A largura'),
@@ -89,6 +112,14 @@ export const cubagemPrecoFields = {
     invalido: 'O preço deve ser um número válido.',
     aceita: (valor) => valor > 0,
     violacao: 'O preço deve ser maior que zero.',
+    // Coluna `decimal(10,2)` (modelagem oficial)
+    complementares: [
+      {
+        aceita: (valor) => Math.abs(valor * 100 - Math.round(valor * 100)) < 1e-6,
+        violacao: 'O preço deve ter no máximo duas casas decimais.',
+      },
+      { aceita: (valor) => valor <= PRECO_MAX, violacao: 'O preço excede o valor máximo permitido.' },
+    ],
   }),
 };
 

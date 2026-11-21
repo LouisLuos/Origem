@@ -11,6 +11,9 @@ import {
   unconfiguredProcessadorImagemPeca,
 } from '../repositories/unconfiguredPecas.repository.js';
 import type { CriarPecaDados } from '../validators/peca.validator.js';
+import { criarArmazenamentoFotosPeca } from '../config/fotosStorage.js';
+import { prismaPecaRepository } from '../repositories/prismaPeca.repository.js';
+import { sharpProcessadorImagemPeca } from '../utils/sharpImagemPeca.processor.js';
 
 export interface PecaServiceDeps {
   readonly repository?: PecaRepository;
@@ -101,4 +104,12 @@ export function createPecaService(deps?: PecaServiceDeps): PecaService {
   };
 }
 
-export const pecaService: PecaService = createPecaService();
+/**
+ * Instância de produção: Prisma/PostgreSQL, otimização com sharp e o armazenamento selecionado
+ * em `config/fotosStorage.ts` (Supabase Storage, disco local ou fail-closed 503).
+ */
+export const pecaService: PecaService = createPecaService({
+  repository: prismaPecaRepository,
+  processadorImagem: sharpProcessadorImagemPeca,
+  armazenamento: criarArmazenamentoFotosPeca(),
+});

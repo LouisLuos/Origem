@@ -44,8 +44,11 @@ export function parseDecimal(value: string): number {
 
 function positive(value: string, label: string): string | undefined {
   const parsed = parseDecimal(value)
+  const capitalized = `${label.charAt(0).toUpperCase()}${label.slice(1)}`
   if (!Number.isFinite(parsed)) return `Informe ${label} em centímetros.`
-  if (parsed <= 0) return `${label.charAt(0).toUpperCase()}${label.slice(1)} deve ser maior que zero.`
+  if (parsed <= 0) return `${capitalized} deve ser maior que zero.`
+  // Banco: comprimento_cm/largura_cm/altura_cm são inteiros
+  if (!Number.isInteger(parsed)) return `${capitalized} deve ser informado(a) em centímetros inteiros.`
   return undefined
 }
 
@@ -72,10 +75,13 @@ export function validatePieceDraft(draft: PieceDraft): PieceDraftErrors {
   const price = parseDecimal(draft.price)
   if (!Number.isFinite(price)) errors.price = 'Informe o preço da peça.'
   else if (price <= 0) errors.price = 'O preço deve ser maior que zero.'
+  else if (Math.abs(price * 100 - Math.round(price * 100)) > 1e-6)
+    errors.price = 'O preço deve ter no máximo duas casas decimais.'
 
   const weight = parseDecimal(draft.weight)
   if (!Number.isFinite(weight)) errors.weight = 'Informe o peso embalado em gramas.'
   else if (weight < PIECE_MIN_WEIGHT_GRAMS) errors.weight = PIECE_MIN_WEIGHT_MESSAGE
+  else if (!Number.isInteger(weight)) errors.weight = 'O peso embalado deve ser informado em gramas inteiros.'
 
   const length = positive(draft.length, 'o comprimento')
   if (length) errors.length = length

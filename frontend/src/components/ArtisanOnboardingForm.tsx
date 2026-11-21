@@ -4,6 +4,7 @@ import { useId, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ShieldCheck } from 'lucide-react'
 import { Badge, Button, Input } from '@/design-system'
+import { useAuth } from '@/context/AuthContext'
 import {
   atelierGovernanceService,
   classifyGovernanceError,
@@ -22,6 +23,7 @@ const selectClass =
   'w-full border border-border bg-surface px-4 py-3 text-base text-ink transition-colors focus:border-terracota'
 
 export function ArtisanOnboardingForm() {
+  const { refreshSession } = useAuth()
   const bioId = useId()
   const bioHintId = useId()
   const pixTypeId = useId()
@@ -74,6 +76,8 @@ export function ArtisanOnboardingForm() {
       // Nunca manter Chave Pix em texto puro no estado nem gravar em storage do navegador
       setChavePix('')
       setConfirmedResult(result)
+      // O papel ARTESAO foi associado no servidor: atualiza a sessão para liberar o painel.
+      await refreshSession()
     } catch (reason) {
       setServerError(
         classifyGovernanceError(

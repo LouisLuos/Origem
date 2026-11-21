@@ -34,6 +34,26 @@ export const TIPOLOGIAS_HOMOLOGADAS = [
 export type TipologiaHomologada = (typeof TIPOLOGIAS_HOMOLOGADAS)[number];
 
 /**
+ * Polos culturais pernambucanos aceitos no cadastro de ateliê (HU-04, "polo homologado").
+ * Reúne os polos citados no backlog (Alto do Moura/Caruaru, Tracunhaém, Bezerros, Pesqueira,
+ * Goiana), os do Design System (`culturalHubs`) e os do catálogo da IA (Passira).
+ * Deve permanecer idêntica a `atelierCulturalHubs` em frontend/src/services/atelierService.ts.
+ */
+export const POLOS_CULTURAIS_HOMOLOGADOS = [
+  'Caruaru',
+  'Alto do Moura',
+  'Nazaré da Mata',
+  'Tracunhaém',
+  'Bezerros',
+  'Garanhuns',
+  'Pesqueira',
+  'Goiana',
+  'Passira',
+] as const;
+
+export type PoloCulturalHomologado = (typeof POLOS_CULTURAIS_HOMOLOGADOS)[number];
+
+/**
  * Normaliza o identificador bruto da técnica para a denominação oficial exibida no Design System.
  * Caso a técnica não esteja explicitamente mapeada, retorna o valor original sem alterações.
  */

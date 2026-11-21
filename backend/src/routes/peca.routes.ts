@@ -13,6 +13,7 @@ import { AppError } from '../utils/AppError.js';
 import { jwtAuthIdentityProvider } from '../utils/authToken.util.js';
 import { LIMITE_CORPO_CRIACAO_PECA_BYTES } from '../utils/fotoPeca.util.js';
 import { securityAuditService, type SecurityAuditService } from '../utils/securityAudit.util.js';
+import { prismaAtelieAutorizacaoRepository } from '../repositories/prismaHu03.repository.js';
 
 /** Caminho de montagem (relativo a /api/v1) das rotas de escrita de peças. */
 export const PECAS_ROUTE_PATH = '/atelies/:atelieId/pecas';
@@ -69,4 +70,7 @@ export function createPecaRoutes(deps?: PecaRoutesDeps): Router {
   return router;
 }
 
-export const pecaRoutes = createPecaRoutes({ authProvider: jwtAuthIdentityProvider });
+export const pecaRoutes = createPecaRoutes({
+  authProvider: jwtAuthIdentityProvider,
+  autorizacaoRepository: prismaAtelieAutorizacaoRepository,
+});

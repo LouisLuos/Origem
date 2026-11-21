@@ -78,7 +78,8 @@ export function ProductDetail() {
   const discountPercent = hasDiscount
     ? Math.round(100 - (product.price / (product.compareAtPrice as number)) * 100)
     : 0
-  const gallery = getProductGalleryImages(product.imageUrl)
+  const gallery =
+    product.gallery && product.gallery.length > 0 ? product.gallery : getProductGalleryImages(product.imageUrl)
   const maxQuantity = Math.max(1, availableQuantity(product))
   const artisan = findArtisanOf(product, artisans)
   const relatedProducts = products

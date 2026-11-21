@@ -17,3 +17,13 @@ export const PapelUsuario = {
 } as const
 
 export type PapelUsuario = (typeof PapelUsuario)[keyof typeof PapelUsuario]
+
+
+export const StatusPeca = {
+  DISPONIVEL: 'DISPONIVEL',
+  RESERVADA: 'RESERVADA',
+  VENDIDA: 'VENDIDA',
+  ARQUIVADA: 'ARQUIVADA'
+} as const
+
+export type StatusPeca = (typeof StatusPeca)[keyof typeof StatusPeca]

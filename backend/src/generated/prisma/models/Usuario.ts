@@ -207,6 +207,9 @@ export type UsuarioWhereInput = {
   status?: Prisma.StringFilter<"Usuario"> | string
   criadoEm?: Prisma.DateTimeFilter<"Usuario"> | Date | string
   papeis?: Prisma.UsuarioPapelListRelationFilter
+  artesao?: Prisma.XOR<Prisma.ArtesaoNullableScalarRelationFilter, Prisma.ArtesaoWhereInput> | null
+  curadorias?: Prisma.AtelieCuradorListRelationFilter
+  enderecos?: Prisma.EnderecoListRelationFilter
 }
 
 export type UsuarioOrderByWithRelationInput = {
@@ -219,6 +222,9 @@ export type UsuarioOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   papeis?: Prisma.UsuarioPapelOrderByRelationAggregateInput
+  artesao?: Prisma.ArtesaoOrderByWithRelationInput
+  curadorias?: Prisma.AtelieCuradorOrderByRelationAggregateInput
+  enderecos?: Prisma.EnderecoOrderByRelationAggregateInput
 }
 
 export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
@@ -234,6 +240,9 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.StringFilter<"Usuario"> | string
   criadoEm?: Prisma.DateTimeFilter<"Usuario"> | Date | string
   papeis?: Prisma.UsuarioPapelListRelationFilter
+  artesao?: Prisma.XOR<Prisma.ArtesaoNullableScalarRelationFilter, Prisma.ArtesaoWhereInput> | null
+  curadorias?: Prisma.AtelieCuradorListRelationFilter
+  enderecos?: Prisma.EnderecoListRelationFilter
 }, "id" | "email" | "cpfCnpj">
 
 export type UsuarioOrderByWithAggregationInput = {
@@ -274,6 +283,9 @@ export type UsuarioCreateInput = {
   status?: string
   criadoEm?: Date | string
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateInput = {
@@ -286,6 +298,9 @@ export type UsuarioUncheckedCreateInput = {
   status?: string
   criadoEm?: Date | string
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUpdateInput = {
@@ -298,6 +313,9 @@ export type UsuarioUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateInput = {
@@ -310,6 +328,9 @@ export type UsuarioUncheckedUpdateInput = {
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateManyInput = {
@@ -383,12 +404,61 @@ export type UsuarioScalarRelationFilter = {
   isNot?: Prisma.UsuarioWhereInput
 }
 
+export type UsuarioNullableScalarRelationFilter = {
+  is?: Prisma.UsuarioWhereInput | null
+  isNot?: Prisma.UsuarioWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type UsuarioCreateNestedOneWithoutArtesaoInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutArtesaoInput, Prisma.UsuarioUncheckedCreateWithoutArtesaoInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutArtesaoInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutArtesaoNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutArtesaoInput, Prisma.UsuarioUncheckedCreateWithoutArtesaoInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutArtesaoInput
+  upsert?: Prisma.UsuarioUpsertWithoutArtesaoInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutArtesaoInput, Prisma.UsuarioUpdateWithoutArtesaoInput>, Prisma.UsuarioUncheckedUpdateWithoutArtesaoInput>
+}
+
+export type UsuarioCreateNestedOneWithoutCuradoriasInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutCuradoriasInput, Prisma.UsuarioUncheckedCreateWithoutCuradoriasInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutCuradoriasInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutCuradoriasNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutCuradoriasInput, Prisma.UsuarioUncheckedCreateWithoutCuradoriasInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutCuradoriasInput
+  upsert?: Prisma.UsuarioUpsertWithoutCuradoriasInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutCuradoriasInput, Prisma.UsuarioUpdateWithoutCuradoriasInput>, Prisma.UsuarioUncheckedUpdateWithoutCuradoriasInput>
+}
+
+export type UsuarioCreateNestedOneWithoutEnderecosInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutEnderecosInput, Prisma.UsuarioUncheckedCreateWithoutEnderecosInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutEnderecosInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneWithoutEnderecosNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutEnderecosInput, Prisma.UsuarioUncheckedCreateWithoutEnderecosInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutEnderecosInput
+  upsert?: Prisma.UsuarioUpsertWithoutEnderecosInput
+  disconnect?: Prisma.UsuarioWhereInput | boolean
+  delete?: Prisma.UsuarioWhereInput | boolean
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutEnderecosInput, Prisma.UsuarioUpdateWithoutEnderecosInput>, Prisma.UsuarioUncheckedUpdateWithoutEnderecosInput>
 }
 
 export type UsuarioCreateNestedOneWithoutPapeisInput = {
@@ -405,6 +475,222 @@ export type UsuarioUpdateOneRequiredWithoutPapeisNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutPapeisInput, Prisma.UsuarioUpdateWithoutPapeisInput>, Prisma.UsuarioUncheckedUpdateWithoutPapeisInput>
 }
 
+export type UsuarioCreateWithoutArtesaoInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioUncheckedCreateWithoutArtesaoInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioCreateOrConnectWithoutArtesaoInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutArtesaoInput, Prisma.UsuarioUncheckedCreateWithoutArtesaoInput>
+}
+
+export type UsuarioUpsertWithoutArtesaoInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutArtesaoInput, Prisma.UsuarioUncheckedUpdateWithoutArtesaoInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutArtesaoInput, Prisma.UsuarioUncheckedCreateWithoutArtesaoInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutArtesaoInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutArtesaoInput, Prisma.UsuarioUncheckedUpdateWithoutArtesaoInput>
+}
+
+export type UsuarioUpdateWithoutArtesaoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutArtesaoInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioCreateWithoutCuradoriasInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioUncheckedCreateWithoutCuradoriasInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioCreateOrConnectWithoutCuradoriasInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutCuradoriasInput, Prisma.UsuarioUncheckedCreateWithoutCuradoriasInput>
+}
+
+export type UsuarioUpsertWithoutCuradoriasInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutCuradoriasInput, Prisma.UsuarioUncheckedUpdateWithoutCuradoriasInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutCuradoriasInput, Prisma.UsuarioUncheckedCreateWithoutCuradoriasInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutCuradoriasInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutCuradoriasInput, Prisma.UsuarioUncheckedUpdateWithoutCuradoriasInput>
+}
+
+export type UsuarioUpdateWithoutCuradoriasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutCuradoriasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioCreateWithoutEnderecosInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioUncheckedCreateWithoutEnderecosInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioCreateOrConnectWithoutEnderecosInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutEnderecosInput, Prisma.UsuarioUncheckedCreateWithoutEnderecosInput>
+}
+
+export type UsuarioUpsertWithoutEnderecosInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutEnderecosInput, Prisma.UsuarioUncheckedUpdateWithoutEnderecosInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutEnderecosInput, Prisma.UsuarioUncheckedCreateWithoutEnderecosInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutEnderecosInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutEnderecosInput, Prisma.UsuarioUncheckedUpdateWithoutEnderecosInput>
+}
+
+export type UsuarioUpdateWithoutEnderecosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutEnderecosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+}
+
 export type UsuarioCreateWithoutPapeisInput = {
   id?: string
   nome: string
@@ -414,6 +700,9 @@ export type UsuarioCreateWithoutPapeisInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutPapeisInput = {
@@ -425,6 +714,9 @@ export type UsuarioUncheckedCreateWithoutPapeisInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutPapeisInput = {
@@ -452,6 +744,9 @@ export type UsuarioUpdateWithoutPapeisInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutPapeisInput = {
@@ -463,6 +758,9 @@ export type UsuarioUncheckedUpdateWithoutPapeisInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 
@@ -472,10 +770,14 @@ export type UsuarioUncheckedUpdateWithoutPapeisInput = {
 
 export type UsuarioCountOutputType = {
   papeis: number
+  curadorias: number
+  enderecos: number
 }
 
 export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   papeis?: boolean | UsuarioCountOutputTypeCountPapeisArgs
+  curadorias?: boolean | UsuarioCountOutputTypeCountCuradoriasArgs
+  enderecos?: boolean | UsuarioCountOutputTypeCountEnderecosArgs
 }
 
 /**
@@ -495,6 +797,20 @@ export type UsuarioCountOutputTypeCountPapeisArgs<ExtArgs extends runtime.Types.
   where?: Prisma.UsuarioPapelWhereInput
 }
 
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountCuradoriasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AtelieCuradorWhereInput
+}
+
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountEnderecosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EnderecoWhereInput
+}
+
 
 export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -506,6 +822,9 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   status?: boolean
   criadoEm?: boolean
   papeis?: boolean | Prisma.Usuario$papeisArgs<ExtArgs>
+  artesao?: boolean | Prisma.Usuario$artesaoArgs<ExtArgs>
+  curadorias?: boolean | Prisma.Usuario$curadoriasArgs<ExtArgs>
+  enderecos?: boolean | Prisma.Usuario$enderecosArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usuario"]>
 
@@ -545,6 +864,9 @@ export type UsuarioSelectScalar = {
 export type UsuarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "email" | "cpfCnpj" | "telefoneWhatsapp" | "senhaHash" | "status" | "criadoEm", ExtArgs["result"]["usuario"]>
 export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   papeis?: boolean | Prisma.Usuario$papeisArgs<ExtArgs>
+  artesao?: boolean | Prisma.Usuario$artesaoArgs<ExtArgs>
+  curadorias?: boolean | Prisma.Usuario$curadoriasArgs<ExtArgs>
+  enderecos?: boolean | Prisma.Usuario$enderecosArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UsuarioIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -554,6 +876,9 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "Usuario"
   objects: {
     papeis: Prisma.$UsuarioPapelPayload<ExtArgs>[]
+    artesao: Prisma.$ArtesaoPayload<ExtArgs> | null
+    curadorias: Prisma.$AtelieCuradorPayload<ExtArgs>[]
+    enderecos: Prisma.$EnderecoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -959,6 +1284,9 @@ readonly fields: UsuarioFieldRefs;
 export interface Prisma__UsuarioClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   papeis<T extends Prisma.Usuario$papeisArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$papeisArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UsuarioPapelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  artesao<T extends Prisma.Usuario$artesaoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$artesaoArgs<ExtArgs>>): Prisma.Prisma__ArtesaoClient<runtime.Types.Result.GetResult<Prisma.$ArtesaoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  curadorias<T extends Prisma.Usuario$curadoriasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$curadoriasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AtelieCuradorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  enderecos<T extends Prisma.Usuario$enderecosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$enderecosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EnderecoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1410,6 +1738,73 @@ export type Usuario$papeisArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.UsuarioPapelScalarFieldEnum | Prisma.UsuarioPapelScalarFieldEnum[]
+}
+
+/**
+ * Usuario.artesao
+ */
+export type Usuario$artesaoArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Artesao
+   */
+  select?: Prisma.ArtesaoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Artesao
+   */
+  omit?: Prisma.ArtesaoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ArtesaoInclude<ExtArgs> | null
+  where?: Prisma.ArtesaoWhereInput
+}
+
+/**
+ * Usuario.curadorias
+ */
+export type Usuario$curadoriasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AtelieCurador
+   */
+  select?: Prisma.AtelieCuradorSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AtelieCurador
+   */
+  omit?: Prisma.AtelieCuradorOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AtelieCuradorInclude<ExtArgs> | null
+  where?: Prisma.AtelieCuradorWhereInput
+  orderBy?: Prisma.AtelieCuradorOrderByWithRelationInput | Prisma.AtelieCuradorOrderByWithRelationInput[]
+  cursor?: Prisma.AtelieCuradorWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AtelieCuradorScalarFieldEnum | Prisma.AtelieCuradorScalarFieldEnum[]
+}
+
+/**
+ * Usuario.enderecos
+ */
+export type Usuario$enderecosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Endereco
+   */
+  select?: Prisma.EnderecoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Endereco
+   */
+  omit?: Prisma.EnderecoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EnderecoInclude<ExtArgs> | null
+  where?: Prisma.EnderecoWhereInput
+  orderBy?: Prisma.EnderecoOrderByWithRelationInput | Prisma.EnderecoOrderByWithRelationInput[]
+  cursor?: Prisma.EnderecoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EnderecoScalarFieldEnum | Prisma.EnderecoScalarFieldEnum[]
 }
 
 /**

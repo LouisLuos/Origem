@@ -46,6 +46,29 @@ const envSchema = z
       .default(DEV_DEFAULT_JWT_SECRET),
     JWT_EXPIRES_IN: z.string().default('7d'),
     IA_RECOMENDADOR_URL: z.string().url().optional().default('http://localhost:3002'),
+    // HU-05 / T-PEC-03: Supabase Storage (credencial administrativa usada somente no backend)
+    SUPABASE_URL: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.string().url('SUPABASE_URL deve ser uma URL válida.').optional(),
+    ),
+    SUPABASE_SERVICE_ROLE_KEY: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.string().min(20, 'SUPABASE_SERVICE_ROLE_KEY inválida.').optional(),
+    ),
+    SUPABASE_STORAGE_BUCKET_FOTOS: z.string().min(3).default('fotos-pecas'),
+    // Driver de armazenamento das fotos: `local` grava em backend/uploads (desenvolvimento)
+    FOTOS_STORAGE_DRIVER: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.enum(['supabase', 'local']).optional(),
+    ),
+    FOTOS_STORAGE_LOCAL_DIR: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.string().optional(),
+    ),
+    FOTOS_PUBLIC_BASE_URL: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.string().url('FOTOS_PUBLIC_BASE_URL deve ser uma URL válida.').optional(),
+    ),
     PIX_ENCRYPTION_KEY: z.preprocess(
       (v) => (typeof v === 'string' ? (v.trim() === '' ? undefined : v.trim()) : v),
       z.string().optional(),

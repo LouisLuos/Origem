@@ -642,8 +642,20 @@ describe('Etapa C4 — Routers HU-03 isolados com mocks de teste (Cenário TC02 
     const { authProvider } = createIsolatedHu03Context();
     const appNoDb = express();
     appNoDb.use(express.json());
-    appNoDb.use('/api/v1/artesaos', createArtesaoRoutes({ authProvider }));
-    appNoDb.use('/api/v1/atelies', createAtelieRoutes({ authProvider }));
+    // As instâncias de produção usam repositórios Prisma reais; aqui os adaptadores fail-closed
+    // (padrão das factories) são injetados explicitamente para comprovar o 503 sem persistência.
+    appNoDb.use(
+      '/api/v1/artesaos',
+      createArtesaoRoutes({ authProvider, habilitacaoService: createHabilitacaoArtesaoService() }),
+    );
+    appNoDb.use(
+      '/api/v1/atelies',
+      createAtelieRoutes({
+        authProvider,
+        financeiroService: createAtelieFinanceiroService(),
+        curadoriaService: createCuradoriaService(),
+      }),
+    );
     appNoDb.use(
       (err: unknown, req: Request, res: Response, next: NextFunction) =>
         errorHandler(err, req, res, next),

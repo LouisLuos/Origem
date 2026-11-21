@@ -5,6 +5,7 @@ import { artesaoRoutes } from './artesao.routes.js';
 import { atelieRoutes } from './atelie.routes.js';
 import { authRoutes } from './auth.routes.js';
 import { PECAS_ROUTE_PATH, pecaRoutes } from './peca.routes.js';
+import { atelieCadastroRoutes } from './atelieCadastro.routes.js';
 
 export const routes = Router();
 
@@ -22,6 +23,9 @@ routes.use('/artesaos', artesaoRoutes);
 
 // Cadastro de peças no escopo do ateliê (HU-05)
 routes.use(PECAS_ROUTE_PATH, pecaRoutes);
+
+// Cadastro de ateliê e endereço de expedição (HU-04)
+routes.use('/atelies', atelieCadastroRoutes);
 
 // Endpoints de governança de ateliês, finanças protegidas e curadores (HU-03)
 routes.use('/atelies', atelieRoutes);

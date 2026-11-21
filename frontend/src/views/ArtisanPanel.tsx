@@ -11,6 +11,7 @@ import { ErrorBlock, LoadingBlock, ResourceGate } from '@/components/AsyncState'
 import { CuratorManagementSection } from '@/components/CuratorManagementSection'
 import { FinancialPixSection } from '@/components/FinancialPixSection'
 import { PieceCatalogForm } from '@/components/PieceCatalogForm'
+import { AtelierSetupForm } from '@/components/AtelierSetupForm'
 import type { CreatedPiece } from '@/services/pieceService'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCatalogAction } from '@/hooks/useCatalogAction'
@@ -187,6 +188,8 @@ export function ArtisanPanel() {
 
   const handlePiecePublished = (piece: CreatedPiece) => {
     setEditingId(null)
+    // A vitrine passa a incluir a peça publicada (GET /produtos lê o banco)
+    reload()
     setPublishedNotice(
       `Peça “${piece.titulo}” publicada com status ${piece.status} e ${piece.fotos.length} fotos.`,
     )
@@ -330,7 +333,12 @@ export function ArtisanPanel() {
             </div>
           )}
 
-          {governanceStatus === 'ready' && atelierLinks.length === 0 && (
+          {governanceStatus === 'ready' && atelierLinks.length === 0 && user.role === 'artisan' && (
+            // HU-04: artesão titular habilitado ainda sem ateliê cadastra o seu aqui
+            <AtelierSetupForm onCreated={() => setGovernanceReloadTick((tick) => tick + 1)} />
+          )}
+
+          {governanceStatus === 'ready' && atelierLinks.length === 0 && user.role !== 'artisan' && (
             <p role="status" className="text-sm text-ink-soft">
               Nenhum ateliê vinculado foi encontrado para sua conta autenticada. As seções de
               curadores e Chave Pix permanecem ocultas até que o vínculo seja confirmado pelo servidor.

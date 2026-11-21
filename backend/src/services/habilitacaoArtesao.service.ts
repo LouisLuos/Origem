@@ -3,6 +3,7 @@ import type {
   TipoChavePix,
 } from '../repositories/contracts/hu03.contracts.js';
 import { unconfiguredHabilitacaoArtesaoRepository } from '../repositories/unconfiguredHu03.repository.js';
+import { prismaHabilitacaoArtesaoRepository } from '../repositories/prismaHu03.repository.js';
 import { AppError } from '../utils/AppError.js';
 import { pixCryptoService, type PixCryptoService } from '../utils/pixCrypto.util.js';
 import type { HabilitarArtesaoValidatedInput } from '../validators/hu03.validator.js';
@@ -93,5 +94,6 @@ export function createHabilitacaoArtesaoService(
   };
 }
 
-export const habilitacaoArtesaoService: HabilitacaoArtesaoService =
-  createHabilitacaoArtesaoService();
+export const habilitacaoArtesaoService: HabilitacaoArtesaoService = createHabilitacaoArtesaoService({
+  repository: prismaHabilitacaoArtesaoRepository,
+});

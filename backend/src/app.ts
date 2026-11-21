@@ -5,6 +5,8 @@ import { requestLogger } from './middlewares/requestLogger.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { routes } from './routes/index.js';
 import { PECAS_ROUTE_PATH, pecaJsonBodyParser } from './routes/peca.routes.js';
+import { DIRETORIO_FOTOS_LOCAIS, resolverDriverFotos } from './config/fotosStorage.js';
+import { ROTA_PUBLICA_FOTOS_LOCAIS } from './repositories/localDiskFotosPeca.storage.js';
 import { AppError } from './utils/AppError.js';
 
 export const app = express();
@@ -34,6 +36,20 @@ app.use(
 app.use(`/api/v1${PECAS_ROUTE_PATH}`, pecaJsonBodyParser);
 app.use(express.json());
 app.use(requestLogger);
+
+// Fotos de peças no driver de armazenamento local (HU-05 / T-PEC-03): somente leitura, sem listagem
+if (resolverDriverFotos() === 'local') {
+  app.use(
+    ROTA_PUBLICA_FOTOS_LOCAIS,
+    express.static(DIRETORIO_FOTOS_LOCAIS, {
+      index: false,
+      dotfiles: 'deny',
+      immutable: true,
+      maxAge: '365d',
+      setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
+    }),
+  );
+}
 
 // Montagem das rotas da API sob o prefixo /api/v1 (compatível com frontend/src/services/api.ts)
 app.use('/api/v1', routes);
