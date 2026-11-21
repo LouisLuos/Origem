@@ -12,10 +12,11 @@ export interface AuthContextValue {
   user: User | null
   /** `false` no HTML do servidor e na hidratação, enquanto a sessão não foi lida do navegador. */
   hydrated: boolean
+  initializationError: string | null
   /** Retornam uma mensagem de erro, ou `null` em caso de sucesso. */
   login: (email: string, password: string) => Promise<string | null>
-  register: (name: string, email: string, password: string, role?: UserRole) => Promise<string | null>
-  logout: () => void
+  register: (name: string, email: string, cpfCnpj: string, whatsapp: string, password: string) => Promise<string | null>
+  logout: () => Promise<string | null>
   updateName: (name: string) => Promise<string | null>
 }
 
@@ -27,10 +28,24 @@ const messageOf = (reason: unknown) => errorMessage(reason, 'Algo deu errado. Te
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [hydrated, setHydrated] = useState(false)
+  const [initializationError, setInitializationError] = useState<string | null>(null)
 
   useEffect(() => {
-    setUser(authService.getSession())
-    setHydrated(true)
+    let active = true
+    void authService
+      .getSession()
+      .then((session) => {
+        if (active) setUser(session)
+      })
+      .catch((reason: unknown) => {
+        if (active) setInitializationError(messageOf(reason))
+      })
+      .finally(() => {
+        if (active) setHydrated(true)
+      })
+    return () => {
+      active = false
+    }
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
@@ -42,18 +57,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const register = useCallback(async (name: string, email: string, password: string, role?: UserRole) => {
+  const register = useCallback(
+    async (name: string, email: string, cpfCnpj: string, whatsapp: string, password: string) => {
+      try {
+        setUser(await authService.register(name, email, cpfCnpj, whatsapp, password))
+        return null
+      } catch (reason) {
+        return messageOf(reason)
+      }
+    },
+    [],
+  )
+
+  const logout = useCallback(async () => {
     try {
-      setUser(await authService.register(name, email, password, role))
+      await authService.logout()
+      setUser(null)
       return null
     } catch (reason) {
       return messageOf(reason)
     }
-  }, [])
-
-  const logout = useCallback(() => {
-    authService.logout()
-    setUser(null)
   }, [])
 
   const updateName = useCallback(
@@ -70,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, hydrated, login, register, logout, updateName }),
-    [user, hydrated, login, register, logout, updateName],
+    () => ({ user, hydrated, initializationError, login, register, logout, updateName }),
+    [user, hydrated, initializationError, login, register, logout, updateName],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -104,7 +104,7 @@ Estes recursos ainda não têm endpoint e usam `localStorage` nos services. Deve
 
 | Recurso | Service | Rota prevista |
 |---|---|---|
-| Usuários e autenticação | `authService` | `POST /auth/login`, `POST /auth/cadastro`, `GET /usuarios` |
+| Usuários e autenticação | `authService` | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`, `PATCH /auth/profile`, `GET /auth/users` (admin) |
 | Pedidos | `orderService` | `GET/POST /pedidos`, `GET /pedidos/:id` |
 | Carrinho | `cartService` | `GET/PUT /carrinho` |
 | Avaliações | `reviewService` | `GET /avaliacoes` |

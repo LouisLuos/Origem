@@ -777,9 +777,7 @@ describe('Etapa C4 — Aplicação real (app.ts): não regressão e modo fail-cl
           method: route.method,
           headers: { Authorization: 'Bearer token-qualquer-sem-hu01' },
         });
-        assert.equal(resWithBearer.status, 503);
-        const body = (await resWithBearer.json()) as { codigo?: string };
-        assert.equal(body.codigo, HU03_ERROR_CODES.AUTENTICACAO_INDISPONIVEL);
+        assert.equal(resWithBearer.status, 401);
       }
     } finally {
       await close();

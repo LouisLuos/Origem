@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
-dotenv.config();
+dotenv.config({ path: ['.env.local', '.env'] });
 
 export const DEV_DEFAULT_JWT_SECRET = 'chave_secreta_para_desenvolvimento_origem_jwt_2026';
 

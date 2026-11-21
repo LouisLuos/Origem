@@ -51,7 +51,9 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-
+  Usuario: 'Usuario',
+  UsuarioPapel: 'UsuarioPapel',
+  AuthLoginAttempt: 'AuthLoginAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -68,4 +70,62 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const UsuarioScalarFieldEnum = {
+  id: 'id',
+  nome: 'nome',
+  email: 'email',
+  cpfCnpj: 'cpfCnpj',
+  telefoneWhatsapp: 'telefoneWhatsapp',
+  senhaHash: 'senhaHash',
+  status: 'status',
+  criadoEm: 'criadoEm'
+} as const
+
+export type UsuarioScalarFieldEnum = (typeof UsuarioScalarFieldEnum)[keyof typeof UsuarioScalarFieldEnum]
+
+
+export const UsuarioPapelScalarFieldEnum = {
+  id: 'id',
+  usuarioId: 'usuarioId',
+  papel: 'papel'
+} as const
+
+export type UsuarioPapelScalarFieldEnum = (typeof UsuarioPapelScalarFieldEnum)[keyof typeof UsuarioPapelScalarFieldEnum]
+
+
+export const AuthLoginAttemptScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  failedAttempts: 'failedAttempts',
+  lockedUntil: 'lockedUntil',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AuthLoginAttemptScalarFieldEnum = (typeof AuthLoginAttemptScalarFieldEnum)[keyof typeof AuthLoginAttemptScalarFieldEnum]
+
+
+export const SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+} as const
+
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+} as const
+
+export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

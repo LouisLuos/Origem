@@ -1,98 +1,71 @@
-import { readStorage, removeStorage, simulateLatency, writeStorage } from './storage'
+import { apiRequest, ApiError } from './api'
 
-export type UserRole = 'buyer' | 'artisan' | 'admin'
+export type UserRole = 'buyer' | 'artisan' | 'curator' | 'admin'
 
 export interface User {
+  id: string
   name: string
   email: string
-  /** Ausente em sessões antigas: tratar como `buyer`. */
-  role?: UserRole
+  role: UserRole
 }
 
-interface StoredUser extends User {
-  password: string
+interface UserResponse {
+  user: User
 }
 
-const USERS_KEY = 'origem:users'
-const SESSION_KEY = 'origem:session'
-
-/** Conta de demonstração do painel do artesão (dona das peças do Zé Caboclo no catálogo). */
-export const DEMO_ARTISAN: StoredUser = {
-  name: 'Zé Caboclo',
-  email: 'artesao@origem.com',
-  password: 'origem123',
-  role: 'artisan',
-}
-
-/** Conta de demonstração do painel administrativo. */
-export const DEMO_ADMIN: StoredUser = {
-  name: 'Administração Origem',
-  email: 'admin@origem.com',
-  password: 'origem123',
-  role: 'admin',
-}
-
-function readUsers(): StoredUser[] {
-  const users = readStorage<StoredUser[]>(USERS_KEY, [])
-  const missingDemos = [DEMO_ARTISAN, DEMO_ADMIN].filter((demo) => !users.some((candidate) => candidate.email === demo.email))
-  return [...users, ...missingDemos]
-}
-
-/**
- * Autenticação SIMULADA: contas no localStorage, senha em texto puro (só para demonstração).
- * Equivalente a `POST /auth/login`, `POST /auth/register` e `GET /usuarios`. Erros de negócio rejeitam a
- * Promise com `Error` e mensagem em português.
- */
 export const authService = {
-  /** Leitura da sessão no navegador; o `AuthProvider` a chama depois da hidratação. */
-  getSession(): User | null {
-    return readStorage<User | null>(SESSION_KEY, null)
+  async getSession(): Promise<User | null> {
+    try {
+      const { user } = await apiRequest<UserResponse>('/auth/me', undefined, 'Não foi possível validar sua sessão.')
+      return user
+    } catch (reason) {
+      if (reason instanceof ApiError && reason.status === 401) return null
+      throw reason
+    }
   },
 
   async login(email: string, password: string): Promise<User> {
-    await simulateLatency(350)
-    const normalized = email.trim().toLowerCase()
-    const found = readUsers().find((candidate) => candidate.email === normalized)
-    if (!found || found.password !== password) throw new Error('E-mail ou senha incorretos.')
-    const user: User = { name: found.name, email: found.email, role: found.role }
-    writeStorage(SESSION_KEY, user)
-    return user
-  },
-
-  async register(name: string, email: string, password: string, role: UserRole = 'buyer'): Promise<User> {
-    await simulateLatency(350)
-    const normalized = email.trim().toLowerCase()
-    const users = readUsers()
-    if (users.some((candidate) => candidate.email === normalized)) throw new Error('Já existe uma conta com este e-mail.')
-    const created: StoredUser = { name: name.trim(), email: normalized, password, role }
-    writeStorage(USERS_KEY, [...users, created])
-    const user: User = { name: created.name, email: created.email, role }
-    writeStorage(SESSION_KEY, user)
-    return user
-  },
-
-  logout() {
-    removeStorage(SESSION_KEY)
-  },
-
-  async updateName(email: string, name: string): Promise<User> {
-    await simulateLatency(200)
-    const trimmed = name.trim()
-    const users = readUsers()
-    const target = users.find((stored) => stored.email === email)
-    if (!target) throw new Error('Conta não encontrada.')
-    writeStorage(
-      USERS_KEY,
-      users.map((stored) => (stored.email === email ? { ...stored, name: trimmed } : stored)),
+    const { user } = await apiRequest<UserResponse>(
+      '/auth/login',
+      { method: 'POST', body: JSON.stringify({ email, password }) },
+      'Não foi possível entrar.',
     )
-    const user: User = { name: trimmed, email, role: target.role }
-    writeStorage(SESSION_KEY, user)
     return user
   },
 
-  /** Contas cadastradas, sem a senha. */
+  async register(
+    name: string,
+    email: string,
+    cpfCnpj: string,
+    whatsapp: string,
+    password: string,
+  ): Promise<User> {
+    const { user } = await apiRequest<UserResponse>(
+      '/auth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({ name, email, cpfCnpj, whatsapp, password }),
+      },
+      'Não foi possível criar sua conta.',
+    )
+    return user
+  },
+
+  async logout(): Promise<void> {
+    await apiRequest<void>('/auth/logout', { method: 'POST' }, 'Não foi possível encerrar sua sessão.')
+  },
+
+  async updateName(_email: string, name: string): Promise<User> {
+    const { user } = await apiRequest<UserResponse>(
+      '/auth/profile',
+      { method: 'PATCH', body: JSON.stringify({ name }) },
+      'Não foi possível atualizar seu perfil.',
+    )
+    return user
+  },
+
   async listUsers(): Promise<User[]> {
-    await simulateLatency(300)
-    return readUsers().map(({ name, email, role }) => ({ name, email, role: role ?? 'buyer' }))
+    const response = await apiRequest<{ users: User[] }>('/auth/users', undefined, 'Não foi possível carregar os usuários.')
+    return response.users
   },
 }

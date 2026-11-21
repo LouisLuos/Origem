@@ -26,6 +26,7 @@ const sections: { id: SectionId; label: string; icon: typeof Users }[] = [
 const roleLabels: Record<NonNullable<User['role']>, string> = {
   buyer: 'Comprador',
   artisan: 'Artesão',
+  curator: 'Curador',
   admin: 'Administrador',
 }
 

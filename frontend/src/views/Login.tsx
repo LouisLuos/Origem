@@ -6,31 +6,50 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Navigate } from '@/components/Navigate'
 import { Button, Container, Input, cn } from '@/design-system'
-import { culturalHubs, techniques } from '@/design-system/tokens'
 import { useAuth } from '@/context/AuthContext'
-import { artisanService } from '@/services/artisanService'
-import { errorMessage } from '@/utils/errors'
-import { buildPlaceholderArtisanMedia } from '@/utils/media'
 
 type Mode = 'login' | 'register'
 
 /** `from` vem da URL: só aceita caminho interno, para o login não redirecionar para outro site. */
 function safeRedirect(from: string | null) {
-  return from && /^\/(?![/\\])/.test(from) ? from : '/conta'
+  return from && /^\/(?![/\\])/.test(from) ? from : '/'
+}
+
+function maskCpfCnpj(value: string) {
+  const raw = value.toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 14)
+  if (raw.length <= 11 && !/[A-Z]/.test(raw)) {
+    return raw
+      .replace(/^(\d{3})(\d)/, '$1.$2')
+      .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+      .replace(/\.(\d{3})(\d)/, '.$1-$2')
+  }
+  return raw
+    .replace(/^(.{2})(.)/, '$1.$2')
+    .replace(/^(.{2})\.(.{3})(.)/, '$1.$2.$3')
+    .replace(/^(.{2})\.(.{3})\.(.{3})(.)/, '$1.$2.$3/$4')
+    .replace(/(.{4})(.)$/, '$1-$2')
+}
+
+function maskWhatsapp(value: string) {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  const local = digits.length === 11
+    ? `${digits.slice(2, 7)}-${digits.slice(7)}`
+    : `${digits.slice(2, 6)}-${digits.slice(6)}`
+  return `(${digits.slice(0, 2)}) ${local}`
 }
 
 export function Login() {
-  const { user, login, register } = useAuth()
+  const { user, login, register, initializationError } = useAuth()
   const redirectTo = safeRedirect(useSearchParams().get('from'))
 
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [cpfCnpj, setCpfCnpj] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
   const [password, setPassword] = useState('')
-  const [isArtisan, setIsArtisan] = useState(false)
-  const [artisanHub, setArtisanHub] = useState<string>(culturalHubs[0])
-  const [artisanTechnique, setArtisanTechnique] = useState<string>(techniques[0])
-  const [artisanBio, setArtisanBio] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -40,11 +59,18 @@ export function Login() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     if (mode === 'register' && !name.trim()) return setError('Informe seu nome.')
-    if (mode === 'register' && isArtisan && artisanBio.trim().length < 20) {
-      return setError('Conte um pouco mais sobre o seu trabalho (mínimo de 20 caracteres).')
-    }
     if (!/^\S+@\S+\.\S+$/.test(email)) return setError('E-mail inválido.')
-    if (password.length < 6) return setError('A senha deve ter ao menos 6 caracteres.')
+    if (mode === 'register') {
+      const document = cpfCnpj.replace(/[^0-9A-Z]/gi, '')
+      const phoneDigits = whatsapp.replace(/\D/g, '')
+      if (document.length !== 11 && document.length !== 14) return setError('Informe um CPF ou CNPJ válido.')
+      if (phoneDigits.length !== 10 && phoneDigits.length !== 11) return setError('Informe um WhatsApp com DDD.')
+      if (password.length < 8 || !/[A-Z]/.test(password) || !/\d/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+        return setError('A senha deve ter ao menos 8 caracteres, uma letra maiúscula, um número e um símbolo.')
+      }
+    } else if (password.length === 0) {
+      return setError('Informe sua senha.')
+    }
 
     setError(null)
     setIsSubmitting(true)
@@ -52,27 +78,7 @@ export function Login() {
     if (mode === 'login') {
       result = await login(email, password)
     } else {
-      result = await register(name, email, password, isArtisan ? 'artisan' : 'buyer')
-      if (!result && isArtisan) {
-        try {
-          const normalizedEmail = email.trim().toLowerCase()
-          const placeholderMedia = buildPlaceholderArtisanMedia(normalizedEmail)
-          await artisanService.create({
-            name: name.trim(),
-            email: normalizedEmail,
-            hub: artisanHub,
-            technique: artisanTechnique,
-            bio: artisanBio.trim(),
-            since: new Date().getFullYear(),
-            photoUrl: placeholderMedia.photoUrl,
-            photoAlt: `Retrato de ${name.trim()}`,
-            coverUrl: placeholderMedia.coverUrl,
-            coverAlt: `Ateliê de ${name.trim()}`,
-          })
-        } catch (reason) {
-          result = `A conta foi criada, mas não foi possível criar o perfil público. ${errorMessage(reason, '')}`.trim()
-        }
-      }
+      result = await register(name, email, cpfCnpj, whatsapp, password)
     }
     setIsSubmitting(false)
     setError(result)
@@ -116,6 +122,7 @@ export function Login() {
               onChange={(event) => setName(event.target.value)}
               autoComplete="name"
               placeholder="Maria da Silva"
+              required
               className="py-2.5"
             />
           )}
@@ -126,64 +133,54 @@ export function Login() {
             onChange={(event) => setEmail(event.target.value)}
             autoComplete="email"
             placeholder="maria@email.com"
+            required
             className="py-2.5"
           />
+          {mode === 'register' && (
+            <>
+              <Input
+                label="CPF ou CNPJ"
+                value={cpfCnpj}
+                onChange={(event) => setCpfCnpj(maskCpfCnpj(event.target.value))}
+                autoComplete="off"
+                inputMode="text"
+                placeholder="000.000.000-00"
+                required
+                className="py-2.5"
+              />
+              <Input
+                label="Telefone WhatsApp"
+                type="tel"
+                value={whatsapp}
+                onChange={(event) => setWhatsapp(maskWhatsapp(event.target.value))}
+                autoComplete="tel"
+                inputMode="tel"
+                placeholder="(81) 99999-9999"
+                required
+                className="py-2.5"
+              />
+            </>
+          )}
           <Input
             label="Senha"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            placeholder="Mínimo de 6 caracteres"
+            placeholder={mode === 'register' ? 'Mín. 8 caracteres, maiúscula, número e símbolo' : 'Sua senha'}
+            required
             className="py-2.5"
           />
 
           {mode === 'register' && (
-            <>
-              <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink-soft">
-                <input
-                  type="checkbox"
-                  checked={isArtisan}
-                  onChange={(event) => setIsArtisan(event.target.checked)}
-                  className="h-4 w-4 accent-terracota"
-                />
-                Sou artesão(ã) e quero vender minhas peças
-              </label>
-
-              {isArtisan && (
-                <div className="flex flex-col gap-4 border-l-2 border-terracota/40 pl-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-soft">
-                      Polo cultural
-                      <select value={artisanHub} onChange={(event) => setArtisanHub(event.target.value)} className={cn('w-full border border-border bg-surface px-4 py-2.5 text-base text-ink', 'focus:border-terracota focus:outline-none')}>
-                        {culturalHubs.map((hub) => <option key={hub}>{hub}</option>)}
-                      </select>
-                    </label>
-                    <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-soft">
-                      Técnica principal
-                      <select value={artisanTechnique} onChange={(event) => setArtisanTechnique(event.target.value)} className={cn('w-full border border-border bg-surface px-4 py-2.5 text-base text-ink', 'focus:border-terracota focus:outline-none')}>
-                        {techniques.map((technique) => <option key={technique}>{technique}</option>)}
-                      </select>
-                    </label>
-                  </div>
-                  <label className="flex flex-col gap-1.5 text-sm font-medium text-ink-soft">
-                    Sobre seu trabalho
-                    <textarea
-                      value={artisanBio}
-                      onChange={(event) => setArtisanBio(event.target.value)}
-                      rows={4}
-                      placeholder="Conte sobre sua técnica, sua história e suas peças."
-                      className="w-full resize-y border border-border bg-surface px-4 py-2.5 text-base text-ink placeholder:text-ink-soft/60 focus:border-terracota focus:outline-none"
-                    />
-                  </label>
-                </div>
-              )}
-            </>
+            <p className="text-sm text-ink-soft">
+              Sua conta começa como comprador. Você poderá solicitar um perfil avançado após entrar.
+            </p>
           )}
 
-          {error && (
+          {(error || (mode === 'login' && initializationError)) && (
             <p role="alert" className="text-sm text-danger">
-              {error}
+              {error ?? initializationError}
             </p>
           )}
 
@@ -197,7 +194,7 @@ export function Login() {
             {isSubmitting ? 'Aguarde…' : mode === 'login' ? 'Entrar' : 'Criar conta'}
           </Button>
           <p className="text-xs text-ink-soft">
-            Simulação: a conta fica salva apenas neste navegador, sem servidor. Para testar o painel do artesão, entre com artesao@origem.com / origem123; para o painel administrativo, admin@origem.com / origem123.
+            Seus dados são enviados com segurança para criar ou acessar sua conta.
           </p>
         </form>
       </Container>

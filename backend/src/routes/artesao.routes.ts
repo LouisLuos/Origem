@@ -8,6 +8,7 @@ import { createAuthMiddleware } from '../middlewares/auth.middleware.js';
 import type { AuthIdentityProvider } from '../repositories/contracts/auth.contracts.js';
 import { unconfiguredAuthIdentityProvider } from '../repositories/unconfiguredHu03.repository.js';
 import type { HabilitacaoArtesaoService } from '../services/habilitacaoArtesao.service.js';
+import { jwtAuthIdentityProvider } from '../utils/authToken.util.js';
 
 export interface ArtesaoRoutesDeps {
   readonly authProvider?: AuthIdentityProvider;
@@ -35,4 +36,4 @@ export function createArtesaoRoutes(deps?: ArtesaoRoutesDeps): Router {
   return router;
 }
 
-export const artesaoRoutes = createArtesaoRoutes();
+export const artesaoRoutes = createArtesaoRoutes({ authProvider: jwtAuthIdentityProvider });

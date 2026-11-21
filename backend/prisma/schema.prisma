@@ -6,3 +6,46 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum PapelUsuario {
+  COMPRADOR
+  ARTESAO
+  CURADOR
+  ADMIN
+
+  @@map("PapelUsuario")
+}
+
+model Usuario {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nome            String         @db.VarChar
+  email           String         @unique @db.VarChar
+  cpfCnpj         String         @unique @map("cpf_cnpj") @db.VarChar
+  telefoneWhatsapp String        @map("telefone_whatsapp") @db.VarChar
+  senhaHash       String         @map("senha_hash") @db.VarChar
+  status          String         @default("ATIVO") @db.VarChar
+  criadoEm        DateTime       @default(now()) @map("criado_em") @db.Timestamp(3)
+  papeis          UsuarioPapel[]
+
+  @@map("usuarios")
+}
+
+model UsuarioPapel {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuarioId String       @map("usuario_id") @db.Uuid
+  papel     PapelUsuario
+  usuario   Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, papel])
+  @@map("usuarios_papeis")
+}
+
+model AuthLoginAttempt {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String    @unique @db.VarChar
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until") @db.Timestamp(3)
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamp(3)
+
+  @@map("auth_login_attempts")
+}

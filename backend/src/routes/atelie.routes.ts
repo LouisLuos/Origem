@@ -11,6 +11,7 @@ import {
   unconfiguredAtelieAutorizacaoRepository,
   unconfiguredAuthIdentityProvider,
 } from '../repositories/unconfiguredHu03.repository.js';
+import { jwtAuthIdentityProvider } from '../utils/authToken.util.js';
 import type { AtelieFinanceiroService } from '../services/atelieFinanceiro.service.js';
 import type { CuradoriaService } from '../services/curadoria.service.js';
 import { securityAuditService, type SecurityAuditService } from '../utils/securityAudit.util.js';
@@ -80,4 +81,4 @@ export function createAtelieRoutes(deps?: AtelieRoutesDeps): Router {
   return router;
 }
 
-export const atelieRoutes = createAtelieRoutes();
+export const atelieRoutes = createAtelieRoutes({ authProvider: jwtAuthIdentityProvider });
