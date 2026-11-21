@@ -167,3 +167,25 @@ model AuthLoginAttempt {
 
   @@map("auth_login_attempts")
 }
+
+/// HU-03 (T-ART-03): trilha de auditoria de segurança, somente inserção (trigger na migration).
+/// Identificadores são texto e sem FK para que o registro sobreviva a exclusões e aceite IDs
+/// de recursos inexistentes informados em tentativas negadas.
+model AuditoriaSeguranca {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tipoEvento    String   @map("tipo_evento") @db.VarChar(40)
+  decisao       String   @db.VarChar(10)
+  motivo        String   @db.VarChar(40)
+  operacao      String   @db.VarChar(40)
+  usuarioId     String   @map("usuario_id") @db.VarChar(100)
+  atelieId      String   @map("atelie_id") @db.VarChar(100)
+  correlationId String   @map("correlation_id") @db.VarChar(128)
+  metodoHttp    String   @map("metodo_http") @db.VarChar(10)
+  caminho       String   @db.VarChar(512)
+  ocorridoEm    DateTime @map("ocorrido_em") @db.Timestamp(3)
+  registradoEm  DateTime @default(now()) @map("registrado_em") @db.Timestamp(3)
+
+  @@index([atelieId, ocorridoEm])
+  @@index([usuarioId, ocorridoEm])
+  @@map("auditoria_seguranca")
+}

@@ -405,7 +405,8 @@ export const ModelName = {
   Peca: 'Peca',
   FotoPeca: 'FotoPeca',
   UsuarioPapel: 'UsuarioPapel',
-  AuthLoginAttempt: 'AuthLoginAttempt'
+  AuthLoginAttempt: 'AuthLoginAttempt',
+  AuditoriaSeguranca: 'AuditoriaSeguranca'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "usuario" | "artesao" | "atelie" | "atelieCurador" | "endereco" | "peca" | "fotoPeca" | "usuarioPapel" | "authLoginAttempt"
+    modelProps: "usuario" | "artesao" | "atelie" | "atelieCurador" | "endereco" | "peca" | "fotoPeca" | "usuarioPapel" | "authLoginAttempt" | "auditoriaSeguranca"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1091,6 +1092,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AuditoriaSeguranca: {
+      payload: Prisma.$AuditoriaSegurancaPayload<ExtArgs>
+      fields: Prisma.AuditoriaSegurancaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditoriaSegurancaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditoriaSegurancaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditoriaSegurancaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditoriaSegurancaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>
+        }
+        findMany: {
+          args: Prisma.AuditoriaSegurancaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>[]
+        }
+        create: {
+          args: Prisma.AuditoriaSegurancaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>
+        }
+        createMany: {
+          args: Prisma.AuditoriaSegurancaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditoriaSegurancaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>[]
+        }
+        delete: {
+          args: Prisma.AuditoriaSegurancaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>
+        }
+        update: {
+          args: Prisma.AuditoriaSegurancaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditoriaSegurancaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditoriaSegurancaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditoriaSegurancaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditoriaSegurancaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditoriaSegurancaPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditoriaSegurancaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditoriaSeguranca>
+        }
+        groupBy: {
+          args: Prisma.AuditoriaSegurancaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditoriaSegurancaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditoriaSegurancaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditoriaSegurancaCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1249,6 +1324,24 @@ export const AuthLoginAttemptScalarFieldEnum = {
 } as const
 
 export type AuthLoginAttemptScalarFieldEnum = (typeof AuthLoginAttemptScalarFieldEnum)[keyof typeof AuthLoginAttemptScalarFieldEnum]
+
+
+export const AuditoriaSegurancaScalarFieldEnum = {
+  id: 'id',
+  tipoEvento: 'tipoEvento',
+  decisao: 'decisao',
+  motivo: 'motivo',
+  operacao: 'operacao',
+  usuarioId: 'usuarioId',
+  atelieId: 'atelieId',
+  correlationId: 'correlationId',
+  metodoHttp: 'metodoHttp',
+  caminho: 'caminho',
+  ocorridoEm: 'ocorridoEm',
+  registradoEm: 'registradoEm'
+} as const
+
+export type AuditoriaSegurancaScalarFieldEnum = (typeof AuditoriaSegurancaScalarFieldEnum)[keyof typeof AuditoriaSegurancaScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1545,6 +1638,7 @@ export type GlobalOmitConfig = {
   fotoPeca?: Prisma.FotoPecaOmit
   usuarioPapel?: Prisma.UsuarioPapelOmit
   authLoginAttempt?: Prisma.AuthLoginAttemptOmit
+  auditoriaSeguranca?: Prisma.AuditoriaSegurancaOmit
 }
 
 /* Types for Logging */

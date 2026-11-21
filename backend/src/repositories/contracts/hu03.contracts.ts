@@ -1,19 +1,21 @@
 /**
  * Contratos de domínio e interfaces de repositório da HU-03 (Especialização de Artesão Titular
- * e Blindagem de Curadoria), preparados para implementação futura pela equipe de Banco de Dados (T-ART-01).
+ * e Blindagem de Curadoria). Implementações reais: repositories/prismaHu03.repository.ts.
  *
  * Referências normativas:
  * - references/modelagem-inicial-origem.sql
  * - references/backlog-priorizado-origem.md (HU-03, HU-04, HU-18)
  *
- * PENDÊNCIAS DE ALINHAMENTO COM A EQUIPE DE BANCO (T-ART-01 — NÃO IMPLEMENTADAS AQUI):
- * - [L1] Unicidade em `usuarios_papeis`: confirmar constraint `UNIQUE (usuario_id, papel)` e inserção idempotente.
- * - [L2] Ciclo de vida do papel global `CURADOR`: definir se `desvincularCuradorDoAtelie` remove `CURADOR` de
- *        `usuarios_papeis` apenas quando não restar nenhum outro vínculo ativo em `atelies_curadores`.
- * - [L3] Fronteira transacional: operações compostas (`habilitarArtesaoComPapel`, `vincularCuradorNoAtelie`,
- *        `desvincularCuradorDoAtelie`) requerem execução atômica (ex.: `prisma.$transaction`).
- * - [L4] Atualização de Chave Pix antes do cadastro do ateliê (pré-HU-04): mantida no escopo do ateliê nesta HU
- *        (`PATCH /api/v1/atelies/:atelieId/chave-pix`), conforme Cenário 2 e TC02.
+ * LACUNAS L1–L4 — SITUAÇÃO:
+ * - [L1] RESOLVIDA: `UNIQUE (usuario_id, papel)` em `usuarios_papeis` (migration hu01_auth) e
+ *        inserção idempotente via `upsert`.
+ * - [L2] RESOLVIDA: `desvincularCuradorDoAtelie` remove o papel global `CURADOR` somente quando não
+ *        resta nenhum vínculo em `atelies_curadores`; demais papéis e vínculos são preservados.
+ * - [L3] RESOLVIDA: habilitação, vinculação e desvinculação executam em `prisma.$transaction`.
+ * - [L4] DECIDIDA: a alteração de Chave Pix permanece no escopo do ateliê
+ *        (`PATCH /api/v1/atelies/:atelieId/chave-pix`). O Cenário 2 da HU-03 trata da "chave Pix
+ *        do ateliê" e nenhum critério da HU-03/HU-04 exige alteração antes de o ateliê existir; a
+ *        Chave Pix é cadastrada na habilitação (Cenário 1). Nenhum endpoint adicional foi criado.
  */
 
 export type PapelUsuario = 'COMPRADOR' | 'ARTESAO' | 'CURADOR' | 'ADMIN';

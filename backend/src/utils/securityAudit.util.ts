@@ -1,11 +1,12 @@
 import type { OperacaoAtelie } from '../repositories/contracts/hu03.contracts.js';
+import { prismaSecurityAuditSink } from '../repositories/prismaSecurityAudit.sink.js';
 
 /**
  * Serviço de auditoria estruturada de segurança da HU-03.
  *
- * Limitação documentada: o sink padrão (`consoleSecurityAuditSink`) emite eventos JSON
- * estruturados apenas no logger da aplicação. A persistência durável desses eventos em tabela
- * dedicada no PostgreSQL ou SIEM permanece pendente de infraestrutura futura.
+ * Persistência durável: a instância padrão grava cada evento na tabela somente-inserção
+ * `auditoria_seguranca` (PostgreSQL). Se a gravação falhar, o evento é emitido no log estruturado
+ * como contingência, sem reverter o bloqueio.
  */
 
 export type SecurityAuditEventType =
@@ -103,6 +104,26 @@ export const consoleSecurityAuditSink: SecurityAuditSink = {
   },
 };
 
+/**
+ * Sink durável com contingência: tenta o sink primário (banco) e, em falha, registra o evento no
+ * log estruturado para que nenhuma negação de acesso fique sem rastro.
+ */
+export function createDurableSecurityAuditSink(
+  primario: SecurityAuditSink,
+  contingencia: SecurityAuditSink = consoleSecurityAuditSink,
+): SecurityAuditSink {
+  return {
+    async record(event: SecurityAuditEvent): Promise<void> {
+      try {
+        await primario.record(event);
+      } catch {
+        console.error('[SECURITY_AUDIT_PERSISTENCE_ERROR]', JSON.stringify({ correlationId: event.correlationId }));
+        await contingencia.record(event);
+      }
+    },
+  };
+}
+
 export function createSecurityAuditService(
   sink: SecurityAuditSink = consoleSecurityAuditSink,
 ): SecurityAuditService {
@@ -142,5 +163,5 @@ export function createSecurityAuditService(
 }
 
 export const securityAuditService: SecurityAuditService = createSecurityAuditService(
-  consoleSecurityAuditSink,
+  createDurableSecurityAuditSink(prismaSecurityAuditSink),
 );

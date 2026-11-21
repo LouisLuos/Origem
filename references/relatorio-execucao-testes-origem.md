@@ -87,6 +87,19 @@ Grande parte do escopo de segurança permanece pendente na build atual, tendo si
 - **Status:** ⛔ Bloqueado
 - **Observação:** O teste encontra-se bloqueado porque o endpoint de atualização de Chave Pix e o papel de usuário "CURADOR" não se encontram implementados no backend nem no serviço de autenticação no deploy atual, fazendo com que qualquer tentativa de envio retorne HTTP 404 antes de alcançar a regra de autorização esperada (HTTP 403).
 
+##### TC02 · Reexecução automatizada (registro complementar)
+
+> Registro adicionado após a rodada original. A execução de 10/11/2026 acima é preservada sem alterações. **Esta validação foi automatizada (teste de integração), não manual**, e não substitui uma reexecução manual oficial pela squad.
+
+- **Data:** 21/11/2026
+- **Executor:** Suíte automatizada de integração do backend (`backend/tests/integracao/hu03-governanca.test.ts`)
+- **Tipo de execução:** Automatizada, via API HTTP do backend real (sem mocks)
+- **Ambiente:** Banco PostgreSQL 17 isolado (container Docker local), com todas as migrations do repositório aplicadas; backend Express com autenticação JWT real (HU-01), RBAC contextual consultando vínculos reais e auditoria persistente. Branch `feat/frontend-next`, alterações locais sobre o commit `0dc6e31`. Não executado no Supabase compartilhado nem no deploy.
+- **Comando:** `npm run test:integration` (com `DATABASE_URL` apontando para o banco isolado)
+- **Pré-condição construída pelo teste:** usuário titular cadastrado e habilitado como artesão (Chave Pix do tipo e-mail), ateliê cadastrado, e um segundo usuário vinculado pelo titular como curador do ateliê.
+- **Status:** ✅ Aprovado (validação automatizada)
+- **Observação:** O curador autenticado enviou `PATCH /api/v1/atelies/:atelieId/chave-pix` com uma nova Chave Pix e recebeu **HTTP 403**. A Chave Pix cifrada do titular e sua data de atualização permaneceram **idênticas** às de antes da requisição, ou seja, **nenhuma alteração financeira** foi realizada. Foi **persistido no PostgreSQL** exatamente um evento na tabela `auditoria_seguranca`, localizado pelo identificador de correlação da requisição, com tipo `FINANCIAL_ACCESS_DENIED`, decisão `DENY`, motivo `CURATOR_FINANCIAL_BLOCK`, operação `ALTERAR_CHAVE_PIX`, usuário (curador), ateliê, método `PATCH`, caminho e data/hora. O teste verificou que o registro **não contém dados sensíveis**: nem a nova Chave Pix, nem a Chave Pix do titular, nem o token JWT da sessão, nem a senha. Na mesma suíte também passaram: o bloqueio 403 do curador na consulta financeira e na gestão de curadores (ambos auditados); a imutabilidade da trilha de auditoria (`UPDATE`, `DELETE` e `TRUNCATE` rejeitados); e o acesso financeiro do titular, que vê apenas a chave mascarada. A suíte executou 22 testes de integração (10 da HU-03 e 12 de regressão da HU-05), todos aprovados.
+
 #### TC04 · Validação de Cubagem Física e Peso Mínimo de 50g
 
 - **Data:** 10/11/2026
@@ -212,6 +225,7 @@ Grande parte do escopo de segurança permanece pendente na build atual, tendo si
 |---|---|---|---|
 | TC01 · Login bloqueado após 5 tentativas | 09/11/2026 | Vinicius Gabriel dos Santos Braz | Reprovado |
 | TC02 · Blindagem de acesso financeiro por Curador | 10/11/2026 | Cauã dos Santos Nascimento | Bloqueado |
+| TC02 · Blindagem de acesso financeiro por Curador (reexecução automatizada, banco isolado) | 21/11/2026 | Suíte automatizada de integração | Aprovado (automatizado) |
 | TC04 · Cubagem Física e Peso Mínimo de 50g | 10/11/2026 | Eduardo Henrique Albuquerque Pessoa de Andrade | Reprovado |
 | TC05 · Desmembramento de pedido multi-origem | 09/11/2026 | Vinicius Gabriel dos Santos Braz | Aprovado |
 | TC07 · Storytelling e Isolamento de Catálogo | 09/11/2026 | Matheus de Freitas Oliveira | Aprovado |

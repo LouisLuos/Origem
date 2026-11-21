@@ -59,7 +59,8 @@ export const ModelName = {
   Peca: 'Peca',
   FotoPeca: 'FotoPeca',
   UsuarioPapel: 'UsuarioPapel',
-  AuthLoginAttempt: 'AuthLoginAttempt'
+  AuthLoginAttempt: 'AuthLoginAttempt',
+  AuditoriaSeguranca: 'AuditoriaSeguranca'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -197,6 +198,24 @@ export const AuthLoginAttemptScalarFieldEnum = {
 } as const
 
 export type AuthLoginAttemptScalarFieldEnum = (typeof AuthLoginAttemptScalarFieldEnum)[keyof typeof AuthLoginAttemptScalarFieldEnum]
+
+
+export const AuditoriaSegurancaScalarFieldEnum = {
+  id: 'id',
+  tipoEvento: 'tipoEvento',
+  decisao: 'decisao',
+  motivo: 'motivo',
+  operacao: 'operacao',
+  usuarioId: 'usuarioId',
+  atelieId: 'atelieId',
+  correlationId: 'correlationId',
+  metodoHttp: 'metodoHttp',
+  caminho: 'caminho',
+  ocorridoEm: 'ocorridoEm',
+  registradoEm: 'registradoEm'
+} as const
+
+export type AuditoriaSegurancaScalarFieldEnum = (typeof AuditoriaSegurancaScalarFieldEnum)[keyof typeof AuditoriaSegurancaScalarFieldEnum]
 
 
 export const SortOrder = {

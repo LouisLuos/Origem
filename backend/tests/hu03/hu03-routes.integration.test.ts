@@ -652,6 +652,8 @@ describe('Etapa C4 — Routers HU-03 isolados com mocks de teste (Cenário TC02 
       '/api/v1/atelies',
       createAtelieRoutes({
         authProvider,
+        // Auditoria em memória: testes unitários nunca gravam no banco compartilhado
+        auditService: createSecurityAuditService({ record: () => undefined }),
         financeiroService: createAtelieFinanceiroService(),
         curadoriaService: createCuradoriaService(),
       }),
