@@ -10,6 +10,8 @@ import { useAuth } from '@/context/AuthContext'
 import { ErrorBlock, LoadingBlock, ResourceGate } from '@/components/AsyncState'
 import { CuratorManagementSection } from '@/components/CuratorManagementSection'
 import { FinancialPixSection } from '@/components/FinancialPixSection'
+import { PieceCatalogForm } from '@/components/PieceCatalogForm'
+import type { CreatedPiece } from '@/services/pieceService'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCatalogAction } from '@/hooks/useCatalogAction'
 import {
@@ -63,6 +65,7 @@ export function ArtisanPanel() {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [publishedNotice, setPublishedNotice] = useState<string | null>(null)
   const { actionError, run } = useCatalogAction()
 
   const [activeTab, setActiveTab] = useState<PanelTab>('catalog')
@@ -170,8 +173,28 @@ export function ArtisanPanel() {
   const lowStock = myItems.filter((item) => item.stock > 0 && item.stock <= LOW_STOCK).length
   const soldOut = myItems.filter((item) => item.stock === 0).length
 
+  // HU-05: a publicação exige ateliê confirmado pelo servidor com permissão de catálogo.
+  const catalogAtelieId =
+    selectedAtelier?.permissoes.includes('GERENCIAR_CATALOGO') ? selectedAtelier.atelieId : null
+  const catalogUnavailableReason =
+    governanceStatus === 'loading'
+      ? 'Consultando no servidor os ateliês em que você pode catalogar peças.'
+      : governanceStatus === 'unavailable'
+        ? (governanceIssue?.message ?? 'Não foi possível confirmar seu vínculo de ateliê no servidor.')
+        : !selectedAtelier
+          ? 'Nenhum ateliê vinculado à sua conta foi encontrado no servidor.'
+          : 'Seu vínculo com este ateliê não permite gerenciar o catálogo.'
+
+  const handlePiecePublished = (piece: CreatedPiece) => {
+    setEditingId(null)
+    setPublishedNotice(
+      `Peça “${piece.titulo}” publicada com status ${piece.status} e ${piece.fotos.length} fotos.`,
+    )
+  }
+
   const openForm = (item?: CatalogItem) => {
     setError(null)
+    setPublishedNotice(null)
     setEditingId(item ? item.id : 'new')
     setForm(
       item
@@ -453,7 +476,22 @@ export function ArtisanPanel() {
                   ))}
                 </dl>
 
-                {editingId && (
+                {publishedNotice && (
+                  <p role="status" className="mb-6 border border-border bg-surface p-4 text-sm text-ink">
+                    {publishedNotice}
+                  </p>
+                )}
+
+                {editingId === 'new' && (
+                  <PieceCatalogForm
+                    atelieId={catalogAtelieId}
+                    unavailableReason={catalogUnavailableReason}
+                    onCancel={closeForm}
+                    onPublished={handlePiecePublished}
+                  />
+                )}
+
+                {editingId && editingId !== 'new' && (
                   <form
                     onSubmit={handleSubmit}
                     noValidate

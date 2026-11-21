@@ -4,6 +4,7 @@ import { env } from './config/env.js';
 import { requestLogger } from './middlewares/requestLogger.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { routes } from './routes/index.js';
+import { PECAS_ROUTE_PATH, pecaJsonBodyParser } from './routes/peca.routes.js';
 import { AppError } from './utils/AppError.js';
 
 export const app = express();
@@ -29,6 +30,8 @@ app.use(
   }),
 );
 
+// Corpo maior (fotos em base64) aceito apenas na criação de peças (HU-05); demais rotas mantêm o limite padrão
+app.use(`/api/v1${PECAS_ROUTE_PATH}`, pecaJsonBodyParser);
 app.use(express.json());
 app.use(requestLogger);
 
