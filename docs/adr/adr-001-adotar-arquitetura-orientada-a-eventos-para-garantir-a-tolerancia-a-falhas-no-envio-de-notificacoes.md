@@ -1,4 +1,4 @@
-# ADR-001: **Título**Comece por um verbo: “Adotar”, “Isolar”, “Separar”.\ &#x20;
+# ADR-001: Adotar arquitetura orientada a eventos para garantir a tolerância a falhas no envio de notificações.
 
 - **Status:** Aceita
 - **Data:** 2026-11-23
