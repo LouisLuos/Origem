@@ -10,6 +10,7 @@ import { estoqueRoutes } from './estoque.routes.js';
 import { notificacaoRoutes } from './notificacao.routes.js';
 import { pagamentoRoutes } from './pagamento.routes.js';
 import { pedidoRoutes } from './pedido.routes.js';
+import { enderecoRoutes } from './endereco.routes.js';
 
 export const routes = Router();
 
@@ -45,3 +46,6 @@ routes.use('/pedidos', pedidoRoutes);
 
 // Recebimento de webhooks financeiros com deduplicação e validação HMAC/Basic (HU-10).
 routes.use('/pagamentos', pagamentoRoutes);
+
+// Livro de endereços de entrega do comprador (HU-11).
+routes.use('/enderecos', enderecoRoutes);
