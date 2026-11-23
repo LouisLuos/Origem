@@ -13,7 +13,7 @@ import { FREE_SHIPPING_THRESHOLD, calculateShipping } from '@/context/OrderConte
 import { removeStorage } from '@/services/storage'
 
 export function Cart() {
-  const { lines: cartLines, removeItem, setQuantity } = useCart()
+  const { lines: cartLines, removeItem, setQuantity, hydrated: cartHydrated } = useCart()
   const { status, error, reload } = useCatalog()
 
   const subtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
@@ -22,11 +22,12 @@ export function Cart() {
       line.product.stock === 0 || line.quantity > (line.product.stock ?? line.quantity),
   )
 
+  // Só limpa o timestamp quando o carrinho estiver hidratado E confirmado como vazio
   useEffect(() => {
-    if (cartLines.length === 0) {
+    if (cartHydrated && status === 'ready' && cartLines.length === 0) {
       removeStorage('origem:cart_reservation_expires_at')
     }
-  }, [cartLines.length])
+  }, [cartHydrated, status, cartLines.length])
 
   // HU-09 (Cenário 1 BDD): Agrupamento visual de carrinho multi-origem por ateliê/polo
   const atelierGroups = useMemo(() => {

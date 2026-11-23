@@ -35,11 +35,11 @@ export function CartReservationTimer({
 
     let targetTime: number
 
-    if (!storedExpiresAt || typeof storedExpiresAt !== 'number') {
+    if (typeof storedExpiresAt === 'number' && storedExpiresAt > 0) {
+      targetTime = storedExpiresAt
+    } else {
       targetTime = now + initialSeconds * 1000
       writeStorage(STORAGE_KEY, targetTime)
-    } else {
-      targetTime = storedExpiresAt
     }
 
     const remaining = Math.max(0, Math.floor((targetTime - now) / 1000))
