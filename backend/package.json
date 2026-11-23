@@ -11,6 +11,7 @@
     "worker:start": "node dist/worker.js",
     "typecheck": "tsc --noEmit",
     "notificacoes:previews": "tsx scripts/gerar-previews-notificacoes.ts",
+    "integracoes:check": "tsx scripts/verificar-integracoes.ts",
     "test": "node --import tsx --test \"tests/**/*.test.ts\"",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

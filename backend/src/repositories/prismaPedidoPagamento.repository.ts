@@ -1210,6 +1210,84 @@ export function createPrismaPedidoPagamentoRepository(
         return mapPedidoDetalhado(atualizado);
       }, CHECKOUT_TX_OPTIONS);
     },
+
+    async expirarPedidosPendentesVencidos(
+      agora: Date = new Date(),
+      usuarioId?: string,
+    ): Promise<{ readonly pedidosExpirados: number; readonly unidadesDevolvidas: number }> {
+      if (usuarioId && !isUuid(usuarioId)) {
+        return { pedidosExpirados: 0, unidadesDevolvidas: 0 };
+      }
+
+      const candidatos = await prisma.pedido.findMany({
+        where: {
+          status: 'PENDENTE_PAGAMENTO',
+          ...(usuarioId ? { usuarioId } : {}),
+          pagamentos: {
+            some: {
+              status: { in: ['CRIADO', 'PENDENTE'] },
+              expiraEm: { lte: agora },
+            },
+          },
+        },
+        select: { id: true },
+        orderBy: { criadoEm: 'asc' },
+        take: 50,
+      });
+
+      let pedidosExpirados = 0;
+      let unidadesDevolvidas = 0;
+
+      for (const candidato of candidatos) {
+        const res = await prisma.$transaction(async (tx) => {
+          await tx.$queryRaw`SELECT "id" FROM "pedidos" WHERE "id" = ${candidato.id}::uuid FOR UPDATE`;
+          const pedido = await tx.pedido.findUnique({
+            where: { id: candidato.id },
+            include: { pagamentos: { orderBy: { criadoEm: 'desc' }, take: 1 } },
+          });
+          const pag = pedido?.pagamentos[0];
+          if (
+            !pedido ||
+            pedido.status !== 'PENDENTE_PAGAMENTO' ||
+            !pag ||
+            (pag.status !== 'CRIADO' && pag.status !== 'PENDENTE') ||
+            !pag.expiraEm ||
+            pag.expiraEm.getTime() > agora.getTime()
+          ) {
+            return { expirado: false, devolvidas: 0 };
+          }
+
+          try {
+            const desfecho = await aplicarRecusaOuExpiracaoNaTransacao({
+              tx,
+              pedidoId: pedido.id,
+              pagamentoId: pag.id,
+              novoStatusPedido: 'EXPIRADO',
+              novoStatusPagamento: 'EXPIRADO',
+              agora,
+              erroSanitizado: 'Prazo máximo do Pix / reserva de 15 minutos expirado.',
+            });
+            return {
+              expirado: desfecho.statusPedidoFinal === 'EXPIRADO',
+              devolvidas: desfecho.unidadesDevolvidas,
+            };
+          } catch (err) {
+            if (
+              err instanceof AppError &&
+              err.code === RESERVA_ERROR_CODES.RESERVA_TRANSICAO_INVALIDA
+            ) {
+              return { expirado: false, devolvidas: 0 };
+            }
+            throw err;
+          }
+        }, CHECKOUT_TX_OPTIONS);
+
+        if (res.expirado) pedidosExpirados += 1;
+        unidadesDevolvidas += res.devolvidas;
+      }
+
+      return { pedidosExpirados, unidadesDevolvidas };
+    },
   };
 }
 

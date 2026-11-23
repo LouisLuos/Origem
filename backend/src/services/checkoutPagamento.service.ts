@@ -492,6 +492,7 @@ export function createCheckoutPagamentoService(deps?: CheckoutPagamentoServiceDe
     },
 
     async listarMeusPedidos(usuarioId: string, limite = 25): Promise<PedidoDetalhado[]> {
+      await repository.expirarPedidosPendentesVencidos(new Date(), usuarioId);
       return repository.listarPedidosUsuario(usuarioId, limite);
     },
 

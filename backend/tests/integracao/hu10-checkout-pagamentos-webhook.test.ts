@@ -116,6 +116,7 @@ describe(
 
     interface GatewayRecord {
       externalPaymentId: string;
+      pedidoId?: string;
       status: 'PENDENTE' | 'APROVADO' | 'RECUSADO';
       gatewayStatusRaw: string;
       erroSanitizado?: string;
@@ -266,8 +267,10 @@ describe(
               }
             }, 350);
             timer.unref?.();
+            // Mesmo com timeout na resposta HTTP, registra no gateway para reconciliação posterior
             gatewayStore.set(extId, {
               externalPaymentId: extId,
+              pedidoId: typeof body.pedidoId === 'string' ? body.pedidoId : undefined,
               status: 'APROVADO',
               gatewayStatusRaw: 'paid',
               cartaoBandeira: 'Visa',
@@ -1086,18 +1089,34 @@ describe(
         assert.equal(pedidoTimeout.status, 'PENDENTE_PAGAMENTO');
         assert.equal(pedidoTimeout.pagamentos[0]?.status, 'ERRO_COMUNICACAO');
 
-        await prisma.reserva.updateMany({
-          where: { grupoId: grupoT },
-          data: { status: 'EXPIRADA', estoqueDevolvidoEm: new Date(), finalizadoEm: new Date() },
+        // 2b) Recuperação real de timeout (ERRO_COMUNICACAO -> APROVADO) quando webhook assinado confirma depois
+        const recordTimeout = Array.from(gatewayStore.values()).find(
+          (g) => g.pedidoId === pedidoTimeout.id,
+        );
+        assert.ok(recordTimeout, 'Gateway controlado deve registrar externalPaymentId criado durante timeout');
+
+        const resRecuperacao = await enviarWebhookAssinado({
+          eventoExternoId: `evt-timeout-heal-${randomUUID()}`,
+          tipoEvento: 'payment.paid',
+          externalPaymentId: recordTimeout.externalPaymentId,
+          status: 'APROVADO',
+          metadata: {
+            pedidoId: pedidoTimeout.id,
+            pagamentoId: pedidoTimeout.pagamentos[0]!.id,
+          },
         });
-        await prisma.peca.update({
-          where: { id: pecaTc09Id },
-          data: { quantidadeEstoque: 5, status: 'DISPONIVEL' },
-        });
-        await prisma.pedido.update({
-          where: { id: pedidoTimeout.id },
-          data: { status: 'EXPIRADO', canceladoEm: new Date() },
-        });
+        assert.equal(resRecuperacao.status, 200);
+        assert.equal(resRecuperacao.json.statusPedidoFinal, 'APROVADO');
+        assert.equal(resRecuperacao.json.outboxRegistrado, true);
+
+        const reservaCurada = await prisma.reserva.findMany({ where: { grupoId: grupoT } });
+        assert.equal(reservaCurada[0]?.status, 'CONFIRMADA');
+        await esperarCondicao(async () => {
+          const outboxCurado = await prisma.outboxEventoNotificacao.findFirst({
+            where: { aggregateId: pedidoTimeout.id },
+          });
+          return outboxCurado?.status === 'PUBLICADO';
+        }, 12_000);
 
         // 3) Pagamento aprovado tardiamente após expiração da reserva -> RECONCILIACAO_ESTORNO
         const resLate = await postJson(
@@ -1151,7 +1170,63 @@ describe(
         const reservasLate = await prisma.reserva.findMany({ where: { grupoId: grupoLate } });
         assert.equal(reservasLate[0]?.status, 'EXPIRADA');
 
-        // 4) Consulta autenticada do pedido pelo dono
+        // 4) Expiração automática de pedido Pix abandonado via GET /api/v1/pedidos/meus devolvendo saldo HU-06
+        const estoqueAntesAbandono = (
+          await prisma.peca.findUniqueOrThrow({ where: { id: pecaTc09Id } })
+        ).quantidadeEstoque;
+        const resAbandono = await postJson(
+          '/api/v1/estoque/reservas',
+          { lines: [{ productId: pecaTc09Id, quantity: 1 }] },
+          { Authorization: `Bearer ${buyerToken}`, 'Idempotency-Key': `res-abnd-${randomUUID()}` },
+        );
+        assert.equal(resAbandono.status, 201);
+        const grupoAbandono = String(resAbandono.json.grupoId);
+
+        const chkAbandono = await postJson(
+          '/api/v1/pedidos/checkout',
+          {
+            reservaGrupoId: grupoAbandono,
+            metodoPagamento: 'PIX',
+            enderecoEntrega: enderecoValido,
+          },
+          { Authorization: `Bearer ${buyerToken}`, 'Idempotency-Key': `chk-abnd-${randomUUID()}` },
+        );
+        assert.equal(chkAbandono.status, 201);
+        const pedidoAbandono = chkAbandono.json.pedido as {
+          id: string;
+          pagamentoAtual: { id: string };
+        };
+
+        const criadoAntigo = new Date(Date.now() - 20 * 60_000);
+        const expiraVencido = new Date(Date.now() - 10_000);
+        await prisma.pagamento.update({
+          where: { id: pedidoAbandono.pagamentoAtual.id },
+          data: { criadoEm: criadoAntigo, expiraEm: expiraVencido },
+        });
+        await prisma.reserva.updateMany({
+          where: { grupoId: grupoAbandono },
+          data: { criadoEm: criadoAntigo, expiraEm: expiraVencido },
+        });
+
+        const listaMeus = await getJson('/api/v1/pedidos/meus', {
+          Authorization: `Bearer ${buyerToken}`,
+        });
+        assert.equal(listaMeus.status, 200);
+        const pedidosLista = listaMeus.json.dados as Array<{
+          id: string;
+          status: string;
+          pagamentoAtual: { status: string } | null;
+        }>;
+        const abandonoNaLista = pedidosLista.find((p) => p.id === pedidoAbandono.id);
+        assert.equal(abandonoNaLista?.status, 'EXPIRADO');
+        assert.equal(abandonoNaLista?.pagamentoAtual?.status, 'EXPIRADO');
+
+        const estoqueAposAbandono = (
+          await prisma.peca.findUniqueOrThrow({ where: { id: pecaTc09Id } })
+        ).quantidadeEstoque;
+        assert.equal(estoqueAposAbandono, estoqueAntesAbandono);
+
+        // 5) Consulta autenticada do pedido pelo dono
         const consultaDono = await getJson(`/api/v1/pedidos/${pedidoLate.id}`, {
           Authorization: `Bearer ${buyerToken}`,
         });

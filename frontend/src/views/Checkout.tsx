@@ -4,11 +4,9 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import {
   AlertTriangle,
-  Check,
   CheckCircle2,
   ChevronRight,
   Clock,
-  Copy,
   CreditCard,
   QrCode,
   RotateCcw,
@@ -19,6 +17,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Navigate } from '@/components/Navigate'
 import { CardTokenizationForm } from '@/components/CardTokenizationForm'
+import { PixPaymentPanel, formatPixCountdown } from '@/components/PixPaymentPanel'
 import { ResourceGate } from '@/components/AsyncState'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
@@ -118,12 +117,7 @@ function formatZip(value: string) {
   return digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits
 }
 
-function formatCountdown(seconds: number): string {
-  const safe = Math.max(0, seconds)
-  const mins = Math.floor(safe / 60)
-  const secs = safe % 60
-  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
-}
+
 
 const formatters: Partial<Record<keyof CustomerFormState, (value: string) => string>> = {
   phone: formatPhone,
@@ -178,7 +172,7 @@ export function Checkout() {
   const { lines: cartLines, clearCart } = useCart()
   const { status: catalogStatus, error: catalogError, reload: reloadCatalog } = useCatalog()
   const { user, hydrated: authHydrated } = useAuth()
-  const { placeOrder, upsertOrder } = useOrders()
+  const { orders, status: ordersStatus, placeOrder, upsertOrder } = useOrders()
 
   const [customer, setCustomer] = useState<CustomerFormState>(() => ({
     ...emptyCustomer,
@@ -202,7 +196,6 @@ export function Checkout() {
   const [isPaying, setIsPaying] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [activeOrder, setActiveOrder] = useState<Order | null>(null)
-  const [copiedPix, setCopiedPix] = useState(false)
   const [nowMs, setNowMs] = useState(() => Date.now())
 
   const reserveIdempotencyRef = useRef<{ signature: string; key: string } | null>(null)
@@ -299,15 +292,18 @@ export function Checkout() {
     ? Math.max(0, Math.floor((new Date(targetExpirationIso).getTime() - nowMs) / 1000))
     : 0
 
+  const activeOrderId = activeOrder?.id
+  const activeOrderStatus = activeOrder?.status
+
   // Polling real do status do pedido enquanto estiver PENDENTE_PAGAMENTO
   useEffect(() => {
-    if (!activeOrder || activeOrder.status !== 'PENDENTE_PAGAMENTO') return
+    if (!activeOrderId || activeOrderStatus !== 'PENDENTE_PAGAMENTO') return
     let cancelled = false
     let intervalId: number | undefined
 
     const pollOnce = async () => {
       try {
-        const updated = await orderService.getById(activeOrder.id)
+        const updated = await orderService.getById(activeOrderId)
         if (cancelled) return
         setActiveOrder(updated)
         upsertOrder(updated)
@@ -338,7 +334,7 @@ export function Checkout() {
       cancelled = true
       if (intervalId !== undefined) window.clearInterval(intervalId)
     }
-  }, [activeOrder, router, upsertOrder, reloadCatalog])
+  }, [activeOrderId, activeOrderStatus, router, upsertOrder, reloadCatalog])
 
   if (!authHydrated) {
     return <ResourceGate status="loading" label="Verificando sessão…" />
@@ -488,12 +484,12 @@ export function Checkout() {
                   )}
                 >
                   <Clock className="h-3.5 w-3.5 text-terracota-600" aria-hidden="true" />
-                  {expiredOnClock ? 'Expirada (00:00)' : `Expira em ${formatCountdown(remainingSeconds)}`}
+                  {expiredOnClock ? 'Expirada (00:00)' : `Expira em ${formatPixCountdown(remainingSeconds)}`}
                 </span>
               )}
             </div>
 
-            {pagamentoAtual?.ambiente === 'sandbox' && (
+            {pagamentoAtual?.ambiente === 'sandbox' && activeOrder?.metodoPagamento !== 'PIX' && (
               <div className="flex items-center gap-2 border border-border bg-aubergine-400/10 px-4 py-2.5 text-xs text-ink">
                 <ShieldCheck className="h-4 w-4 shrink-0 text-terracota-600" aria-hidden="true" />
                 <span>
@@ -506,73 +502,8 @@ export function Checkout() {
             {activeOrder &&
               activeOrder.status === 'PENDENTE_PAGAMENTO' &&
               activeOrder.metodoPagamento === 'PIX' &&
-              pagamentoAtual &&
-              !expiredOnClock && (
-                <section
-                  aria-label="Pagamento via Pix"
-                  className="flex flex-col items-center gap-4 border border-terracota/40 bg-surface-muted/30 p-6"
-                >
-                  {pagamentoAtual.pixQrCodeBase64 ? (
-                    <img
-                      src={
-                        pagamentoAtual.pixQrCodeBase64.startsWith('data:')
-                          ? pagamentoAtual.pixQrCodeBase64
-                          : `data:image/png;base64,${pagamentoAtual.pixQrCodeBase64}`
-                      }
-                      alt="QR Code Pix para pagamento do pedido"
-                      className="h-52 w-52 border border-border bg-white p-2 object-contain"
-                    />
-                  ) : pagamentoAtual.pixTicketUrl ? (
-                    <img
-                      src={pagamentoAtual.pixTicketUrl}
-                      alt="QR Code Pix para pagamento do pedido"
-                      className="h-52 w-52 border border-border bg-white p-2 object-contain"
-                    />
-                  ) : null}
-
-                  {pagamentoAtual.pixCopiaECola && (
-                    <div className="flex w-full max-w-lg flex-col gap-2">
-                      <label htmlFor="pix-copia-e-cola" className="text-xs font-medium text-ink">
-                        Pix Copia e Cola
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          id="pix-copia-e-cola"
-                          readOnly
-                          value={pagamentoAtual.pixCopiaECola}
-                          className="min-w-0 flex-1 border border-border bg-surface px-3 py-2 text-xs text-ink"
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={async () => {
-                            if (!pagamentoAtual.pixCopiaECola) return
-                            await navigator.clipboard.writeText(pagamentoAtual.pixCopiaECola)
-                            setCopiedPix(true)
-                            window.setTimeout(() => setCopiedPix(false), 2500)
-                          }}
-                        >
-                          {copiedPix ? (
-                            <>
-                              <Check className="h-4 w-4 text-oliva-600" aria-hidden="true" />
-                              Copiado!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-4 w-4" aria-hidden="true" />
-                              Copiar código Pix
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-
-                  <p className="text-center text-xs text-ink-soft">
-                    Aguardando confirmação em tempo real do provedor de pagamento… Esta tela atualiza automaticamente após o recebimento do webhook oficial.
-                  </p>
-                </section>
+              pagamentoAtual && (
+                <PixPaymentPanel pagamento={pagamentoAtual} remainingSeconds={remainingSeconds} />
               )}
 
             {/* Itens reservados */}
@@ -766,7 +697,49 @@ export function Checkout() {
     )
   }
 
-  if (lines.length === 0 && !isReserving) return <Navigate to="/carrinho" />
+  const pendingRecoverableOrder = orders.find(
+    (order) =>
+      order.status === 'PENDENTE_PAGAMENTO' &&
+      order.pagamentoAtual?.expiraEm &&
+      new Date(order.pagamentoAtual.expiraEm).getTime() > nowMs,
+  )
+
+  if (lines.length === 0 && !isReserving) {
+    if (ordersStatus === 'loading') {
+      return <ResourceGate status="loading" label="Verificando pedidos pendentes…" />
+    }
+    if (pendingRecoverableOrder) {
+      return (
+        <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
+          <Container>
+            <div className="mx-auto flex max-w-xl flex-col items-center gap-4 border border-border bg-surface p-8 text-center">
+              <Clock className="h-10 w-10 text-terracota-600" aria-hidden="true" />
+              <Badge tone="oliva">Pagamento em aberto</Badge>
+              <h1 className="text-2xl font-semibold text-ink">Você possui um pedido pendente</h1>
+              <p className="text-sm text-ink-soft">
+                O pedido <strong className="text-ink">{pendingRecoverableOrder.codigoPedido}</strong> (
+                {currency.format(pendingRecoverableOrder.valorTotalPedido)} via{' '}
+                {paymentLabels[pendingRecoverableOrder.metodoPagamento]}) ainda aguarda confirmação.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 pt-2">
+                <ButtonLink
+                  href={`/pedido/${encodeURIComponent(pendingRecoverableOrder.codigoPedido)}`}
+                  variant="primary"
+                  size="md"
+                >
+                  Retomar pagamento / acompanhar pedido
+                </ButtonLink>
+                <ButtonLink href="/#vitrine" variant="outline" size="md">
+                  Voltar à vitrine
+                </ButtonLink>
+              </div>
+            </div>
+          </Container>
+        </main>
+      )
+    }
+    return <Navigate to="/carrinho" />
+  }
 
   const subtotal = lines.reduce((total, line) => total + line.unitPrice * line.quantity, 0)
   const hasStockMismatch = cartLines.some(

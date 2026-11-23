@@ -1,3 +1,4 @@
+import { prismaPedidoPagamentoRepository } from '../repositories/prismaPedidoPagamento.repository.js';
 import {
   reservaEstoqueService,
   type ReservaEstoqueService,
@@ -11,8 +12,8 @@ export interface AgendadorExpiracaoReservas {
 }
 
 /**
- * Rotina periódica em backend para expirar reservas não confirmadas após 15 minutos e devolver
- * o estoque ao PostgreSQL mesmo quando não há usuários acessando a aplicação.
+ * Rotina periódica em backend para expirar reservas e pedidos pendentes vencidos após 15 minutos,
+ * devolvendo o estoque ao PostgreSQL mesmo quando não há usuários acessando a aplicação.
  *
  * Condições operacionais para produção:
  * 1. O processo Node precisa rodar de forma contínua (ou, em ambientes serverless / multi-réplica,
@@ -20,14 +21,22 @@ export interface AgendadorExpiracaoReservas {
  * 2. Cada ciclo é protegido contra sobreposição em memória e seguro para concorrência no banco
  *    via locks pessimistas ordenados (`ORDER BY peca_id ASC FOR UPDATE`) e transição atômica
  *    `WHERE status = 'ATIVA' AND expira_em <= NOW()`, evitando devolução duplicada entre réplicas.
- * 3. Como camada adicional de segurança, tentativas de reserva ou confirmação também executam
- *    expiração lazy imediata caso o cron ainda não tenha rodado naquele segundo.
+ * 3. Como camada adicional de segurança, tentativas de reserva, confirmação ou consulta de pedidos
+ *    também executam expiração lazy imediata caso o cron ainda não tenha rodado naquele segundo.
  */
 export function iniciarAgendadorExpiracaoReservas(opcoes?: {
   readonly service?: Pick<ReservaEstoqueService, 'expirarVencidas'>;
+  readonly expirarPedidosVencidos?: (
+    agora?: Date,
+  ) => Promise<{ readonly pedidosExpirados: number; readonly unidadesDevolvidas: number }>;
   readonly intervaloMs?: number;
 }): AgendadorExpiracaoReservas {
   const service = opcoes?.service ?? reservaEstoqueService;
+  const expirarPedidosVencidos =
+    opcoes?.expirarPedidosVencidos ??
+    (opcoes?.service
+      ? undefined
+      : (agora?: Date) => prismaPedidoPagamentoRepository.expirarPedidosPendentesVencidos(agora));
   const intervaloMs = opcoes?.intervaloMs ?? INTERVALO_VARREDURA_EXPIRACAO_MS;
   let emExecucao = false;
   let encerrado = false;
@@ -37,9 +46,13 @@ export function iniciarAgendadorExpiracaoReservas(opcoes?: {
     emExecucao = true;
     try {
       const resultado = await service.expirarVencidas();
-      if (resultado.reservasExpiradas > 0) {
+      const resultadoPedidos = expirarPedidosVencidos
+        ? await expirarPedidosVencidos(new Date())
+        : { pedidosExpirados: 0, unidadesDevolvidas: 0 };
+
+      if (resultado.reservasExpiradas > 0 || resultadoPedidos.pedidosExpirados > 0) {
         console.info(
-          `⏳ Expiração automática HU-06: ${resultado.reservasExpiradas} reserva(s) expirada(s), ${resultado.unidadesDevolvidas} unidade(s) devolvida(s).`,
+          `⏳ Expiração automática HU-06/HU-10: ${resultado.reservasExpiradas} reserva(s) expirada(s), ${resultadoPedidos.pedidosExpirados} pedido(s) pendente(s) expirado(s), ${resultado.unidadesDevolvidas + resultadoPedidos.unidadesDevolvidas} unidade(s) devolvida(s).`,
         );
       }
     } catch (err) {

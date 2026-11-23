@@ -5,8 +5,10 @@ import { AlertTriangle, CheckCircle2, Clock, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Navigate } from '@/components/Navigate'
+import { PixPaymentPanel } from '@/components/PixPaymentPanel'
 import { ResourceGate } from '@/components/AsyncState'
 import { useAuth } from '@/context/AuthContext'
+import { useCatalog } from '@/context/CatalogContext'
 import { orderStatusLabels, paymentLabels, useOrders } from '@/context/OrderContext'
 import type { Order } from '@/context/OrderContext'
 import { Badge, ButtonLink, Container, currency } from '@/design-system'
@@ -16,12 +18,18 @@ import { errorMessage } from '@/utils/errors'
 export function OrderConfirmation() {
   const { id } = useParams<{ id: string }>()
   const { user, hydrated: authHydrated } = useAuth()
+  const { reload: reloadCatalog } = useCatalog()
   const { getOrder, upsertOrder, status: ordersStatus } = useOrders()
 
   const cachedOrder = getOrder(id)
   const [fetchedOrder, setFetchedOrder] = useState<Order | null>(null)
   const [loadingRemote, setLoadingRemote] = useState(false)
   const [remoteError, setRemoteError] = useState<string | null>(null)
+  const [nowMs, setNowMs] = useState(() => Date.now())
+
+  const order = cachedOrder ?? fetchedOrder
+  const pendingExpiraIso =
+    order?.status === 'PENDENTE_PAGAMENTO' ? (order.pagamentoAtual?.expiraEm ?? null) : null
 
   useEffect(() => {
     if (!authHydrated || !user || cachedOrder) return
@@ -31,10 +39,10 @@ export function OrderConfirmation() {
 
     orderService
       .getById(id)
-      .then((order) => {
+      .then((loaded) => {
         if (!cancelled) {
-          setFetchedOrder(order)
-          upsertOrder(order)
+          setFetchedOrder(loaded)
+          upsertOrder(loaded)
         }
       })
       .catch((reason: unknown) => {
@@ -51,6 +59,50 @@ export function OrderConfirmation() {
     }
   }, [authHydrated, user, cachedOrder, id, upsertOrder])
 
+  // Cronômetro regressivo quando acessado diretamente para retomar Pix pendente
+  useEffect(() => {
+    if (!pendingExpiraIso) return
+    setNowMs(Date.now())
+    const timer = window.setInterval(() => {
+      setNowMs(Date.now())
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [pendingExpiraIso])
+
+  const orderIdForPoll = order?.id
+  const orderStatusForPoll = order?.status
+
+  // Polling real nesta página para pedidos em PENDENTE_PAGAMENTO retomados após refresh ou link
+  useEffect(() => {
+    if (!orderIdForPoll || orderStatusForPoll !== 'PENDENTE_PAGAMENTO') return
+    let cancelled = false
+    let intervalId: number | undefined
+
+    const pollOnce = async () => {
+      try {
+        const updated = await orderService.getById(orderIdForPoll)
+        if (cancelled) return
+        setFetchedOrder(updated)
+        upsertOrder(updated)
+        if (updated.status !== 'PENDENTE_PAGAMENTO') {
+          if (intervalId !== undefined) window.clearInterval(intervalId)
+          reloadCatalog()
+        }
+      } catch {
+        // Mantém polling resiliente
+      }
+    }
+
+    intervalId = window.setInterval(() => {
+      void pollOnce()
+    }, 3000)
+
+    return () => {
+      cancelled = true
+      if (intervalId !== undefined) window.clearInterval(intervalId)
+    }
+  }, [orderIdForPoll, orderStatusForPoll, upsertOrder, reloadCatalog])
+
   if (!authHydrated) {
     return <ResourceGate status="loading" label="Verificando sessão…" />
   }
@@ -58,8 +110,6 @@ export function OrderConfirmation() {
   if (!user) {
     return <Navigate to={`/entrar?from=/pedido/${encodeURIComponent(id)}`} />
   }
-
-  const order = cachedOrder ?? fetchedOrder
 
   if (!order && (ordersStatus === 'loading' || loadingRemote)) {
     return <ResourceGate status="loading" label="Carregando pedido…" />
@@ -90,6 +140,9 @@ export function OrderConfirmation() {
     order.status === 'EXPIRADO' ||
     order.status === 'CANCELADO' ||
     order.status === 'RECONCILIACAO_ESTORNO'
+  const remainingSeconds = pendingExpiraIso
+    ? Math.max(0, Math.floor((new Date(pendingExpiraIso).getTime() - nowMs) / 1000))
+    : 0
 
   return (
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
@@ -132,6 +185,14 @@ export function OrderConfirmation() {
             </span>
           )}
         </div>
+
+        {order.status === 'PENDENTE_PAGAMENTO' &&
+          order.metodoPagamento === 'PIX' &&
+          pagamentoAtual && (
+            <div className="mx-auto mb-10 max-w-2xl">
+              <PixPaymentPanel pagamento={pagamentoAtual} remainingSeconds={remainingSeconds} />
+            </div>
+          )}
 
         <div className="grid gap-10 lg:grid-cols-[2fr_1fr] lg:gap-14">
           <div className="flex flex-col gap-6">
