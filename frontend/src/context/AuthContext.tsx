@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { isApiError } from '@/services/api'
 import { authService } from '@/services/authService'
 import type { User, UserRole } from '@/services/authService'
 import { errorMessage } from '@/utils/errors'
@@ -13,9 +14,9 @@ export interface AuthContextValue {
   /** `false` no HTML do servidor e na hidratação, enquanto a sessão não foi lida do navegador. */
   hydrated: boolean
   initializationError: string | null
-  /** Retornam uma mensagem de erro, ou `null` em caso de sucesso. */
-  login: (email: string, password: string) => Promise<string | null>
-  register: (name: string, email: string, cpfCnpj: string, whatsapp: string, password: string) => Promise<string | null>
+  /** Retornam o erro (mensagem e código do servidor), ou `null` em caso de sucesso. */
+  login: (email: string, password: string) => Promise<AuthFailure | null>
+  register: (name: string, email: string, cpfCnpj: string, whatsapp: string, password: string) => Promise<AuthFailure | null>
   logout: () => Promise<string | null>
   updateName: (name: string) => Promise<string | null>
   /** Recarrega a sessão do servidor (ex.: após a habilitação de artesão alterar o papel). */
@@ -25,6 +26,18 @@ export interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 const messageOf = (reason: unknown) => errorMessage(reason, 'Algo deu errado. Tente novamente.')
+
+export interface AuthFailure {
+  message: string
+  /** Código do servidor, ex.: `LOGIN_BLOQUEADO`, `CONTA_DUPLICADA`, `CREDENCIAIS_INVALIDAS`. */
+  code?: string
+  status?: number
+}
+
+const failureOf = (reason: unknown): AuthFailure => ({
+  message: messageOf(reason),
+  ...(isApiError(reason) ? { status: reason.status, ...(reason.code ? { code: reason.code } : {}) } : {}),
+})
 
 /** Sessão do usuário logado; a autenticação em si vive em `authService`. */
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -55,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(await authService.login(email, password))
       return null
     } catch (reason) {
-      return messageOf(reason)
+      return failureOf(reason)
     }
   }, [])
 
@@ -65,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(await authService.register(name, email, cpfCnpj, whatsapp, password))
         return null
       } catch (reason) {
-        return messageOf(reason)
+        return failureOf(reason)
       }
     },
     [],
