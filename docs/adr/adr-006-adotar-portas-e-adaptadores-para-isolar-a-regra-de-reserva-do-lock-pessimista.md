@@ -1,4 +1,4 @@
-# ADR-005: Adotar Portas e Adaptadores com lock pessimista na reserva para impedir venda duplicada
+# ADR-006: Adotar Portas e Adaptadores para isolar a regra de reserva do mecanismo de lock pessimista
 
 - **Status:** Aceita
 - **Data:** 2026-11-23
@@ -8,6 +8,8 @@
 
 ## Contexto
 
+O ADR-005 decidiu usar bloqueio pessimista no PostgreSQL para a reserva concorrente de peças. Este ADR complementa aquela decisão definindo como o código se organiza em torno dele.
+
 O Origem é um marketplace de artesanato pernambucano em que a maioria das peças é única (estoque = 1). A equipe é pequena, formada por estudantes que cursam outras disciplinas em paralelo, e tem um semestre de prazo. A stack foi acordada com Desenvolvimento Web (backend Express 5 + TypeScript + Prisma 7) e o modelo de dados com Banco de Dados (PostgreSQL no Supabase). Não há orçamento de infraestrutura. A prioridade definida é confiabilidade (ausência de falhas) no fluxo de compra: nenhuma peça pode ser vendida duas vezes (Invariante 1, HU-09).
 
 ## Preocupações
@@ -16,7 +18,7 @@ consistência do estoque, concorrência, testabilidade, prazo, custo de infraest
 
 ## Decisão
 
-Estruturar a reserva e a confirmação da compra no padrão Portas e Adaptadores: o serviço de domínio (`reservaEstoque.service.ts`) depende apenas da porta `ReservaEstoqueRepository` (`repositories/contracts/reservas.contracts.ts`) e aplica a regra "só reserva se houver estoque". O adaptador de persistência (`prismaReserva.repository.ts`) implementa essa porta com lock pessimista (`SELECT ... FOR UPDATE` via `tx.$queryRaw` do Prisma) no PostgreSQL, dentro de uma transação, travando as peças sempre em ordem crescente de ID. Efeitos secundários, como notificações, são publicados somente após o commit (ver ADR-001 e ADR-002).
+Estruturar a reserva e a confirmação da compra no padrão Portas e Adaptadores: o serviço de domínio (`reservaEstoque.service.ts`) depende apenas da porta `ReservaEstoqueRepository` (`repositories/contracts/reservas.contracts.ts`) e aplica a regra "só reserva se houver estoque". O adaptador de persistência (`prismaReserva.repository.ts`) implementa essa porta com lock pessimista (`SELECT ... FOR UPDATE` via `tx.$queryRaw` do Prisma) no PostgreSQL, dentro de uma transação, travando as peças sempre em ordem crescente de ID. Efeitos secundários, como notificações, são publicados somente após o commit (ver ADR-001 e ADR-002). O mecanismo de bloqueio em si está detalhado no ADR-005.
 
 ## Justificativa
 
