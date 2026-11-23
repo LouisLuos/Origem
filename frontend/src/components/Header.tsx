@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Heart, Menu, Search, ShoppingBag, Trash2, User, X } from 'lucide-react'
+import { Bell, Heart, Menu, Search, ShoppingBag, Trash2, User, X } from 'lucide-react'
 import { ButtonLink, Container, Input, cn, currency } from '@/design-system'
 import { matchesSearch } from '@/utils/text'
 import { useProductFilter } from '@/context/ProductFilterContext'
@@ -172,6 +172,18 @@ export function Header() {
               </span>
             )}
           </Link>
+          {user && (
+            <Link
+              href="/notificacoes"
+              aria-label="Meus avisos"
+              className={cn(
+                'hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
+                isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
+              )}
+            >
+              <Bell className="h-5 w-5" aria-hidden="true" />
+            </Link>
+          )}
           <Link
             href={user ? '/conta' : '/entrar'}
             aria-label={user ? 'Minha conta' : 'Entrar ou criar conta'}
@@ -429,6 +441,15 @@ export function Header() {
             >
               Favoritos{favorites.length > 0 && ` (${favorites.length})`}
             </Link>
+            {user && (
+              <Link
+                href="/notificacoes"
+                onClick={() => setIsMenuOpen(false)}
+                className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
+              >
+                Avisos
+              </Link>
+            )}
             <Link
               href={user ? '/conta' : '/entrar'}
               onClick={() => setIsMenuOpen(false)}
