@@ -3,11 +3,27 @@ export const RESERVA_TTL_MS = RESERVA_TTL_MINUTOS * 60 * 1000;
 
 export type StatusReserva = 'ATIVA' | 'CONFIRMADA' | 'CANCELADA' | 'EXPIRADA';
 
+export type StatusPedidoVinculadoReserva =
+  | 'PENDENTE_PAGAMENTO'
+  | 'APROVADO'
+  | 'RECUSADO'
+  | 'EXPIRADO'
+  | 'CANCELADO'
+  | 'RECONCILIACAO_ESTORNO';
+
+export interface PedidoVinculadoReservaResumo {
+  readonly pedidoId: string;
+  readonly codigoPedido: string;
+  readonly status: StatusPedidoVinculadoReserva;
+  readonly ativo: boolean;
+}
+
 export const RESERVA_ERROR_CODES = {
   ESTOQUE_INSUFICIENTE: 'ESTOQUE_INSUFICIENTE',
   PECA_INDISPONIVEL: 'PECA_INDISPONIVEL',
   CHAVE_IDEMPOTENCIA_CONFLITO: 'CHAVE_IDEMPOTENCIA_CONFLITO',
   RESERVA_TRANSICAO_INVALIDA: 'RESERVA_TRANSICAO_INVALIDA',
+  RESERVA_VINCULADA_A_PEDIDO_ATIVO: 'RESERVA_VINCULADA_A_PEDIDO_ATIVO',
   PECA_NAO_PERSISTIDA: 'PECA_NAO_PERSISTIDA',
   RESERVA_DADOS_INVALIDOS: 'RESERVA_DADOS_INVALIDOS',
   PERSISTENCIA_INDISPONIVEL: 'PERSISTENCIA_INDISPONIVEL',
@@ -50,6 +66,9 @@ export interface GrupoReservaResultado {
   readonly criadoEm: string;
   readonly expiraEm: string;
   readonly ttlMinutos: number;
+  readonly servidorAgora?: string;
+  readonly possuiPedidoAtivo?: boolean;
+  readonly pedidoVinculado?: PedidoVinculadoReservaResumo | null;
   readonly itens: readonly ReservaItemPersistido[];
 }
 
@@ -78,7 +97,7 @@ export interface ExpiracaoReservasResultado {
 
 export interface ReservaEstoqueRepository {
   criarGrupoReserva(input: CriarGrupoReservaInput): Promise<GrupoReservaResultado>;
-  listarReservasUsuario(usuarioId: string): Promise<GrupoReservaResultado[]>;
+  listarReservasUsuario(usuarioId: string, agora?: Date): Promise<GrupoReservaResultado[]>;
   cancelarPorGrupo(
     grupoId: string,
     usuarioId: string,

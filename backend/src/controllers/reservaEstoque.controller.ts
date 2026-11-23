@@ -35,8 +35,9 @@ export function createReservaEstoqueController(
           throw new AppError('Autenticação obrigatória para consultar reservas.', 401);
         }
 
-        const dados = await service.listarMinhas(req.auth.userId);
-        res.status(200).json({ dados });
+        const agora = new Date();
+        const dados = await service.listarMinhas(req.auth.userId, agora);
+        res.status(200).json({ servidorAgora: agora.toISOString(), dados });
       } catch (err) {
         next(err);
       }
