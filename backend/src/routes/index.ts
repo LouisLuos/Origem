@@ -9,7 +9,7 @@ import { atelieCadastroRoutes } from './atelieCadastro.routes.js';
 
 export const routes = Router();
 
-// Autenticação e sessão de usuários (HU-01)
+// Autenticação e sessão de usuários.
 routes.use('/auth', authRoutes);
 
 // Endpoint de saúde / health check
@@ -21,12 +21,11 @@ routes.use('/produtos', produtoRoutes);
 // Endpoints de mestres e artesãos
 routes.use('/artesaos', artesaoRoutes);
 
-// Cadastro de peças no escopo do ateliê (HU-05)
+// Cadastro de peças no escopo do ateliê.
 routes.use(PECAS_ROUTE_PATH, pecaRoutes);
 
-// Cadastro de ateliê e endereço de expedição (HU-04)
+// Cadastro de ateliê e endereço de expedição.
 routes.use('/atelies', atelieCadastroRoutes);
 
-// Endpoints de governança de ateliês, finanças protegidas e curadores (HU-03)
+// Endpoints de governança de ateliês, finanças protegidas e curadores.
 routes.use('/atelies', atelieRoutes);
-

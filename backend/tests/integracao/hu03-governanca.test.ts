@@ -1,5 +1,5 @@
 /**
- * Integração REAL da HU-03 (com HU-01 e HU-04): PostgreSQL + Prisma + JWT + RBAC contextual +
+ * Integração REAL da  (com  e ): PostgreSQL + Prisma + JWT + RBAC contextual +
  * auditoria durável, pela API HTTP do app de produção. Sem mocks.
  *
  * Executa apenas com RUN_DB_INTEGRATION=1 e DATABASE_URL LOCAL (banco isolado com migrations).
@@ -35,7 +35,7 @@ interface Usuario {
   readonly cookie: string;
 }
 
-describe('HU-03 governança com infraestrutura real (banco isolado)', { skip: !habilitado }, () => {
+describe('Governança com infraestrutura real (banco isolado)', { skip: !habilitado }, () => {
   let server: Server;
   let prisma: typeof import('../../src/config/database.js')['prisma'];
   let pixCrypto: typeof import('../../src/utils/pixCrypto.util.js')['pixCryptoService'];

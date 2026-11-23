@@ -2,7 +2,7 @@ import { prisma } from '../config/database.js';
 import type { PecaPersistida, PecaRepository, StatusPeca } from './contracts/pecas.contracts.js';
 
 /**
- * Implementação real (Prisma/PostgreSQL) do `PecaRepository` (T-PEC-01/02).
+ * Implementação real (Prisma/PostgreSQL) do `PecaRepository`.
  * A criação aninhada grava `pecas` e `fotos_peca` na mesma transação (pendência P4); os CHECKs
  * do banco revalidam a cubagem física (Invariante 2).
  */

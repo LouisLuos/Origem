@@ -7,7 +7,7 @@ function limitar(valor: string, maximo: number): string {
 }
 
 /**
- * Sink durável da auditoria de segurança (HU-03 / T-ART-03): grava o evento já projetado pela
+ * Sink durável da auditoria de segurança: grava o evento já projetado pela
  * allowlist (`projectSafeAuditEvent`) na tabela somente-inserção `auditoria_seguranca`.
  */
 export const prismaSecurityAuditSink: SecurityAuditSink = {

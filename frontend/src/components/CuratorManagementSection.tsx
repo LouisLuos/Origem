@@ -22,6 +22,7 @@ interface CuratorManagementSectionProps {
 const dateFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' })
 
 const operationLabels: Record<AtelierOperation, string> = {
+  EDITAR_DADOS_ATELIE: 'Dados do ateliê',
   ALTERAR_CHAVE_PIX: 'Chave Pix',
   CONSULTAR_DADOS_FINANCEIROS: 'Dados financeiros',
   GERENCIAR_CURADORES: 'Curadores',
@@ -137,7 +138,7 @@ export function CuratorManagementSection({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft">
-            Governança do ateliê (T-ART-04)
+            Governança do ateliê
           </p>
           <h2 id="curators-management-title" className="pt-1 text-xl font-semibold text-ink">
             Equipe de curadores operacionais

@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model Endereco
- * HU-04 (T-ATE-01): endereço de expedição (1:1 estrito com ateliê).
+ * Endereço de expedição (1:1 estrito com ateliê).
  */
 export type EnderecoModel = runtime.Types.Result.DefaultSelection<Prisma.$EnderecoPayload>
 

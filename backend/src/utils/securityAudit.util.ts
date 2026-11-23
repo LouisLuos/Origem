@@ -2,7 +2,7 @@ import type { OperacaoAtelie } from '../repositories/contracts/hu03.contracts.js
 import { prismaSecurityAuditSink } from '../repositories/prismaSecurityAudit.sink.js';
 
 /**
- * Serviço de auditoria estruturada de segurança da HU-03.
+ * Serviço de auditoria estruturada de segurança da .
  *
  * Persistência durável: a instância padrão grava cada evento na tabela somente-inserção
  * `auditoria_seguranca` (PostgreSQL). Se a gravação falhar, o evento é emitido no log estruturado

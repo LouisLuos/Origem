@@ -12,7 +12,7 @@ const user: AuthUserRecord = {
   roles: ['COMPRADOR'],
 };
 
-describe('sessão JWT da HU-01', () => {
+describe('sessão JWT', () => {
   it('assina e verifica sessão por cookie HttpOnly', async () => {
     const token = await sessionTokenService.issue(user);
     const result = await jwtAuthIdentityProvider.verify({

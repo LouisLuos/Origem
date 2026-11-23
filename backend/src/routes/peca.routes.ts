@@ -52,7 +52,7 @@ export interface PecaRoutesDeps {
 }
 
 /**
- * Rotas de escrita de peças no escopo do ateliê (HU-05). Montadas em `/atelies/:atelieId/pecas`
+ * Rotas de escrita de peças no escopo do ateliê. Montadas em `/atelies/:atelieId/pecas`
  * com `mergeParams`, para que o RBAC contextual leia o `atelieId` da URL.
  */
 export function createPecaRoutes(deps?: PecaRoutesDeps): Router {

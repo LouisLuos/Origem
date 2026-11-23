@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model Atelie
- * HU-04 (T-ATE-01): ateliê único por artesão titular no MVP.
+ * Ateliê único por artesão titular no MVP.
  */
 export type AtelieModel = runtime.Types.Result.DefaultSelection<Prisma.$AteliePayload>
 

@@ -10,7 +10,7 @@ const validRegistration = {
   password: 'Origem@2026',
 };
 
-describe('validações da HU-01', () => {
+describe('validações de autenticação', () => {
   it('valida CPF/CNPJ e normaliza os dados de cadastro', () => {
     const result = registerBodySchema.parse(validRegistration);
     assert.equal(result.email, 'maria@email.com');

@@ -17,14 +17,14 @@ export interface ProdutoPublico {
   ownerEmail?: string | null;
   imageUrl: string;
   imageAlt: string;
-  /** Presente nas peças publicadas pela HU-05. */
+  /** Presente nas peças publicadas pela . */
   description?: string;
-  /** Fotos da peça, com a capa primeiro (peças publicadas pela HU-05). */
+  /** Fotos da peça, com a capa primeiro (peças publicadas pela ). */
   gallery?: string[];
 }
 
 /**
- * Vitrine pública: combina as peças publicadas no PostgreSQL (HU-05) com o catálogo legado de
+ * Vitrine pública: combina as peças publicadas no PostgreSQL com o catálogo legado de
  * catalogo.json, preservado por compatibilidade (IA recomendadora e IDs `p01`...). Os IDs não
  * colidem: peças do banco usam UUID.
  */

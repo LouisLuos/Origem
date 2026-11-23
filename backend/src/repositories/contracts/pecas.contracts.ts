@@ -1,12 +1,12 @@
 /**
- * Contratos de domínio e de infraestrutura da HU-05 (Catalogação de Peças com Cubagem e Fotos).
+ * Contratos de domínio e de infraestrutura para catalogação de peças com cubagem e fotos.
  *
  * Referências normativas:
- * - references/backlog-priorizado-origem.md (HU-05, T-PEC-01..04)
+ * - references/backlog-priorizado-origem.md
  * - references/modelagem-inicial-origem.sql (tabelas `pecas`, `fotos_peca`, enum `StatusPeca`)
  *
- * PENDÊNCIAS COM A EQUIPE DE BANCO (T-PEC-01 — NÃO IMPLEMENTADAS AQUI):
- * - [P1] Tabelas `pecas` e `fotos_peca` inexistentes no PostgreSQL; dependem de `atelies` (HU-04 / T-ATE-01).
+ * PENDÊNCIAS COM A EQUIPE DE BANCO — NÃO IMPLEMENTADAS AQUI:
+ * - [P1] Tabelas `pecas` e `fotos_peca` inexistentes no PostgreSQL; dependem de `atelies`.
  * - [P2] Tipo das PKs (o banco real usa UUID; o SQL de referência usa INT IDENTITY). Identificadores
  *        trafegam aqui como string para não acoplar a decisão.
  * - [P3] Constraints CHECK: peso_gramas >= 50, comprimento/largura/altura > 0, preco > 0.
@@ -64,14 +64,14 @@ export interface PecaPersistida {
 }
 
 /**
- * Contrato de persistência de peças (T-PEC-01 / T-PEC-02).
+ * Contrato de persistência de peças.
  * A implementação real deve gravar `pecas` e `fotos_peca` em uma única transação (pendência P4).
  */
 export interface PecaRepository {
   criarComFotos(dados: CriarPecaPersistenciaInput): Promise<PecaPersistida>;
 }
 
-/** Imagem já otimizada para a web (T-PEC-03). */
+/** Imagem já otimizada para a web. */
 export interface ImagemOtimizada {
   readonly conteudo: Buffer;
   readonly tipoMime: string;
@@ -79,7 +79,7 @@ export interface ImagemOtimizada {
 }
 
 /**
- * Contrato de processamento/otimização das fotos (T-PEC-03).
+ * Contrato de processamento e otimização das fotos.
  * PENDÊNCIA: biblioteca ou serviço de otimização ainda não aprovado.
  */
 export interface ProcessadorImagemPeca {
@@ -92,7 +92,7 @@ export interface ArquivoArmazenado {
 }
 
 /**
- * Contrato de armazenamento das fotos (T-PEC-03).
+ * Contrato de armazenamento das fotos.
  * PENDÊNCIA: bucket, políticas e credenciais do Supabase Storage (ou outro provedor) não configurados.
  */
 export interface ArmazenamentoFotosPeca {

@@ -1,5 +1,5 @@
 /**
- * Integração REAL da HU-05 (com HU-01, HU-03 e HU-04): PostgreSQL + Prisma + JWT + RBAC + sharp
+ * Integração REAL da  (com ,  e ): PostgreSQL + Prisma + JWT + RBAC + sharp
  * + armazenamento em disco, pela API HTTP do app de produção. Sem mocks.
  *
  * Executa apenas com RUN_DB_INTEGRATION=1 e um DATABASE_URL LOCAL (banco isolado, com as
@@ -39,7 +39,7 @@ function gerarCpf(semente: number): string {
   return [...base, d1, d2].join('');
 }
 
-describe('HU-05 ponta a ponta com infraestrutura real (banco isolado)', { skip: !habilitado }, () => {
+describe('Fluxo ponta a ponta com infraestrutura real (banco isolado)', { skip: !habilitado }, () => {
   let server: Server;
   let dirFotos: string;
   let prisma: typeof import('../../src/config/database.js')['prisma'];
@@ -127,7 +127,7 @@ describe('HU-05 ponta a ponta com infraestrutura real (banco isolado)', { skip: 
     await rm(dirFotos, { recursive: true, force: true });
   });
 
-  it('HU-01 + HU-03: cadastra usuário real e o habilita como artesão (papel ARTESAO no banco)', async () => {
+  it('cadastra usuário real e o habilita como artesão (papel ARTESAO no banco)', async () => {
     estado.titular = await cadastrarUsuario('titular', sufixo);
     const res = await chamar(
       'POST',
@@ -142,7 +142,7 @@ describe('HU-05 ponta a ponta com infraestrutura real (banco isolado)', { skip: 
     assert.ok(artesao && !artesao.chavePixCriptografada.includes(estado.titular.email), 'Chave Pix deve estar cifrada');
   });
 
-  it('HU-04: cadastra ateliê e endereço atomicamente; segundo cadastro → 422', async () => {
+  it('cadastra ateliê e endereço atomicamente; segundo cadastro retorna 422', async () => {
     const res = await chamar('POST', '/atelies', atelieValido, estado.titular?.cookie);
     assert.equal(res.status, 201, JSON.stringify(res.body));
     assert.equal(res.body.endereco.cep, '55000000');
@@ -154,12 +154,12 @@ describe('HU-05 ponta a ponta com infraestrutura real (banco isolado)', { skip: 
     assert.equal(repetido.status, 422);
   });
 
-  it('HU-04: usuário não habilitado como artesão não cria ateliê (403)', async () => {
+  it('usuário não habilitado como artesão não cria ateliê (403)', async () => {
     const comprador = await cadastrarUsuario('sem-artesao', sufixo + 7);
     assert.equal((await chamar('POST', '/atelies', atelieValido, comprador.cookie)).status, 403);
   });
 
-  it('HU-03: RBAC real lista o vínculo de titular com permissão GERENCIAR_CATALOGO', async () => {
+  it('RBAC lista o vínculo de titular com permissão GERENCIAR_CATALOGO', async () => {
     const res = await chamar('GET', '/atelies/meus-vinculos', undefined, estado.titular?.cookie);
     assert.equal(res.status, 200);
     const vinculo = (res.body.dados as any[]).find((v) => v.atelieId === estado.atelieId);
@@ -167,7 +167,7 @@ describe('HU-05 ponta a ponta com infraestrutura real (banco isolado)', { skip: 
     assert.ok(vinculo.permissoes.includes('GERENCIAR_CATALOGO'));
   });
 
-  it('HU-05: 422 com a mensagem oficial para peso de 30g, sem gravar nada', async () => {
+  it('retorna 422 para peso de 30g sem gravar dados', async () => {
     const fotos = [await fotoReal('jpeg', 800, 600), await fotoReal('png', 600, 800)];
     const res = await chamar('POST', `/atelies/${estado.atelieId}/pecas`, corpoPeca(fotos, { pesoGramas: 30 }), estado.titular?.cookie);
     assert.equal(res.status, 422);
@@ -176,7 +176,7 @@ describe('HU-05 ponta a ponta com infraestrutura real (banco isolado)', { skip: 
     assert.deepEqual(await readdir(dirFotos), []);
   });
 
-  it('HU-05: imagem corrompida → 422 sem arquivos nem registros parciais', async () => {
+  it('rejeita imagem corrompida sem arquivos nem registros parciais', async () => {
     const corrompida = { tipoMime: 'image/jpeg', conteudoBase64: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4, 5, 6, 7, 8]).toString('base64') };
     const res = await chamar('POST', `/atelies/${estado.atelieId}/pecas`, corpoPeca([await fotoReal('png', 300, 300), corrompida]), estado.titular?.cookie);
     assert.equal(res.status, 422);
@@ -185,7 +185,7 @@ describe('HU-05 ponta a ponta com infraestrutura real (banco isolado)', { skip: 
     assert.deepEqual(await readdir(dirFotos), []);
   });
 
-  it('HU-05 Cenários 1 e 3: publica peça real (201, DISPONIVEL, is_fragil, capa) com fotos otimizadas', async () => {
+  it('publica peça real (201, DISPONIVEL, is_fragil, capa) com fotos otimizadas', async () => {
     const fotos = [await fotoReal('jpeg', 3000, 2000), await fotoReal('png', 1200, 1800)];
     const res = await chamar('POST', `/atelies/${estado.atelieId}/pecas`, corpoPeca(fotos), estado.titular?.cookie);
     assert.equal(res.status, 201, JSON.stringify(res.body));
@@ -246,7 +246,7 @@ describe('HU-05 ponta a ponta com infraestrutura real (banco isolado)', { skip: 
     assert.equal((await chamar('POST', `/atelies/${estado.atelieId}/pecas`, corpoPeca(fotos))).status, 401);
   });
 
-  it('HU-03: curador vinculado cataloga peças, mas não acessa dados financeiros (403)', async () => {
+  it('curador vinculado cataloga peças, mas não acessa dados financeiros (403)', async () => {
     const curador = await cadastrarUsuario('curador', sufixo + 29);
     const vinculo = await chamar('POST', `/atelies/${estado.atelieId}/curadores`, { email: curador.email }, estado.titular?.cookie);
     assert.equal(vinculo.status, 201, JSON.stringify(vinculo.body));

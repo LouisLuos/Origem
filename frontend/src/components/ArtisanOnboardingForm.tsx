@@ -98,7 +98,7 @@ export function ArtisanOnboardingForm() {
       <div className="flex flex-wrap items-start justify-between gap-3 pb-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft">
-            Governança do titular (HU-03)
+            Governança do titular
           </p>
           <h2 id="artisan-onboarding-title" className="pt-1 text-xl font-semibold text-ink">
             Habilitação como artesão titular
@@ -130,7 +130,7 @@ export function ArtisanOnboardingForm() {
           </p>
           <p className="text-xs text-ink-soft">
             Status DICT: {confirmedResult.chavePix.verificacaoDict} · A parametrização física do
-            ateliê e endereço de origem ocorre na etapa seguinte (HU-04).
+            ateliê e endereço de origem ocorre na etapa seguinte.
           </p>
         </div>
       ) : (

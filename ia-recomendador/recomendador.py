@@ -1,4 +1,4 @@
-"""Lógica do recomendador da HU-24 (sem BentoML, para poder ser testada isolada).
+"""Lógica do recomendador da  (sem BentoML, para poder ser testada isolada).
 
 T-IA-01: cada peça vira um vetor de features (técnica, polo, categoria, faixa de preço).
 T-IA-02: similaridade de cosseno entre vetores + reforço por co-compra (cestas).
@@ -11,7 +11,7 @@ from collections import defaultdict
 import numpy as np
 
 # Peso de cada grupo de features no vetor. Técnica pesa mais porque é o
-# principal critério da HU-24; polo vem logo atrás (mesma região).
+# principal critério do recomendador; polo vem logo atrás (mesma região).
 PESOS = {"tecnica": 1.0, "polo": 0.8, "categoria": 0.4, "faixa_preco": 0.3}
 
 # Mistura final: conteúdo (cosseno) + comportamento (comprados juntos).
@@ -19,7 +19,7 @@ PESO_COSSENO = 0.6
 PESO_COOC = 0.4
 
 LIMITE_PADRAO = 4  # DoD da T-IA-02: top-4
-LIMITE_MAXIMO = 6  # Cenário 1 da HU-24: "até 6 peças"
+LIMITE_MAXIMO = 6  # Limite máximo de recomendações exibidas.
 
 
 def faixa_preco(preco: float) -> str:
@@ -80,7 +80,7 @@ def treinar(catalogo: dict) -> dict:
 
 
 def recomendar(artefato: dict, produto_id: str, limite: int = LIMITE_PADRAO) -> dict:
-    """Peças afins à peça aberta na página (HU-24).
+    """Peças afins à peça aberta na página.
 
     Regras do BDD: candidatas precisam ser da mesma técnica OU do mesmo polo,
     nunca a própria peça, nunca peça com estoque zerado; no máximo 6.

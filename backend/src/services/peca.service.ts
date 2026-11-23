@@ -22,7 +22,7 @@ export interface PecaServiceDeps {
 }
 
 export interface PecaService {
-  /** Publica uma peça validada no ateliê informado (HU-05, Cenário 1). */
+  /** Publica uma peça validada no ateliê informado. */
   criar(atelieId: string, dados: CriarPecaDados): Promise<PecaPersistida>;
 }
 

@@ -80,7 +80,7 @@ const passwordHasher: PasswordHasher = {
   },
 };
 
-describe('serviço de autenticação HU-01', () => {
+describe('serviço de autenticação', () => {
   it('cria comprador com e-mail normalizado e senha em hash', async () => {
     const repository = new InMemoryAuthRepository();
     const service = createAuthService({ repository, passwordHasher });

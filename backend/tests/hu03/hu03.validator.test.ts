@@ -12,7 +12,7 @@ import {
 
 const VALID_BIO = 'Ceramista do Alto do Moura há 25 anos produzindo bonecos figurativos.';
 
-describe('Etapa C2 — Schemas Zod da HU-03 (habilitarArtesaoBodySchema)', () => {
+describe('Etapa C2 — Schemas Zod de habilitação de artesão titular', () => {
   it('valida, normaliza e descarta campos extras contra mass assignment', () => {
     const parsed = habilitarArtesaoBodySchema.safeParse({
       biografiaCultural: `  ${VALID_BIO}  `,

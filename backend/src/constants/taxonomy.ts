@@ -12,7 +12,7 @@ export const TECHNIQUE_MAP: Record<string, string> = {
 };
 
 /**
- * Tipologias aceitas no cadastro de peças (HU-05, "tipologia homologada").
+ * Tipologias aceitas no cadastro de peças ("tipologia homologada").
  *
  * Os documentos normativos não fecham uma lista (a modelagem usa `varchar` e a análise de domínio
  * cita apenas exemplos). Por compatibilidade, a lista reúne as técnicas já usadas pelo projeto:
@@ -34,7 +34,7 @@ export const TIPOLOGIAS_HOMOLOGADAS = [
 export type TipologiaHomologada = (typeof TIPOLOGIAS_HOMOLOGADAS)[number];
 
 /**
- * Polos culturais pernambucanos aceitos no cadastro de ateliê (HU-04, "polo homologado").
+ * Polos culturais pernambucanos aceitos no cadastro de ateliê ("polo homologado").
  * Reúne os polos citados no backlog (Alto do Moura/Caruaru, Tracunhaém, Bezerros, Pesqueira,
  * Goiana), os do Design System (`culturalHubs`) e os do catálogo da IA (Passira).
  * Deve permanecer idêntica a `atelierCulturalHubs` em frontend/src/services/atelierService.ts.

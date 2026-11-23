@@ -3,7 +3,7 @@ import type {
   TipoChavePix,
 } from '../repositories/contracts/hu03.contracts.js';
 import {
-  HU03_ERROR_CODES,
+  ATELIE_ERROR_CODES,
   unconfiguredAtelieFinanceiroRepository,
 } from '../repositories/unconfiguredHu03.repository.js';
 import { prismaAtelieFinanceiroRepository } from '../repositories/prismaHu03.repository.js';
@@ -115,7 +115,7 @@ export function createAtelieFinanceiroService(
         throw new AppError(
           'Acesso financeiro negado: titularidade inconsistente para este ateliê.',
           403,
-          HU03_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO,
+          ATELIE_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO,
         );
       }
 

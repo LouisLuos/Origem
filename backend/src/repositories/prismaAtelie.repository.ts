@@ -7,7 +7,51 @@ import type { AtelieCadastroRepository } from './contracts/hu04.contracts.js';
 export const MENSAGEM_ATELIE_DUPLICADO =
   'Você já possui um ateliê cadastrado. No MVP, cada artesão titular pode ter apenas um ateliê.';
 
-/** Implementação real (Prisma/PostgreSQL) do cadastro de ateliê da HU-04. */
+function mapAtelie(atelie: {
+  id: string;
+  artesaoId: string;
+  nomeComercial: string;
+  poloCultural: string;
+  status: string;
+  criadoEm: Date;
+  endereco: {
+    cep: string;
+    logradouro: string;
+    numero: string;
+    complemento: string | null;
+    bairro: string;
+    cidade: string;
+    uf: string;
+  } | null;
+}) {
+  if (!atelie.endereco) {
+    throw new AppError(
+      'O endereço de expedição do ateliê não foi encontrado.',
+      500,
+      'ATELIE_ENDERECO_INCONSISTENTE',
+    );
+  }
+  const { endereco } = atelie;
+  return {
+    id: atelie.id,
+    artesaoId: atelie.artesaoId,
+    nomeComercial: atelie.nomeComercial,
+    poloCultural: atelie.poloCultural,
+    status: atelie.status === 'SUSPENSO' ? 'SUSPENSO' as const : 'ATIVO' as const,
+    endereco: {
+      cep: endereco.cep,
+      logradouro: endereco.logradouro,
+      numero: endereco.numero,
+      ...(endereco.complemento ? { complemento: endereco.complemento } : {}),
+      bairro: endereco.bairro,
+      cidade: endereco.cidade,
+      uf: endereco.uf,
+    },
+    criadoEm: atelie.criadoEm.toISOString(),
+  };
+}
+
+/** Implementação real (Prisma/PostgreSQL) do cadastro de ateliê da . */
 export const prismaAtelieCadastroRepository: AtelieCadastroRepository = {
   async findArtesaoIdPorUsuarioId(usuarioId) {
     if (!isUuid(usuarioId)) return null;
@@ -41,25 +85,7 @@ export const prismaAtelieCadastroRepository: AtelieCadastroRepository = {
         },
         include: { endereco: true },
       });
-      const endereco = atelie.endereco;
-      if (!endereco) throw new Error('Endereço do ateliê não foi persistido.');
-      return {
-        id: atelie.id,
-        artesaoId: atelie.artesaoId,
-        nomeComercial: atelie.nomeComercial,
-        poloCultural: atelie.poloCultural,
-        status: atelie.status === 'SUSPENSO' ? 'SUSPENSO' : 'ATIVO',
-        endereco: {
-          cep: endereco.cep,
-          logradouro: endereco.logradouro,
-          numero: endereco.numero,
-          ...(endereco.complemento ? { complemento: endereco.complemento } : {}),
-          bairro: endereco.bairro,
-          cidade: endereco.cidade,
-          uf: endereco.uf,
-        },
-        criadoEm: atelie.criadoEm.toISOString(),
-      };
+      return mapAtelie(atelie);
     } catch (error) {
       // Corrida entre duas submissões simultâneas: o UNIQUE de artesao_id garante a regra.
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
@@ -67,5 +93,53 @@ export const prismaAtelieCadastroRepository: AtelieCadastroRepository = {
       }
       throw error;
     }
+  },
+
+  async findAteliePorIdEUsuarioId(atelieId, usuarioId) {
+    if (!isUuid(atelieId) || !isUuid(usuarioId)) return null;
+    const atelie = await prisma.atelie.findFirst({
+      where: { id: atelieId, artesao: { usuarioId } },
+      include: { endereco: true },
+    });
+    return atelie ? mapAtelie(atelie) : null;
+  },
+
+  async atualizarAtelieComEndereco(atelieId, usuarioId, dados) {
+    if (!isUuid(atelieId) || !isUuid(usuarioId)) return null;
+    return prisma.$transaction(async (tx) => {
+      const atual = await tx.atelie.findFirst({
+        where: { id: atelieId, artesao: { usuarioId } },
+        select: { id: true, endereco: { select: { id: true } } },
+      });
+      if (!atual) return null;
+      if (!atual.endereco) {
+        throw new AppError(
+          'O endereço de expedição do ateliê não foi encontrado.',
+          500,
+          'ATELIE_ENDERECO_INCONSISTENTE',
+        );
+      }
+
+      const atelie = await tx.atelie.update({
+        where: { id: atual.id },
+        data: {
+          nomeComercial: dados.nomeComercial,
+          poloCultural: dados.poloCultural,
+          endereco: {
+            update: {
+              cep: dados.endereco.cep,
+              logradouro: dados.endereco.logradouro,
+              numero: dados.endereco.numero,
+              complemento: dados.endereco.complemento ?? null,
+              bairro: dados.endereco.bairro,
+              cidade: dados.endereco.cidade,
+              uf: dados.endereco.uf,
+            },
+          },
+        },
+        include: { endereco: true },
+      });
+      return mapAtelie(atelie);
+    });
   },
 };

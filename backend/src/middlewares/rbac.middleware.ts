@@ -8,7 +8,7 @@ import {
   type RelacionamentoUsuarioAtelie,
 } from '../repositories/contracts/hu03.contracts.js';
 import {
-  HU03_ERROR_CODES,
+  ATELIE_ERROR_CODES,
   unconfiguredAtelieAutorizacaoRepository,
 } from '../repositories/unconfiguredHu03.repository.js';
 import { AppError } from '../utils/AppError.js';
@@ -89,8 +89,8 @@ export function evaluateAtelierAccess(
       allowed: false,
       reason: 'NO_ATELIER_LINK',
       errorCode: isFinancial
-        ? HU03_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO
-        : HU03_ERROR_CODES.ACESSO_ATELIE_NEGADO,
+        ? ATELIE_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO
+        : ATELIE_ERROR_CODES.ACESSO_ATELIE_NEGADO,
       message: isFinancial
         ? 'Acesso financeiro negado: usuário não possui titularidade neste ateliê.'
         : 'Acesso negado: usuário não possui vínculo com este ateliê.',
@@ -106,7 +106,7 @@ export function evaluateAtelierAccess(
       return {
         allowed: false,
         reason: 'CURATOR_FINANCIAL_BLOCK',
-        errorCode: HU03_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO,
+        errorCode: ATELIE_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO,
         message:
           'Acesso financeiro negado: curadores não têm permissão para consultar ou alterar a Chave Pix do ateliê.',
       };
@@ -118,8 +118,19 @@ export function evaluateAtelierAccess(
       return {
         allowed: false,
         reason: 'CURATOR_GOVERNANCE_BLOCK',
-        errorCode: HU03_ERROR_CODES.ACESSO_ATELIE_NEGADO,
+        errorCode: ATELIE_ERROR_CODES.ACESSO_ATELIE_NEGADO,
         message: 'Operação negada: apenas o artesão titular pode gerenciar os curadores do ateliê.',
+      };
+
+    case 'EDITAR_DADOS_ATELIE':
+      if (relacionamento.ehTitular) {
+        return { allowed: true, context };
+      }
+      return {
+        allowed: false,
+        reason: 'NOT_ATELIER_OWNER',
+        errorCode: ATELIE_ERROR_CODES.ACESSO_ATELIE_NEGADO,
+        message: 'Operação negada: apenas o artesão titular pode editar os dados do ateliê.',
       };
 
     case 'GERENCIAR_CATALOGO':
@@ -134,7 +145,7 @@ export function evaluateAtelierAccess(
         return {
           allowed: false,
           reason: 'ATELIER_SUSPENDED_FOR_CURATOR',
-          errorCode: HU03_ERROR_CODES.ACESSO_ATELIE_NEGADO,
+          errorCode: ATELIE_ERROR_CODES.ACESSO_ATELIE_NEGADO,
           message: 'Acesso negado: curadores não podem operar ateliês com status suspenso.',
         };
       }
@@ -144,7 +155,7 @@ export function evaluateAtelierAccess(
   return {
     allowed: false,
     reason: 'OPERATION_NOT_ALLOWED',
-    errorCode: HU03_ERROR_CODES.ACESSO_ATELIE_NEGADO,
+    errorCode: ATELIE_ERROR_CODES.ACESSO_ATELIE_NEGADO,
     message: 'Operação não autorizada para este ateliê.',
   };
 }
@@ -190,7 +201,7 @@ export function createAtelierRbacMiddleware(deps?: AtelierRbacDependencies) {
             new AppError(
               'Não foi possível verificar as permissões do ateliê no momento.',
               503,
-              HU03_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
+              ATELIE_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
             ),
           );
           return;
@@ -228,12 +239,12 @@ export function createAtelierRbacMiddleware(deps?: AtelierRbacDependencies) {
           new AppError(
             'Não foi possível concluir a verificação de autorização do ateliê.',
             503,
-            HU03_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
+            ATELIE_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
           ),
         );
       }
     };
 }
 
-/** Instância padrão conectada ao adaptador não configurado até a entrega da T-ART-01. */
+/** Instância padrão conectada ao adaptador não configurado até a entrega da . */
 export const requireAtelierPermission = createAtelierRbacMiddleware();

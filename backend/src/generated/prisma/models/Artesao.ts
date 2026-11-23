@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model Artesao
- * HU-03 (T-ART-01): perfil de artesão titular com Chave Pix cifrada (AES-256-GCM).
+ * Perfil de artesão titular com Chave Pix cifrada usando AES-256-GCM.
  */
 export type ArtesaoModel = runtime.Types.Result.DefaultSelection<Prisma.$ArtesaoPayload>
 

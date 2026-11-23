@@ -7,7 +7,7 @@ import type {
   HabilitacaoArtesaoRepository,
 } from './contracts/hu03.contracts.js';
 
-export const HU03_ERROR_CODES = {
+export const ATELIE_ERROR_CODES = {
   PERSISTENCIA_INDISPONIVEL: 'PERSISTENCIA_INDISPONIVEL',
   AUTENTICACAO_INDISPONIVEL: 'AUTENTICACAO_INDISPONIVEL',
   ACESSO_FINANCEIRO_BLOQUEADO: 'ACESSO_FINANCEIRO_BLOQUEADO',
@@ -16,21 +16,21 @@ export const HU03_ERROR_CODES = {
 
 export function createPersistenceUnavailableError(operacao: string): AppError {
   return new AppError(
-    `Persistência indisponível para '${operacao}': a estrutura de banco da tarefa T-ART-01 ainda não foi implantada.`,
+    `Persistência indisponível para '${operacao}': a estrutura de banco da tarefa  ainda não foi implantada.`,
     503,
-    HU03_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
+    ATELIE_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
   );
 }
 
 /**
- * Adaptador padrão fail-closed enquanto a autenticação real da HU-01 não está conectada.
+ * Adaptador padrão fail-closed enquanto a autenticação real da  não está conectada.
  * Nunca emite nem valida identidades simuladas em produção.
  */
 export const unconfiguredAuthIdentityProvider: AuthIdentityProvider = {
   async verify() {
     return {
       status: 'PROVIDER_UNAVAILABLE',
-      reason: 'Serviço de autenticação real (HU-01) ainda não integrado ao backend.',
+      reason: 'Serviço de autenticação real ainda não integrado ao backend.',
     };
   },
 };

@@ -2,6 +2,7 @@ import type { PixKeyType } from '@/utils/pixKey'
 import { apiRequest, isApiError } from './api'
 
 export type AtelierOperation =
+  | 'EDITAR_DADOS_ATELIE'
   | 'ALTERAR_CHAVE_PIX'
   | 'CONSULTAR_DADOS_FINANCEIROS'
   | 'GERENCIAR_CURADORES'
@@ -120,7 +121,7 @@ export function classifyGovernanceError(
       status,
       code,
       message:
-        'Sessão não autenticada no servidor. É necessária a integração real de autenticação (HU-01) para esta operação.',
+        'Sessão não autenticada no servidor. É necessária a integração real de autenticação para esta operação.',
     }
   }
 
@@ -135,7 +136,7 @@ export function classifyGovernanceError(
         status,
         code,
         message:
-          'Autenticação oficial do servidor (HU-01) ainda indisponível. Nenhuma operação foi executada.',
+          'Autenticação oficial do servidor ainda indisponível. Nenhuma operação foi executada.',
       }
     }
 
@@ -144,7 +145,7 @@ export function classifyGovernanceError(
       status,
       code,
       message:
-        'Persistência em banco de dados (T-ART-01) ainda indisponível. Nenhuma alteração foi salva.',
+        'Persistência em banco de dados ainda indisponível. Nenhuma alteração foi salva.',
     }
   }
 
@@ -164,7 +165,7 @@ export function classifyGovernanceError(
 }
 
 /**
- * Integração HTTP real com os endpoints de governança da HU-03.
+ * Integração HTTP real com os endpoints de governança da .
  * Não utiliza tokens fictícios, localStorage ou simulações de sucesso.
  */
 export const atelierGovernanceService = {

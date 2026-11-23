@@ -48,32 +48,32 @@ export { Prisma }
 export type Usuario = Prisma.UsuarioModel
 /**
  * Model Artesao
- * HU-03 (T-ART-01): perfil de artesão titular com Chave Pix cifrada (AES-256-GCM).
+ * Perfil de artesão titular com Chave Pix cifrada usando AES-256-GCM.
  */
 export type Artesao = Prisma.ArtesaoModel
 /**
  * Model Atelie
- * HU-04 (T-ATE-01): ateliê único por artesão titular no MVP.
+ * Ateliê único por artesão titular no MVP.
  */
 export type Atelie = Prisma.AtelieModel
 /**
  * Model AtelieCurador
- * HU-03 (T-ART-01): vínculo associativo de curadores operacionais por ateliê.
+ * Vínculo associativo de curadores operacionais por ateliê.
  */
 export type AtelieCurador = Prisma.AtelieCuradorModel
 /**
  * Model Endereco
- * HU-04 (T-ATE-01): endereço de expedição (1:1 estrito com ateliê).
+ * Endereço de expedição (1:1 estrito com ateliê).
  */
 export type Endereco = Prisma.EnderecoModel
 /**
  * Model Peca
- * HU-05 (T-PEC-01): peça do acervo com cubagem física (CHECKs na migration).
+ * Peça do acervo com cubagem física (restrições CHECK na migration).
  */
 export type Peca = Prisma.PecaModel
 /**
  * Model FotoPeca
- * HU-05 (T-PEC-01): fotos otimizadas da peça (no máximo uma principal por peça).
+ * Fotos otimizadas da peça (no máximo uma principal por peça).
  */
 export type FotoPeca = Prisma.FotoPecaModel
 /**
@@ -88,7 +88,7 @@ export type UsuarioPapel = Prisma.UsuarioPapelModel
 export type AuthLoginAttempt = Prisma.AuthLoginAttemptModel
 /**
  * Model AuditoriaSeguranca
- * HU-03 (T-ART-03): trilha de auditoria de segurança, somente inserção (trigger na migration).
+ * Trilha de auditoria de segurança, somente inserção (trigger na migration).
  * Identificadores são texto e sem FK para que o registro sobreviva a exclusões e aceite IDs
  * de recursos inexistentes informados em tentativas negadas.
  */

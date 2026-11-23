@@ -11,7 +11,7 @@ import {
 import { errorHandler } from '../../src/middlewares/errorHandler.js';
 import { resolveCorrelationId } from '../../src/middlewares/requestLogger.js';
 import {
-  HU03_ERROR_CODES,
+  ATELIE_ERROR_CODES,
   unconfiguredAtelieAutorizacaoRepository,
   unconfiguredAtelieFinanceiroRepository,
   unconfiguredAuthIdentityProvider,
@@ -170,7 +170,7 @@ describe('Etapa C1 — AppError e errorHandler', () => {
     const { res, captured } = createMockResponse();
 
     errorHandler(
-      new AppError('Persistência indisponível.', 503, HU03_ERROR_CODES.PERSISTENCIA_INDISPONIVEL),
+      new AppError('Persistência indisponível.', 503, ATELIE_ERROR_CODES.PERSISTENCIA_INDISPONIVEL),
       req,
       res,
       noopNext,
@@ -221,7 +221,7 @@ describe('Etapa C1 — AppError e errorHandler', () => {
   });
 });
 
-describe('Etapa C1 — Adaptadores fail-closed (sem HU-01 e sem T-ART-01)', () => {
+describe('Etapa C1 — Adaptadores fail-closed sem configuração', () => {
   it('unconfiguredAuthIdentityProvider retorna PROVIDER_UNAVAILABLE mesmo com credencial enviada', async () => {
     const verification = await unconfiguredAuthIdentityProvider.verify({
       bearerToken: 'qualquer.token.aqui',
@@ -262,7 +262,7 @@ describe('Etapa C1 — Adaptadores fail-closed (sem HU-01 e sem T-ART-01)', () =
       await assert.rejects(call, (err: unknown) => {
         assert.ok(err instanceof AppError);
         assert.equal(err.statusCode, 503);
-        assert.equal(err.code, HU03_ERROR_CODES.PERSISTENCIA_INDISPONIVEL);
+        assert.equal(err.code, ATELIE_ERROR_CODES.PERSISTENCIA_INDISPONIVEL);
         return true;
       });
     }

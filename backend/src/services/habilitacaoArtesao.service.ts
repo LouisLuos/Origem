@@ -35,8 +35,8 @@ export interface HabilitacaoArtesaoServiceDeps {
 }
 
 /**
- * Orquestra a habilitação de artesão titular (T-ART-02), protegendo a Chave Pix com
- * AES-256-GCM e respeitando a fronteira da HU-04 (não cria registro de ateliê aqui).
+ * Orquestra a habilitação de artesão titular, protegendo a Chave Pix com
+ * AES-256-GCM e respeitando a fronteira da  (não cria registro de ateliê aqui).
  */
 export function createHabilitacaoArtesaoService(
   deps?: HabilitacaoArtesaoServiceDeps,

@@ -32,12 +32,12 @@ app.use(
   }),
 );
 
-// Corpo maior (fotos em base64) aceito apenas na criação de peças (HU-05); demais rotas mantêm o limite padrão
+// Corpo maior (fotos em base64) é aceito apenas na criação de peças; demais rotas mantêm o limite padrão.
 app.use(`/api/v1${PECAS_ROUTE_PATH}`, pecaJsonBodyParser);
 app.use(express.json());
 app.use(requestLogger);
 
-// Fotos de peças no driver de armazenamento local (HU-05 / T-PEC-03): somente leitura, sem listagem
+// Fotos de peças no armazenamento local são somente leitura e não permitem listagem.
 if (resolverDriverFotos() === 'local') {
   app.use(
     ROTA_PUBLICA_FOTOS_LOCAIS,

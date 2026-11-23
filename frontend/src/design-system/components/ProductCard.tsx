@@ -20,7 +20,7 @@ export interface Product {
   details?: string[]
   /** Unidades em estoque. Ausente = sem controle de estoque; 0 = esgotada. */
   stock?: number
-  /** Fotos reais da peça (capa primeiro), presentes nas peças publicadas pelo cadastro (HU-05). */
+  /** Fotos reais da peça (capa primeiro), presentes nas peças publicadas pelo cadastro. */
   gallery?: string[]
 }
 

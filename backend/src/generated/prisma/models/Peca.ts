@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model Peca
- * HU-05 (T-PEC-01): peça do acervo com cubagem física (CHECKs na migration).
+ * Peça do acervo com cubagem física (restrições CHECK na migration).
  */
 export type PecaModel = runtime.Types.Result.DefaultSelection<Prisma.$PecaPayload>
 

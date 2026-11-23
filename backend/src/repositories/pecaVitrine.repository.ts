@@ -4,7 +4,7 @@ import { isUuid } from '../utils/uuid.util.js';
 import type { ProdutoPublico } from './produto.repository.js';
 
 /**
- * Leitura pública das peças publicadas no banco (HU-05 → vitrine), adaptadas ao contrato
+ * Leitura pública das peças publicadas no banco ( → vitrine), adaptadas ao contrato
  * `ProdutoPublico` já consumido pelo frontend. Somente peças `DISPONIVEL` são expostas, e nenhum
  * dado do titular além do nome público é lido.
  */

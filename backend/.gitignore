@@ -5,5 +5,5 @@ dist/
 !.env.example
 *.log
 
-# Fotos gravadas pelo driver de armazenamento local (HU-05)
+# Fotos gravadas pelo driver de armazenamento local
 uploads/

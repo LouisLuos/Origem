@@ -108,7 +108,7 @@ function parsePixKeyInput(
 }
 
 /**
- * Schema para `POST /api/v1/artesaos/habilitacao` (T-ART-02).
+ * Schema para `POST /api/v1/artesaos/habilitacao`.
  * Rejeita campos fora do contrato por descarte automático do `z.object`, evitando mass assignment.
  */
 export const habilitarArtesaoBodySchema = z
@@ -130,7 +130,7 @@ export const habilitarArtesaoBodySchema = z
   });
 
 /**
- * Schema para `PATCH /api/v1/atelies/:atelieId/chave-pix` (T-ART-02 / TC02).
+ * Schema para `PATCH /api/v1/atelies/:atelieId/chave-pix`.
  */
 export const atualizarChavePixBodySchema = z
   .object({
@@ -140,7 +140,7 @@ export const atualizarChavePixBodySchema = z
   .transform((data, ctx) => parsePixKeyInput(data.chavePix, data.tipoChavePix, ctx));
 
 /**
- * Schema para `POST /api/v1/atelies/:atelieId/curadores` (T-ART-04).
+ * Schema para `POST /api/v1/atelies/:atelieId/curadores`.
  */
 export const associarCuradorBodySchema = z.object({
   email: requiredStringField('E-mail do curador').transform((trimmed, ctx): string => {

@@ -1,6 +1,6 @@
 /**
- * Contratos da HU-04 (Parametrização do Ateliê e Endereço Físico de Origem).
- * Referências: references/backlog-priorizado-origem.md (HU-04, T-ATE-01/02) e
+ * Contratos da  (Parametrização do Ateliê e Endereço Físico de Origem).
+ * Referências: references/backlog-priorizado-origem.md e
  * references/modelagem-inicial-origem.sql (`atelies`, `enderecos`).
  */
 
@@ -36,4 +36,11 @@ export interface AtelieCadastroRepository {
   existeAteliePorArtesaoId(artesaoId: string): Promise<boolean>;
   /** Persiste ateliê e endereço em uma única transação (Cenário 1, relação 1:1 estrita). */
   criarAtelieComEndereco(dados: CriarAtelieComEnderecoInput): Promise<AteliePersistido>;
+  findAteliePorIdEUsuarioId(atelieId: string, usuarioId: string): Promise<AteliePersistido | null>;
+  /** Atualiza dados do ateliê e endereço na mesma transação e somente para o titular. */
+  atualizarAtelieComEndereco(
+    atelieId: string,
+    usuarioId: string,
+    dados: Omit<CriarAtelieComEnderecoInput, 'artesaoId'>,
+  ): Promise<AteliePersistido | null>;
 }

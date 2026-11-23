@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model AuditoriaSeguranca
- * HU-03 (T-ART-03): trilha de auditoria de segurança, somente inserção (trigger na migration).
+ * Trilha de auditoria de segurança, somente inserção (trigger na migration).
  * Identificadores são texto e sem FK para que o registro sobreviva a exclusões e aceite IDs
  * de recursos inexistentes informados em tentativas negadas.
  */

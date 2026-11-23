@@ -1,5 +1,5 @@
 /**
- * Prepara o bucket de fotos das peças no Supabase Storage (HU-05 / T-PEC-03). Idempotente.
+ * Prepara o bucket de fotos das peças no Supabase Storage. Idempotente.
  * Uso: npm run storage:setup  (requer SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no backend/.env)
  *
  * Política resultante:

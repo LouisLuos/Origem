@@ -43,7 +43,7 @@ function assertRejeitado422(input: unknown, trechoMensagem?: string): AppError {
 
 const VALORES_NAO_NUMERICOS: unknown[] = ['50', '', 'abc', true, {}, [], NaN, Infinity, -Infinity];
 
-describe('HU-05 / T-PEC-02 (etapa 1) — Peso embalado (unitário)', () => {
+describe('Validação de peça — peso embalado (unitário)', () => {
   it('[1] rejeita 30g com 422 e exatamente a mensagem oficial', () => {
     const erro = assertRejeitado422({ ...PECA_VALIDA, pesoGramas: 30 });
     assert.equal(erro.message, MENSAGEM_PESO_MINIMO);
@@ -84,7 +84,7 @@ describe('HU-05 / T-PEC-02 (etapa 1) — Peso embalado (unitário)', () => {
   });
 });
 
-describe('HU-05 / T-PEC-02 (etapa 1) — Dimensões físicas (unitário)', () => {
+describe('Validação de peça — dimensões físicas (unitário)', () => {
   const dimensoes = [
     { campo: 'comprimentoCm', rotulo: 'O comprimento' },
     { campo: 'larguraCm', rotulo: 'A largura' },
@@ -138,7 +138,7 @@ describe('HU-05 / T-PEC-02 (etapa 1) — Dimensões físicas (unitário)', () =>
   });
 });
 
-describe('HU-05 / T-PEC-02 (etapa 1) — Preço (unitário)', () => {
+describe('Validação de peça — preço (unitário)', () => {
   it('[10] rejeita preço igual a zero com 422', () => {
     assertRejeitado422({ ...PECA_VALIDA, preco: 0 }, 'O preço deve ser maior que zero.');
   });
@@ -169,7 +169,7 @@ describe('HU-05 / T-PEC-02 (etapa 1) — Preço (unitário)', () => {
   });
 });
 
-describe('HU-05 / T-PEC-02 (etapa 1) — Campos obrigatórios e estrutura (unitário)', () => {
+describe('Validação de peça — campos obrigatórios e estrutura (unitário)', () => {
   const obrigatorios = [
     { campo: 'pesoGramas', mensagem: 'O peso embalado é obrigatório.' },
     { campo: 'comprimentoCm', mensagem: 'O comprimento é obrigatório(a).' },
@@ -216,7 +216,7 @@ describe('HU-05 / T-PEC-02 (etapa 1) — Campos obrigatórios e estrutura (unit�
  * serializa a violação como HTTP 422. Não comprova que a API de produção responda 422,
  * pois a rota de cadastro de peças ainda não existe.
  */
-describe('HU-05 / T-PEC-02 (etapa 1) — Integração validador + errorHandler (rota de teste)', () => {
+describe('Integração do validador de peça com errorHandler (rota de teste)', () => {
   async function comServidorDeTeste(
     executar: (baseUrl: string) => Promise<void>,
   ): Promise<void> {

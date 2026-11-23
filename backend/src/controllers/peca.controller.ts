@@ -5,7 +5,7 @@ import { validarCriacaoPeca } from '../validators/peca.validator.js';
 
 export function createPecaController(service: PecaService = pecaService) {
   return {
-    /** POST /api/v1/atelies/:atelieId/pecas — publica uma peça (HU-05). */
+    /** POST /api/v1/atelies/:atelieId/pecas — publica uma peça. */
     async criar(req: Request, res: Response, next: NextFunction): Promise<void> {
       try {
         // O ateliê vem do contexto já autorizado pelo RBAC (nunca do corpo da requisição).

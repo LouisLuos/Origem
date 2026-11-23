@@ -1,4 +1,4 @@
--- HU-03 (T-ART-03, Cenário 2): trilha durável de auditoria de segurança.
+-- Cenário 2: trilha durável de auditoria de segurança.
 -- Armazena apenas a allowlist de campos do evento (sem Chave Pix, JWT, cookies ou senhas).
 -- CreateTable
 CREATE TABLE "auditoria_seguranca" (

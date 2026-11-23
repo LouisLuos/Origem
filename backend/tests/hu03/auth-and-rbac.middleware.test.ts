@@ -12,7 +12,7 @@ import type {
   RelacionamentoUsuarioAtelie,
 } from '../../src/repositories/contracts/hu03.contracts.js';
 import {
-  HU03_ERROR_CODES,
+  ATELIE_ERROR_CODES,
   unconfiguredAtelieAutorizacaoRepository,
   unconfiguredAuthIdentityProvider,
 } from '../../src/repositories/unconfiguredHu03.repository.js';
@@ -186,7 +186,7 @@ describe('Etapa C3 — Middleware de autenticação desacoplado (401 e 503)', ()
     }
   });
 
-  it('retorna 503 fail-closed quando provedor HU-01 não está configurado ou lança exceção', async () => {
+  it('retorna 503 fail-closed quando o provedor de autenticação não está configurado ou lança exceção', async () => {
     const unconfiguredServer = await startMiddlewareTestServer({
       authProvider: unconfiguredAuthIdentityProvider,
     });
@@ -205,7 +205,7 @@ describe('Etapa C3 — Middleware de autenticação desacoplado (401 e 503)', ()
       });
       assert.equal(r1.status, 503);
       const b1 = (await r1.json()) as { codigo?: string };
-      assert.equal(b1.codigo, HU03_ERROR_CODES.AUTENTICACAO_INDISPONIVEL);
+      assert.equal(b1.codigo, ATELIE_ERROR_CODES.AUTENTICACAO_INDISPONIVEL);
       assert.equal(unconfiguredServer.getProtectedCalls(), 0);
 
       const r2 = await fetch(`${crashingServer.baseUrl}/atelies/atelie-1/financeiro`, {
@@ -221,7 +221,7 @@ describe('Etapa C3 — Middleware de autenticação desacoplado (401 e 503)', ()
 });
 
 describe('Etapa C3 — RBAC contextual por ateliê, persistência indisponível (503) e auditoria (403)', () => {
-  it('retorna 503 (nunca 403) quando persistência T-ART-01 está indisponível', async () => {
+  it('retorna 503 (nunca 403) quando a persistência está indisponível', async () => {
     const unconfiguredRepoServer = await startMiddlewareTestServer({
       authProvider: createTokenMapAuthProvider({ 'token-u1': 'user-1' }),
       autorizacaoRepository: unconfiguredAtelieAutorizacaoRepository,
@@ -246,7 +246,7 @@ describe('Etapa C3 — RBAC contextual por ateliê, persistência indisponível 
       });
       assert.equal(r1.status, 503);
       const b1 = (await r1.json()) as { codigo?: string };
-      assert.equal(b1.codigo, HU03_ERROR_CODES.PERSISTENCIA_INDISPONIVEL);
+      assert.equal(b1.codigo, ATELIE_ERROR_CODES.PERSISTENCIA_INDISPONIVEL);
       assert.equal(unconfiguredRepoServer.getProtectedCalls(), 0);
 
       const r2 = await fetch(`${errorRepoServer.baseUrl}/atelies/atelie-1/catalogo`, {
@@ -299,7 +299,7 @@ describe('Etapa C3 — RBAC contextual por ateliê, persistência indisponível 
       });
       assert.equal(resPatchPix.status, 403);
       const bodyPatch = (await resPatchPix.json()) as { codigo?: string };
-      assert.equal(bodyPatch.codigo, HU03_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO);
+      assert.equal(bodyPatch.codigo, ATELIE_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO);
 
       // 2. Curador tentando consultar dados financeiros privados
       const resGetFin = await fetch(`${server.baseUrl}/atelies/atelie-1/financeiro`, {

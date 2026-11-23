@@ -20,7 +20,7 @@ def main() -> None:
 
     with bentoml.models.create(
         NOME_MODELO,
-        labels={"projeto": "origem", "hu": "HU-24"},
+        labels={"projeto": "origem", "hu": ""},
         metadata={
             "n_produtos": len(artefato["produtos"]),
             "n_cestas": len(catalogo.get("cestas", [])),

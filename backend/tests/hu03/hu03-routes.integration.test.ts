@@ -20,7 +20,7 @@ import {
   type RelacionamentoUsuarioAtelie,
   type UsuarioAtivoResumo,
 } from '../../src/repositories/contracts/hu03.contracts.js';
-import { HU03_ERROR_CODES } from '../../src/repositories/unconfiguredHu03.repository.js';
+import { ATELIE_ERROR_CODES } from '../../src/repositories/unconfiguredHu03.repository.js';
 import { createArtesaoRoutes } from '../../src/routes/artesao.routes.js';
 import { createAtelieRoutes } from '../../src/routes/atelie.routes.js';
 import {
@@ -344,7 +344,7 @@ async function listenEphemeral(expressApp: express.Express): Promise<{
   };
 }
 
-describe('Etapa C4 — Routers HU-03 isolados com mocks de teste (Cenário TC02 e Regras de Domínio)', () => {
+describe('Etapa C4 — Rotas isoladas com mocks (cenário TC02 e regras de domínio)', () => {
   it('TC02 isolado: bloqueia CURADOR tentando PATCH de Chave Pix e GET financeiro com 403 antes de tocar no repositório financeiro', async () => {
     const { state, testApp, initialCipherA } = createIsolatedHu03Context();
     const { baseUrl, close } = await listenEphemeral(testApp);
@@ -362,7 +362,7 @@ describe('Etapa C4 — Routers HU-03 isolados com mocks de teste (Cenário TC02 
 
       assert.equal(resPatch.status, 403);
       const patchBody = (await resPatch.json()) as { codigo?: string };
-      assert.equal(patchBody.codigo, HU03_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO);
+      assert.equal(patchBody.codigo, ATELIE_ERROR_CODES.ACESSO_FINANCEIRO_BLOQUEADO);
 
       const resFin = await fetch(`${baseUrl}/api/v1/atelies/atelie-a/financeiro`, {
         headers: { Authorization: 'Bearer tok:user-curador', 'X-Request-Id': 'corr-tc02-get-01' },
@@ -391,7 +391,7 @@ describe('Etapa C4 — Routers HU-03 isolados com mocks de teste (Cenário TC02 
     }
   });
 
-  it('executa fluxo de habilitação (T-ART-02): valida entrada, criptografa Pix com AAD, impede duplicidade e bloqueia usuário inativo/inexistente', async () => {
+  it('habilita artesão titular, criptografa Pix e bloqueia usuário inválido ou duplicado', async () => {
     const { state, testApp, cryptoService } = createIsolatedHu03Context();
     const { baseUrl, close } = await listenEphemeral(testApp);
 
@@ -534,7 +534,7 @@ describe('Etapa C4 — Routers HU-03 isolados com mocks de teste (Cenário TC02 
     }
   });
 
-  it('lista vínculos contextuais múltiplos e executa gestão completa de curadores (T-ART-04)', async () => {
+  it('lista vínculos contextuais múltiplos e executa gestão completa de curadores', async () => {
     const { testApp } = createIsolatedHu03Context();
     const { baseUrl, close } = await listenEphemeral(testApp);
 
@@ -638,7 +638,7 @@ describe('Etapa C4 — Routers HU-03 isolados com mocks de teste (Cenário TC02 
     }
   });
 
-  it('retorna 503 PERSISTENCIA_INDISPONIVEL quando autenticado mas repositórios padrão (T-ART-01) estão ausentes', async () => {
+  it('retorna 503 quando a persistência padrão está ausente', async () => {
     const { authProvider } = createIsolatedHu03Context();
     const appNoDb = express();
     appNoDb.use(express.json());
@@ -701,7 +701,7 @@ describe('Etapa C4 — Routers HU-03 isolados com mocks de teste (Cenário TC02 
         });
         assert.equal(res.status, 503);
         const json = (await res.json()) as { codigo?: string };
-        assert.equal(json.codigo, HU03_ERROR_CODES.PERSISTENCIA_INDISPONIVEL);
+        assert.equal(json.codigo, ATELIE_ERROR_CODES.PERSISTENCIA_INDISPONIVEL);
       }
     } finally {
       await close();
@@ -769,7 +769,7 @@ describe('Etapa C4 — Aplicação real (app.ts): não regressão e modo fail-cl
     }
   });
 
-  it('retorna 401 sem credencial e 503 AUTENTICACAO_INDISPONIVEL com Bearer nas 7 rotas da HU-03 (zero sucesso fictício)', async () => {
+  it('retorna 401 sem credencial e falha fechado sem autenticação configurada', async () => {
     const { baseUrl, close } = await listenEphemeral(realApp);
 
     const hu03Routes: Array<{ method: string; path: string }> = [

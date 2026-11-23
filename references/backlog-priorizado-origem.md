@@ -188,7 +188,18 @@ Cenário 3: Restrição de unicidade de ateliê no MVP
 Dado que já possuo um ateliê ativo vinculado ao meu cadastro
 Quando tento submeter novo formulário de criação de ateliê
 Então o sistema deve rejeitar a operação com HTTP 422 Unprocessable Entity
+
+Cenário 4: Edição de dados do ateliê pelo titular
+Dado que estou autenticado como titular de um ateliê
+Quando consulto e atualizo o nome comercial, polo cultural ou endereço de expedição
+Então somente o titular pode realizar a operação
+E as alterações do ateliê e do endereço devem ser persistidas atomicamente
+E a interface deve carregar os dados atuais para edição
 ```
+
+**Extensão aprovada em 22/11/2026:** a edição do ateliê é disponibilizada no painel do titular por
+`GET /api/v1/atelies/:atelieId/dados` e `PATCH /api/v1/atelies/:atelieId/dados`. Curadores não
+podem consultar nem alterar esses dados.
 
 **Tarefas SMART de Engenharia:**
 

@@ -1,7 +1,7 @@
 import { apiRequest, isApiError } from './api'
 import { techniques } from '@/design-system/tokens'
 
-/** Regras da HU-05 espelhadas do backend (backend/src/validators/peca.validator.ts). */
+/** Regras da  espelhadas do backend (backend/src/validators/peca.validator.ts). */
 export const PIECE_MIN_WEIGHT_GRAMS = 50
 export const PIECE_MIN_WEIGHT_MESSAGE = 'O peso mínimo embalado para cotação de frete é 50g'
 export const PIECE_MIN_PHOTOS = 2
@@ -107,7 +107,7 @@ export function classifyPieceError(reason: unknown): ClassifiedPieceError {
 }
 
 export const pieceService = {
-  /** Publica uma peça no ateliê (HU-05). Só resolve quando o servidor confirma com 201. */
+  /** Publica uma peça no ateliê. Só resolve quando o servidor confirma com 201. */
   async create(atelieId: string, payload: CreatePiecePayload): Promise<CreatedPiece> {
     return apiRequest<CreatedPiece>(
       `/atelies/${encodeURIComponent(atelieId)}/pecas`,

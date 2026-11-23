@@ -1,9 +1,9 @@
 /**
- * Contratos desacoplados de identidade autenticada para integração futura com a HU-01.
+ * Contratos desacoplados de identidade autenticada para integração futura com a .
  *
- * A HU-03 NÃO implementa emissão, assinatura ou validação própria de tokens JWT.
+ * A  NÃO implementa emissão, assinatura ou validação própria de tokens JWT.
  * O middleware de autenticação consome exclusivamente esta porta e opera em modo
- * fail-closed enquanto o provedor oficial da HU-01 não estiver integrado.
+ * fail-closed enquanto o provedor oficial da  não estiver integrado.
  */
 
 export interface AuthenticatedIdentity {
@@ -18,7 +18,7 @@ export interface AuthenticatedIdentity {
 export interface AuthRequestCredentials {
   /** Token extraído do cabeçalho `Authorization: Bearer <token>`, se presente. */
   readonly bearerToken?: string;
-  /** Cabeçalho bruto `Cookie`, caso a HU-01 utilize cookies HttpOnly de sessão. */
+  /** Cabeçalho bruto `Cookie`, caso a  utilize cookies HttpOnly de sessão. */
   readonly cookieHeader?: string;
 }
 
@@ -28,7 +28,7 @@ export type AuthVerificationResult =
   | { readonly status: 'PROVIDER_UNAVAILABLE'; readonly reason: string };
 
 /**
- * Porta de verificação de identidade a ser implementada pela entrega da HU-01.
+ * Porta de verificação de identidade a ser implementada pela entrega da .
  */
 export interface AuthIdentityProvider {
   verify(credentials: AuthRequestCredentials): Promise<AuthVerificationResult>;

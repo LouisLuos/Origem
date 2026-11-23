@@ -4,7 +4,7 @@ import path from 'node:path';
 import { AppError } from '../utils/AppError.js';
 import { isUuid } from '../utils/uuid.util.js';
 import type { ArmazenamentoFotosPeca } from './contracts/pecas.contracts.js';
-import { HU05_ERROR_CODES } from './unconfiguredPecas.repository.js';
+import { FOTO_PECA_ERROR_CODES } from './unconfiguredPecas.repository.js';
 
 export interface LocalDiskStorageConfig {
   /** Diretório raiz onde as fotos são gravadas (servido em `/uploads/fotos-pecas`). */
@@ -16,7 +16,7 @@ export interface LocalDiskStorageConfig {
 export const ROTA_PUBLICA_FOTOS_LOCAIS = '/uploads/fotos-pecas';
 
 /**
- * Armazenamento real em disco local (T-PEC-03, DoD: "armazena em disco ou nuvem").
+ * Armazenamento real em disco local, adequado para desenvolvimento e testes.
  * Indicado para desenvolvimento; em produção, preferir o Supabase Storage.
  */
 export function createLocalDiskArmazenamentoFotosPeca(config: LocalDiskStorageConfig): ArmazenamentoFotosPeca {
@@ -44,7 +44,7 @@ export function createLocalDiskArmazenamentoFotosPeca(config: LocalDiskStorageCo
         throw new AppError(
           'Não foi possível armazenar as fotos da peça. Nenhuma peça foi publicada.',
           502,
-          HU05_ERROR_CODES.ARMAZENAMENTO_INDISPONIVEL,
+          FOTO_PECA_ERROR_CODES.ARMAZENAMENTO_INDISPONIVEL,
         );
       }
       const base = config.urlPublicaBase.replace(/\/+$/, '');

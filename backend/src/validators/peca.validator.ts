@@ -13,7 +13,7 @@ import {
 } from '../utils/fotoPeca.util.js';
 
 /**
- * Validações de domínio da HU-05 (T-PEC-02, etapa 1): cubagem física e preço da peça.
+ * Validações de domínio: cubagem física e preço da peça.
  *
  * Escopo deliberadamente restrito às regras sem ambiguidade do backlog (Invariante 2):
  * peso embalado >= 50g, comprimento/largura/altura > 0 e preço > 0.
@@ -145,7 +145,7 @@ export function validarCubagemEPreco(input: unknown): CubagemPreco {
 }
 
 /* -------------------------------------------------------------------------------------------- */
-/* Criação de peça (HU-05, T-PEC-02): campos textuais, tipologia, fragilidade e fotos            */
+/* Criação de peça: campos textuais, tipologia, fragilidade e fotos                  */
 /* -------------------------------------------------------------------------------------------- */
 
 export const PECA_DADOS_INVALIDOS_CODE = 'PECA_DADOS_INVALIDOS';
@@ -183,7 +183,7 @@ const tipologiaSchema = z.unknown().transform((val, ctx): TipologiaHomologada =>
   return tipologia as TipologiaHomologada;
 });
 
-/** `is_fragil` é obrigatório e explícito (T-PEC-02: bloquear cadastro sem flag de fragilidade). */
+/** `is_fragil` é obrigatório e explícito (: bloquear cadastro sem flag de fragilidade). */
 const isFragilSchema = z.unknown().transform((val, ctx): boolean => {
   if (typeof val !== 'boolean') {
     ctx.addIssue({
@@ -311,7 +311,7 @@ export type CriarPecaDados = z.infer<typeof criarPecaBodySchema>;
 
 /**
  * Valida o corpo completo de criação de peça. Qualquer violação gera `AppError` 422; quando a
- * única violação é o peso, a mensagem é exatamente a oficial da HU-05.
+ * única violação é o peso, a mensagem é exatamente a oficial da .
  */
 export function validarCriacaoPeca(input: unknown): CriarPecaDados {
   const resultado = criarPecaBodySchema.safeParse(input);

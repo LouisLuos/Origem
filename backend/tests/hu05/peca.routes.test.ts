@@ -121,7 +121,7 @@ async function postarPeca(baseUrl: string, atelieId: string, corpo: unknown, usu
   return { status: res.status, body: (await res.json()) as Record<string, unknown> };
 }
 
-describe('HU-05 — POST /api/v1/atelies/:atelieId/pecas (HTTP com dublês)', () => {
+describe('POST /api/v1/atelies/:atelieId/pecas (HTTP com dublês)', () => {
   it('201: titular publica peça DISPONIVEL com fotos associadas e is_fragil persistido', async () => {
     const { app, persistidas } = criarApp({ configurarInfra: true });
     await comServidor(app, async (baseUrl) => {
@@ -192,7 +192,7 @@ describe('HU-05 — POST /api/v1/atelies/:atelieId/pecas (HTTP com dublês)', ()
     });
   });
 
-  it('503: sem persistência de vínculos de ateliê (T-ART-01), o RBAC falha fechado', async () => {
+  it('503: sem persistência de vínculos de ateliê, o RBAC falha fechado', async () => {
     // Usa o adaptador real não configurado (o mesmo da produção) para comprovar o 503
     const { app, persistidas } = criarApp({
       configurarInfra: true,
@@ -217,7 +217,7 @@ describe('HU-05 — POST /api/v1/atelies/:atelieId/pecas (HTTP com dublês)', ()
   });
 });
 
-describe('HU-05 — Montagem no app real (sem banco)', () => {
+describe('Montagem no app real (sem banco)', () => {
   it('a rota existe no app de produção, exige autenticação e aceita corpo acima de 100 KB', async () => {
     const { app } = await import('../../src/app.js');
     await comServidor(app, async (baseUrl) => {

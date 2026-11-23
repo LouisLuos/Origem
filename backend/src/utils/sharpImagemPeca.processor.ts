@@ -10,7 +10,7 @@ export const FOTO_OTIMIZADA_QUALIDADE = 82;
 const LIMITE_PIXELS_ENTRADA = 50_000_000;
 
 /**
- * Processador real de fotos (T-PEC-03) com `sharp`:
+ * Processador real de fotos com `sharp`:
  * - decodifica com falha em dados corrompidos (`failOn: 'error'`);
  * - aplica a orientação EXIF e descarta metadados (GPS, câmera etc.), que o sharp não copia por padrão;
  * - reduz para no máximo 1600 px no maior lado, preservando a proporção e sem ampliar;

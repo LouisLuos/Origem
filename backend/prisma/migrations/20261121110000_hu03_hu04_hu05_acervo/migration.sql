@@ -144,16 +144,16 @@ ALTER TABLE "fotos_peca" ADD CONSTRAINT "fotos_peca_peca_id_fkey" FOREIGN KEY ("
 -- Regras de integridade não representáveis no schema Prisma (escritas à mão)
 -- ---------------------------------------------------------------------------------------------
 
--- HU-04: status de ateliê e formato do endereço de expedição
+-- : status de ateliê e formato do endereço de expedição
 ALTER TABLE "atelies" ADD CONSTRAINT "atelies_status_check" CHECK ("status" IN ('ATIVO', 'SUSPENSO'));
 ALTER TABLE "enderecos" ADD CONSTRAINT "enderecos_cep_check" CHECK ("cep" ~ '^[0-9]{8}$');
 ALTER TABLE "enderecos" ADD CONSTRAINT "enderecos_uf_check" CHECK ("uf" ~ '^[A-Z]{2}$');
 ALTER TABLE "enderecos" ADD CONSTRAINT "enderecos_dono_check" CHECK (num_nonnulls("atelie_id", "usuario_id") >= 1);
 
--- HU-03: tipo de Chave Pix
+-- : tipo de Chave Pix
 ALTER TABLE "artesaos" ADD CONSTRAINT "artesaos_tipo_chave_pix_check" CHECK ("tipo_chave_pix" IN ('CPF', 'EMAIL', 'TELEFONE', 'EVP'));
 
--- HU-05 (Invariante 2): cubagem física e preço
+--  (Invariante 2): cubagem física e preço
 ALTER TABLE "pecas" ADD CONSTRAINT "pecas_peso_minimo_check" CHECK ("peso_gramas" >= 50);
 ALTER TABLE "pecas" ADD CONSTRAINT "pecas_comprimento_check" CHECK ("comprimento_cm" > 0);
 ALTER TABLE "pecas" ADD CONSTRAINT "pecas_largura_check" CHECK ("largura_cm" > 0);
@@ -183,5 +183,5 @@ BEGIN
   END LOOP;
 END $$;
 
--- HU-05: no máximo uma foto principal (capa) por peça
+-- : no máximo uma foto principal (capa) por peça
 CREATE UNIQUE INDEX "fotos_peca_principal_unica" ON "fotos_peca"("peca_id") WHERE "is_principal";

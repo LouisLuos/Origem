@@ -46,7 +46,7 @@ const envSchema = z
       .default(DEV_DEFAULT_JWT_SECRET),
     JWT_EXPIRES_IN: z.string().default('7d'),
     IA_RECOMENDADOR_URL: z.string().url().optional().default('http://localhost:3002'),
-    // HU-05 / T-PEC-03: Supabase Storage (credencial administrativa usada somente no backend)
+    // Supabase Storage: credencial administrativa usada somente no backend.
     SUPABASE_URL: z.preprocess(
       (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
       z.string().url('SUPABASE_URL deve ser uma URL válida.').optional(),

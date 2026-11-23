@@ -50,7 +50,7 @@ async function startServer(service: AuthService) {
   };
 }
 
-describe('rotas de autenticação HU-01', () => {
+describe('rotas de autenticação', () => {
   it('cria conta com HTTP 201 e cookie de sessão sem devolver hash', async () => {
     const service: AuthService = {
       async register() { return buyer; },

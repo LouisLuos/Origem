@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model AtelieCurador
- * HU-03 (T-ART-01): vínculo associativo de curadores operacionais por ateliê.
+ * Vínculo associativo de curadores operacionais por ateliê.
  */
 export type AtelieCuradorModel = runtime.Types.Result.DefaultSelection<Prisma.$AtelieCuradorPayload>
 

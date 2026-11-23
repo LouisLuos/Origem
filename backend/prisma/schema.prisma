@@ -42,7 +42,7 @@ enum StatusPeca {
   @@map("StatusPeca")
 }
 
-/// HU-03 (T-ART-01): perfil de artesão titular com Chave Pix cifrada (AES-256-GCM).
+/// Perfil de artesão titular com Chave Pix cifrada usando AES-256-GCM.
 model Artesao {
   id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   usuarioId             String   @unique @map("usuario_id") @db.Uuid
@@ -57,7 +57,7 @@ model Artesao {
   @@map("artesaos")
 }
 
-/// HU-04 (T-ATE-01): ateliê único por artesão titular no MVP.
+/// Ateliê único por artesão titular no MVP.
 model Atelie {
   id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   artesaoId     String          @unique @map("artesao_id") @db.Uuid
@@ -74,7 +74,7 @@ model Atelie {
   @@map("atelies")
 }
 
-/// HU-03 (T-ART-01): vínculo associativo de curadores operacionais por ateliê.
+/// Vínculo associativo de curadores operacionais por ateliê.
 model AtelieCurador {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   atelieId  String   @map("atelie_id") @db.Uuid
@@ -88,7 +88,7 @@ model AtelieCurador {
   @@map("atelies_curadores")
 }
 
-/// HU-04 (T-ATE-01): endereço de expedição (1:1 estrito com ateliê).
+/// Endereço de expedição (1:1 estrito com ateliê).
 model Endereco {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   cep         String   @db.VarChar(8)
@@ -108,7 +108,7 @@ model Endereco {
   @@map("enderecos")
 }
 
-/// HU-05 (T-PEC-01): peça do acervo com cubagem física (CHECKs na migration).
+/// Peça do acervo com cubagem física (restrições CHECK na migration).
 model Peca {
   id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   atelieId          String     @map("atelie_id") @db.Uuid
@@ -133,7 +133,7 @@ model Peca {
   @@map("pecas")
 }
 
-/// HU-05 (T-PEC-01): fotos otimizadas da peça (no máximo uma principal por peça).
+/// Fotos otimizadas da peça (no máximo uma principal por peça).
 model FotoPeca {
   id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   pecaId               String   @map("peca_id") @db.Uuid
@@ -168,7 +168,7 @@ model AuthLoginAttempt {
   @@map("auth_login_attempts")
 }
 
-/// HU-03 (T-ART-03): trilha de auditoria de segurança, somente inserção (trigger na migration).
+/// Trilha de auditoria de segurança, somente inserção (trigger na migration).
 /// Identificadores são texto e sem FK para que o registro sobreviva a exclusões e aceite IDs
 /// de recursos inexistentes informados em tentativas negadas.
 model AuditoriaSeguranca {

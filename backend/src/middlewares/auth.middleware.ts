@@ -4,7 +4,7 @@ import type {
   AuthRequestCredentials,
 } from '../repositories/contracts/auth.contracts.js';
 import {
-  HU03_ERROR_CODES,
+  ATELIE_ERROR_CODES,
   unconfiguredAuthIdentityProvider,
 } from '../repositories/unconfiguredHu03.repository.js';
 import { AppError } from '../utils/AppError.js';
@@ -56,7 +56,7 @@ export function extractAuthCredentials(req: Request): ExtractedCredentials {
 }
 
 /**
- * Cria o middleware de autenticação desacoplado do provedor real da HU-01.
+ * Cria o middleware de autenticação desacoplado do provedor real da .
  * Opera em modo fail-closed: ausência/invalidade retorna HTTP 401; provedor ausente ou
  * indisponível retorna HTTP 503 sem nunca permitir identidades simuladas em produção.
  */
@@ -100,9 +100,9 @@ export function createAuthMiddleware(
 
       next(
         new AppError(
-          verification.reason || 'Serviço de autenticação real (HU-01) ainda não integrado ao backend.',
+          verification.reason || 'Serviço de autenticação real ainda não integrado ao backend.',
           503,
-          HU03_ERROR_CODES.AUTENTICACAO_INDISPONIVEL,
+          ATELIE_ERROR_CODES.AUTENTICACAO_INDISPONIVEL,
         ),
       );
     } catch (err) {
@@ -115,12 +115,12 @@ export function createAuthMiddleware(
         new AppError(
           'Serviço de autenticação indisponível no momento.',
           503,
-          HU03_ERROR_CODES.AUTENTICACAO_INDISPONIVEL,
+          ATELIE_ERROR_CODES.AUTENTICACAO_INDISPONIVEL,
         ),
       );
     }
   };
 }
 
-/** Instância padrão conectada ao adaptador não configurado até a entrega da HU-01. */
+/** Instância padrão conectada ao adaptador não configurado até a entrega da . */
 export const authenticate = createAuthMiddleware(unconfiguredAuthIdentityProvider);

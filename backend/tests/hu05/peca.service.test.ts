@@ -6,7 +6,7 @@ import type {
   PecaRepository,
   ProcessadorImagemPeca,
 } from '../../src/repositories/contracts/pecas.contracts.js';
-import { HU05_ERROR_CODES } from '../../src/repositories/unconfiguredPecas.repository.js';
+import { FOTO_PECA_ERROR_CODES } from '../../src/repositories/unconfiguredPecas.repository.js';
 import { createPecaService } from '../../src/services/peca.service.js';
 import { AppError } from '../../src/utils/AppError.js';
 import { validarCriacaoPeca } from '../../src/validators/peca.validator.js';
@@ -75,7 +75,7 @@ function criarDubles(opcoes: { falharArmazenamentoNa?: number; falharRepositorio
   return { registro, service: createPecaService({ processadorImagem, armazenamento, repository }) };
 }
 
-describe('HU-05 / T-PEC-02 e T-PEC-03 — PecaService (unitário com dublês)', () => {
+describe('PecaService (unitário com dublês)', () => {
   it('Cenário 1: publica com status DISPONIVEL e associa as URLs otimizadas, marcando a foto principal', async () => {
     const { registro, service } = criarDubles();
     const dados = validarCriacaoPeca({ ...corpoPecaValido(), indiceFotoPrincipal: 1 });
@@ -119,7 +119,7 @@ describe('HU-05 / T-PEC-02 e T-PEC-03 — PecaService (unitário com dublês)', 
     await assert.rejects(service.criar('atelie-a', validarCriacaoPeca(corpoPecaValido())), (err: unknown) => {
       assert.ok(err instanceof AppError);
       assert.equal(err.statusCode, 503);
-      assert.equal(err.code, HU05_ERROR_CODES.PROCESSAMENTO_IMAGEM_INDISPONIVEL);
+      assert.equal(err.code, FOTO_PECA_ERROR_CODES.PROCESSAMENTO_IMAGEM_INDISPONIVEL);
       return true;
     });
   });
@@ -132,7 +132,7 @@ describe('HU-05 / T-PEC-02 e T-PEC-03 — PecaService (unitário com dublês)', 
     await assert.rejects(service.criar('atelie-a', validarCriacaoPeca(corpoPecaValido())), (err: unknown) => {
       assert.ok(err instanceof AppError);
       assert.equal(err.statusCode, 503);
-      assert.equal(err.code, HU05_ERROR_CODES.ARMAZENAMENTO_INDISPONIVEL);
+      assert.equal(err.code, FOTO_PECA_ERROR_CODES.ARMAZENAMENTO_INDISPONIVEL);
       return true;
     });
   });

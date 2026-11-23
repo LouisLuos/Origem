@@ -1,11 +1,11 @@
 import type { TipoMimeFotoPeca } from '../repositories/contracts/pecas.contracts.js';
 
-/** Mínimo de fotos exigido para publicar uma peça (HU-05, Cenário 1). */
+/** Mínimo de fotos exigido para publicar uma peça. */
 export const FOTOS_PECA_MIN = 2;
 
 /**
  * Limites técnicos provisórios de upload (não definidos nos documentos normativos).
- * PENDÊNCIA: confirmar quantidade máxima e tamanho máximo por foto (T-PEC-03).
+ * PENDÊNCIA: confirmar quantidade máxima e tamanho máximo por foto.
  */
 export const FOTOS_PECA_MAX = 5;
 export const FOTO_PECA_MAX_BYTES = 5 * 1024 * 1024;

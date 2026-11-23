@@ -27,7 +27,7 @@ function comCampo(campo: string, valor: unknown): Record<string, unknown> {
   return { ...corpoPecaValido(), [campo]: valor };
 }
 
-describe('HU-05 / T-PEC-02 — Validação de criação de peça (unitário)', () => {
+describe('Validação de criação de peça (unitário)', () => {
   it('aceita peça válida, normaliza textos, decodifica fotos e define foto principal 0 por padrão', () => {
     const dados = validarCriacaoPeca({ ...corpoPecaValido(), titulo: '  Vaso  ', extra: 'ignorado', atelieId: 'forjado' });
     assert.equal(dados.titulo, 'Vaso');

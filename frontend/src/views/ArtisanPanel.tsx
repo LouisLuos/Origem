@@ -21,6 +21,7 @@ import {
   type AtelierAccessContext,
   type GovernanceErrorKind,
 } from '@/services/atelierGovernanceService'
+import { atelierService, type AtelierDetails } from '@/services/atelierService'
 import { errorMessage } from '@/utils/errors'
 import { buildPlaceholderProductImageUrl } from '@/utils/media'
 import type { CatalogItem, CatalogItemInput } from '@/context/CatalogContext'
@@ -78,6 +79,9 @@ export function ArtisanPanel() {
     message: string
   } | null>(null)
   const [governanceReloadTick, setGovernanceReloadTick] = useState(0)
+  const [atelierEditData, setAtelierEditData] = useState<AtelierDetails | null>(null)
+  const [atelierEditLoading, setAtelierEditLoading] = useState(false)
+  const [atelierEditError, setAtelierEditError] = useState<string | null>(null)
 
   const userEmail = user?.email ?? null
 
@@ -141,6 +145,9 @@ export function ArtisanPanel() {
   const canUpdatePix = Boolean(
     selectedAtelier?.permissoes.includes('ALTERAR_CHAVE_PIX'),
   )
+  const canEditAtelier = Boolean(
+    selectedAtelier?.permissoes.includes('EDITAR_DADOS_ATELIE'),
+  )
   const canAccessFinancialTab = canViewFinancial || canUpdatePix
   const isSuspendedForCurator = Boolean(
     selectedAtelier &&
@@ -157,6 +164,8 @@ export function ArtisanPanel() {
 
   const handleSelectAtelier = (nextAtelieId: string) => {
     setSelectedAtelieId(nextAtelieId)
+    setAtelierEditData(null)
+    setAtelierEditError(null)
     const nextCtx = atelierLinks.find((item) => item.atelieId === nextAtelieId)
     if (
       (activeTab === 'curators' && !nextCtx?.permissoes.includes('GERENCIAR_CURADORES')) ||
@@ -168,13 +177,27 @@ export function ArtisanPanel() {
     }
   }
 
+  const handleEditAtelier = async () => {
+    if (!selectedAtelier) return
+    setAtelierEditLoading(true)
+    setAtelierEditError(null)
+    setAtelierEditData(null)
+    try {
+      setAtelierEditData(await atelierService.get(selectedAtelier.atelieId))
+    } catch (reason) {
+      setAtelierEditError(reason instanceof Error ? reason.message : 'Não foi possível carregar o ateliê.')
+    } finally {
+      setAtelierEditLoading(false)
+    }
+  }
+
   const myItems = items.filter((item) => item.ownerEmail === user.email)
   const activeCount = myItems.filter((item) => item.active).length
   const totalUnits = myItems.reduce((total, item) => total + item.stock, 0)
   const lowStock = myItems.filter((item) => item.stock > 0 && item.stock <= LOW_STOCK).length
   const soldOut = myItems.filter((item) => item.stock === 0).length
 
-  // HU-05: a publicação exige ateliê confirmado pelo servidor com permissão de catálogo.
+  // : a publicação exige ateliê confirmado pelo servidor com permissão de catálogo.
   const catalogAtelieId =
     selectedAtelier?.permissoes.includes('GERENCIAR_CATALOGO') ? selectedAtelier.atelieId : null
   const catalogUnavailableReason =
@@ -293,7 +316,7 @@ export function ArtisanPanel() {
           )}
         </div>
 
-        {/* Barra de governança contextual (HU-03): exibe apenas vínculos confirmados pelo backend */}
+        {/* Barra de governança contextual: exibe apenas vínculos confirmados pelo backend */}
         <section
           aria-label="Contexto de acesso ao ateliê"
           className="mb-8 border border-border bg-surface p-5"
@@ -312,9 +335,9 @@ export function ArtisanPanel() {
                   <p className="font-semibold text-ink">
                     {governanceIssue.kind === 'unauthenticated' ||
                     governanceIssue.kind === 'auth_unavailable'
-                      ? 'Governança financeira e de curadores aguardando autenticação real (HU-01)'
+                      ? 'Governança financeira e de curadores aguardando autenticação real'
                       : governanceIssue.kind === 'persistence_unavailable'
-                        ? 'Governança financeira e de curadores aguardando banco de dados (T-ART-01)'
+                        ? 'Governança financeira e de curadores aguardando banco de dados'
                         : 'Não foi possível confirmar o vínculo contextual no servidor'}
                   </p>
                   <p className="pt-1 text-ink-soft">
@@ -334,8 +357,8 @@ export function ArtisanPanel() {
           )}
 
           {governanceStatus === 'ready' && atelierLinks.length === 0 && user.role === 'artisan' && (
-            // HU-04: artesão titular habilitado ainda sem ateliê cadastra o seu aqui
-            <AtelierSetupForm onCreated={() => setGovernanceReloadTick((tick) => tick + 1)} />
+            // : artesão titular habilitado ainda sem ateliê cadastra o seu aqui
+            <AtelierSetupForm onSaved={() => setGovernanceReloadTick((tick) => tick + 1)} />
           )}
 
           {governanceStatus === 'ready' && atelierLinks.length === 0 && user.role !== 'artisan' && (
@@ -362,6 +385,18 @@ export function ArtisanPanel() {
                   <Badge tone={selectedAtelier.statusAtelie === 'ATIVO' ? 'oliva' : 'neutral'}>
                     {selectedAtelier.statusAtelie === 'ATIVO' ? 'Ativo' : 'Suspenso'}
                   </Badge>
+                  {canEditAtelier && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditAtelier}
+                      disabled={atelierEditLoading}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" aria-hidden="true" />
+                      {atelierEditLoading ? 'Carregando…' : 'Editar ateliê'}
+                    </Button>
+                  )}
                 </div>
 
                 {atelierLinks.length > 1 && (
@@ -386,15 +421,33 @@ export function ArtisanPanel() {
                 )}
               </div>
 
-              {selectedAtelier.papelNoAtelie === 'CURADOR' && (
-                <p className="text-xs text-ink-soft">
-                  {isSuspendedForCurator
-                    ? 'Este ateliê está suspenso: o acesso operacional de curadores foi bloqueado pelo servidor.'
-                    : 'Você atua como curador operacional neste ateliê (permissões restritas a catálogo e etiquetas). Informações financeiras e Chave Pix permanecem inacessíveis.'}
+              {atelierEditError && (
+                <p role="alert" className="text-sm text-danger">
+                  {atelierEditError}
                 </p>
               )}
 
-              <div role="tablist" aria-label="Seções do ateliê" className="flex flex-wrap gap-2 border-t border-border pt-4">
+              {atelierEditData?.id === selectedAtelier.atelieId ? (
+                <AtelierSetupForm
+                  key={atelierEditData.id}
+                  initialData={atelierEditData}
+                  onSaved={() => {
+                    setAtelierEditData(null)
+                    setGovernanceReloadTick((tick) => tick + 1)
+                  }}
+                  onCancel={() => setAtelierEditData(null)}
+                />
+              ) : (
+                <>
+                  {selectedAtelier.papelNoAtelie === 'CURADOR' && (
+                    <p className="text-xs text-ink-soft">
+                      {isSuspendedForCurator
+                        ? 'Este ateliê está suspenso: o acesso operacional de curadores foi bloqueado pelo servidor.'
+                        : 'Você atua como curador operacional neste ateliê (permissões restritas a catálogo e etiquetas). Informações financeiras e Chave Pix permanecem inacessíveis.'}
+                    </p>
+                  )}
+
+                  <div role="tablist" aria-label="Seções do ateliê" className="flex flex-wrap gap-2 border-t border-border pt-4">
                 <button
                   type="button"
                   role="tab"
@@ -445,12 +498,14 @@ export function ArtisanPanel() {
                     Dados financeiros
                   </button>
                 )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </section>
 
-        {resolvedTab === 'curators' && selectedAtelier && canManageCurators && (
+        {!atelierEditData && resolvedTab === 'curators' && selectedAtelier && canManageCurators && (
           <CuratorManagementSection
             key={selectedAtelier.atelieId}
             atelieId={selectedAtelier.atelieId}
@@ -458,7 +513,7 @@ export function ArtisanPanel() {
           />
         )}
 
-        {resolvedTab === 'financial' && selectedAtelier && canAccessFinancialTab && (
+        {!atelierEditData && resolvedTab === 'financial' && selectedAtelier && canAccessFinancialTab && (
           <FinancialPixSection
             key={selectedAtelier.atelieId}
             atelieId={selectedAtelier.atelieId}

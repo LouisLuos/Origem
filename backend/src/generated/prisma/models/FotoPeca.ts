@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace.js"
 
 /**
  * Model FotoPeca
- * HU-05 (T-PEC-01): fotos otimizadas da peça (no máximo uma principal por peça).
+ * Fotos otimizadas da peça (no máximo uma principal por peça).
  */
 export type FotoPecaModel = runtime.Types.Result.DefaultSelection<Prisma.$FotoPecaPayload>
 

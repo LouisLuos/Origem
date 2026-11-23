@@ -1,10 +1,10 @@
 /**
- * Contratos de domínio e interfaces de repositório da HU-03 (Especialização de Artesão Titular
+ * Contratos de domínio e interfaces de repositório para especialização de artesão titular
  * e Blindagem de Curadoria). Implementações reais: repositories/prismaHu03.repository.ts.
  *
  * Referências normativas:
  * - references/modelagem-inicial-origem.sql
- * - references/backlog-priorizado-origem.md (HU-03, HU-04, HU-18)
+ * - references/backlog-priorizado-origem.md
  *
  * LACUNAS L1–L4 — SITUAÇÃO:
  * - [L1] RESOLVIDA: `UNIQUE (usuario_id, papel)` em `usuarios_papeis` (migration hu01_auth) e
@@ -13,8 +13,8 @@
  *        resta nenhum vínculo em `atelies_curadores`; demais papéis e vínculos são preservados.
  * - [L3] RESOLVIDA: habilitação, vinculação e desvinculação executam em `prisma.$transaction`.
  * - [L4] DECIDIDA: a alteração de Chave Pix permanece no escopo do ateliê
- *        (`PATCH /api/v1/atelies/:atelieId/chave-pix`). O Cenário 2 da HU-03 trata da "chave Pix
- *        do ateliê" e nenhum critério da HU-03/HU-04 exige alteração antes de o ateliê existir; a
+ *        (`PATCH /api/v1/atelies/:atelieId/chave-pix`). A regra de negócio trata da "chave Pix
+ *        do ateliê" e não exige alteração antes de o ateliê existir; a
  *        Chave Pix é cadastrada na habilitação (Cenário 1). Nenhum endpoint adicional foi criado.
  */
 
@@ -29,6 +29,7 @@ export type StatusUsuario = 'ATIVO' | 'INATIVO' | 'SUSPENSO';
 export type TipoChavePix = 'CPF' | 'EMAIL' | 'TELEFONE' | 'EVP';
 
 export type OperacaoAtelie =
+  | 'EDITAR_DADOS_ATELIE'
   | 'ALTERAR_CHAVE_PIX'
   | 'CONSULTAR_DADOS_FINANCEIROS'
   | 'GERENCIAR_CURADORES'
@@ -36,6 +37,7 @@ export type OperacaoAtelie =
   | 'GERENCIAR_ETIQUETAS';
 
 export const PERMISSOES_TITULAR_ATELIE: readonly OperacaoAtelie[] = [
+  'EDITAR_DADOS_ATELIE',
   'ALTERAR_CHAVE_PIX',
   'CONSULTAR_DADOS_FINANCEIROS',
   'GERENCIAR_CURADORES',
@@ -114,8 +116,8 @@ export interface CuradorVinculoPersistido {
 }
 
 /**
- * Contrato de persistência para habilitação de artesão titular (T-ART-02).
- * Nota de domínio: a habilitação NÃO cria o registro de `atelies` (fronteira reservada à HU-04).
+ * Contrato de persistência para habilitação de artesão titular.
+ * Nota de domínio: a habilitação NÃO cria o registro de `atelies`; o cadastro é separado.
  */
 export interface HabilitacaoArtesaoRepository {
   findUsuarioPorId(usuarioId: string): Promise<UsuarioAtivoResumo | null>;
@@ -128,7 +130,7 @@ export interface HabilitacaoArtesaoRepository {
 }
 
 /**
- * Contrato de consulta contextual de titularidade e vínculo de curadoria por ateliê (T-ART-03).
+ * Contrato de consulta contextual de titularidade e vínculo de curadoria por ateliê.
  */
 export interface AtelieAutorizacaoRepository {
   findRelacionamentoUsuarioAtelie(
@@ -139,7 +141,7 @@ export interface AtelieAutorizacaoRepository {
 }
 
 /**
- * Contrato de leitura e atualização de Chave Pix protegida no escopo do ateliê (T-ART-02 / T-ART-03).
+ * Contrato de leitura e atualização da Chave Pix protegida no escopo do ateliê.
  */
 export interface AtelieFinanceiroRepository {
   findDadosFinanceirosPorAtelie(atelieId: string): Promise<DadosFinanceirosAteliePersistidos | null>;
@@ -151,7 +153,7 @@ export interface AtelieFinanceiroRepository {
 }
 
 /**
- * Contrato de gestão de curadores operacionais vinculados ao ateliê (T-ART-04).
+ * Contrato de gestão de curadores operacionais vinculados ao ateliê.
  */
 export interface CuradorVinculoRepository {
   findUsuarioPorEmail(emailNormalizado: string): Promise<UsuarioAtivoResumo | null>;

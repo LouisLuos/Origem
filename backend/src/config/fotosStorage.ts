@@ -14,7 +14,7 @@ export const DIRETORIO_FOTOS_LOCAIS = env.FOTOS_STORAGE_LOCAL_DIR
 export type DriverFotos = 'supabase' | 'local' | 'nao_configurado';
 
 /**
- * Seleção do armazenamento de fotos (T-PEC-03):
+ * Seleção do armazenamento de fotos.
  * - `FOTOS_STORAGE_DRIVER=local`: disco local, servido pelo próprio backend;
  * - Supabase Storage quando `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` existem;
  * - caso contrário, fail-closed (503) — nunca simula upload.

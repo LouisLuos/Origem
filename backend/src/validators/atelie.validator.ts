@@ -51,8 +51,8 @@ const cepSchema = z.unknown().transform((val, ctx): string => {
 
 const ufSchema = z.unknown().transform((val, ctx): string => {
   const uf = typeof val === 'string' ? val.trim().toUpperCase() : '';
-  if (!/^[A-Z]{2}$/.test(uf)) {
-    ctx.addIssue({ code: 'custom', message: 'Informe a UF com 2 letras.' });
+  if (uf !== 'PE') {
+    ctx.addIssue({ code: 'custom', message: 'O endereço de expedição deve ser em Pernambuco (UF PE).' });
     return z.NEVER;
   }
   return uf;
@@ -90,10 +90,25 @@ export const criarAtelieBodySchema = z.object(
   { error: 'Os dados do ateliê devem ser enviados como um objeto JSON.' },
 );
 
+export const atualizarAtelieBodySchema = criarAtelieBodySchema;
+
 export type CriarAtelieDados = z.infer<typeof criarAtelieBodySchema>;
+export type AtualizarAtelieDados = z.infer<typeof atualizarAtelieBodySchema>;
 
 export function validarCriacaoAtelie(input: unknown): CriarAtelieDados {
   const resultado = criarAtelieBodySchema.safeParse(input);
+  if (!resultado.success) {
+    throw new AppError(
+      resultado.error.issues.map((issue) => issue.message).join('; '),
+      422,
+      ATELIE_DADOS_INVALIDOS_CODE,
+    );
+  }
+  return resultado.data;
+}
+
+export function validarAtualizacaoAtelie(input: unknown): AtualizarAtelieDados {
+  const resultado = atualizarAtelieBodySchema.safeParse(input);
   if (!resultado.success) {
     throw new AppError(
       resultado.error.issues.map((issue) => issue.message).join('; '),

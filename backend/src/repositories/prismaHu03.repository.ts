@@ -15,7 +15,7 @@ import type {
 } from './contracts/hu03.contracts.js';
 
 /**
- * Implementações reais (Prisma/PostgreSQL) dos contratos da HU-03.
+ * Implementações reais (Prisma/PostgreSQL) dos contratos da .
  * - L1: papéis inseridos de forma idempotente (UNIQUE usuario_id + papel).
  * - L2: o papel global CURADOR é removido apenas quando não restar nenhum vínculo.
  * - L3: operações compostas executadas em `prisma.$transaction`.
