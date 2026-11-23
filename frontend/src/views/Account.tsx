@@ -10,7 +10,7 @@ import { ArtisanOnboardingForm } from '@/components/ArtisanOnboardingForm'
 import { Button, ButtonLink, Container, Input, currency } from '@/design-system'
 import { useAuth } from '@/context/AuthContext'
 import { LoadingBlock } from '@/components/AsyncState'
-import { useOrders } from '@/context/OrderContext'
+import { orderStatusLabels, useOrders } from '@/context/OrderContext'
 
 const dateFormat = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' })
 
@@ -23,7 +23,7 @@ export function Account() {
 
   if (!user) return <Navigate to="/entrar?from=/conta" />
 
-  const myOrders = orders.filter((order) => order.userEmail === user.email)
+  const myOrders = orders
 
   const handleSave = async (event: FormEvent) => {
     event.preventDefault()
@@ -84,31 +84,41 @@ export function Account() {
                   <li key={order.id} className="border border-border bg-surface p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
                       <Link
-                        href={`/pedido/${order.id}`}
+                        href={`/pedido/${encodeURIComponent(order.codigoPedido)}`}
                         className="text-sm font-semibold tracking-widest text-ink hover:text-terracota-600 hover:underline underline-offset-4"
                       >
-                        {order.id}
+                        {order.codigoPedido}
                       </Link>
-                      <span className="text-xs text-ink-soft">{dateFormat.format(new Date(order.createdAt))}</span>
+                      <span className="text-xs text-ink-soft">{dateFormat.format(new Date(order.criadoEm))}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {order.lines.slice(0, 4).map((line) => (
-                        <img
-                          key={line.productId}
-                          src={line.imageUrl}
-                          alt={line.imageAlt}
-                          className="h-14 w-14 object-cover"
-                        />
-                      ))}
-                      {order.lines.length > 4 && (
-                        <span className="text-xs text-ink-soft">+{order.lines.length - 4}</span>
+                      {order.itens.slice(0, 4).map((line) =>
+                        line.fotoPrincipalUrl ? (
+                          <img
+                            key={line.pecaId}
+                            src={line.fotoPrincipalUrl}
+                            alt={line.titulo}
+                            className="h-14 w-14 object-cover"
+                          />
+                        ) : (
+                          <div
+                            key={line.pecaId}
+                            className="flex h-14 w-14 items-center justify-center bg-surface-muted text-xs text-ink-soft"
+                          >
+                            {line.quantidade}x
+                          </div>
+                        ),
+                      )}
+                      {order.itens.length > 4 && (
+                        <span className="text-xs text-ink-soft">+{order.itens.length - 4}</span>
                       )}
                     </div>
                     <div className="flex items-center justify-between pt-3 text-sm">
                       <span className="text-ink-soft">
-                        {order.lines.reduce((total, line) => total + line.quantity, 0)} item(ns) · Em preparo
+                        {order.itens.reduce((total, line) => total + line.quantidade, 0)} item(ns) ·{' '}
+                        {orderStatusLabels[order.status]}
                       </span>
-                      <span className="font-semibold text-ink">{currency.format(order.total)}</span>
+                      <span className="font-semibold text-ink">{currency.format(order.valorTotalPedido)}</span>
                     </div>
                   </li>
                 ))}

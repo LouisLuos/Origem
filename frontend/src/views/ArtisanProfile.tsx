@@ -12,8 +12,13 @@ import { useCart } from '@/context/CartContext'
 import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 import { findArtisanOf } from '@/utils/artisanMatch'
+import type { Artisan } from '@/services/artisanService'
 
-export function ArtisanProfile() {
+interface ArtisanProfileProps {
+  initialArtisan?: Artisan
+}
+
+export function ArtisanProfile({ initialArtisan }: ArtisanProfileProps) {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const { addItem } = useCart()
@@ -23,9 +28,9 @@ export function ArtisanProfile() {
   const { artisans, status: artisansStatus, error: artisansError, reload: reloadArtisans } = useArtisans()
   const { products: catalogProducts, status: catalogStatus, error: catalogError, reload: reloadCatalog } = useCatalog()
 
-  const artisan = artisans.find((item) => item.id === id)
+  const artisan = initialArtisan ?? artisans.find((item) => item.id === id)
 
-  if (artisansStatus === 'loading' || (artisan && catalogStatus === 'loading')) {
+  if (!initialArtisan && (artisansStatus === 'loading' || (artisan && catalogStatus === 'loading'))) {
     return <ResourceGate status="loading" label="Carregando perfil…" spacing="detail" />
   }
 
@@ -49,7 +54,9 @@ export function ArtisanProfile() {
     )
   }
 
-  const products = catalogProducts.filter((product) => findArtisanOf(product, artisans)?.id === artisan.id)
+  const products = initialArtisan?.pieces
+    ? initialArtisan.pieces
+    : catalogProducts.filter((product) => findArtisanOf(product, artisans)?.id === artisan.id)
 
   const goToTechnique = () => {
     selectTechnique(artisan.technique)
@@ -165,7 +172,7 @@ export function ArtisanProfile() {
             )}
           </div>
 
-          {catalogStatus === 'error' ? (
+          {!initialArtisan && catalogStatus === 'error' ? (
             <ErrorBlock message={catalogError} onRetry={reloadCatalog} />
           ) : products.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">

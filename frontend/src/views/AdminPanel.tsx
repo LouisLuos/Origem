@@ -85,14 +85,16 @@ export function AdminPanel() {
     )
   }
 
-  const revenue = orders.reduce((total, order) => total + order.total, 0)
+  const revenue = orders
+    .filter((order) => order.status === 'APROVADO')
+    .reduce((total, order) => total + order.valorTotalPedido, 0)
   const soldOutCount = items.filter((item) => item.stock === 0).length
 
   const metrics = [
     { label: 'Usuários', value: String(users.length) },
     { label: 'Artesãos', value: String(users.filter((candidate) => candidate.role === 'artisan').length) },
     { label: 'Pedidos', value: String(orders.length) },
-    { label: 'Receita simulada', value: currency.format(revenue) },
+    { label: 'Receita aprovada', value: currency.format(revenue) },
     { label: 'Peças no catálogo', value: String(items.length) },
     { label: 'Peças esgotadas', value: String(soldOutCount) },
   ]
@@ -146,10 +148,10 @@ export function AdminPanel() {
                     <Table caption="Pedidos recentes" headers={['Pedido', 'Cliente', 'Data', 'Total']}>
                       {orders.slice(0, 5).map((order) => (
                         <tr key={order.id}>
-                          <td className="px-4 py-3 font-semibold tracking-wider">{order.id}</td>
-                          <td className="px-4 py-3">{order.customer.name}</td>
-                          <td className="px-4 py-3 text-ink-soft">{dateFormat.format(new Date(order.createdAt))}</td>
-                          <td className="px-4 py-3 font-semibold">{currency.format(order.total)}</td>
+                          <td className="px-4 py-3 font-semibold tracking-wider">{order.codigoPedido}</td>
+                          <td className="px-4 py-3">{order.enderecoEntrega.nomeDestinatario}</td>
+                          <td className="px-4 py-3 text-ink-soft">{dateFormat.format(new Date(order.criadoEm))}</td>
+                          <td className="px-4 py-3 font-semibold">{currency.format(order.valorTotalPedido)}</td>
                         </tr>
                       ))}
                     </Table>
@@ -177,17 +179,17 @@ export function AdminPanel() {
                 <Table caption="Todos os pedidos" headers={['Pedido', 'Cliente', 'Itens', 'Pagamento', 'Data', 'Total']}>
                   {orders.map((order) => (
                     <tr key={order.id}>
-                      <td className="px-4 py-3 font-semibold tracking-wider">{order.id}</td>
+                      <td className="px-4 py-3 font-semibold tracking-wider">{order.codigoPedido}</td>
                       <td className="px-4 py-3">
-                        {order.customer.name}
-                        <span className="block text-xs text-ink-soft">{order.customer.email}</span>
+                        {order.enderecoEntrega.nomeDestinatario}
+                        <span className="block text-xs text-ink-soft">{order.enderecoEntrega.email}</span>
                       </td>
-                      <td className="px-4 py-3">{order.lines.reduce((total, line) => total + line.quantity, 0)}</td>
+                      <td className="px-4 py-3">{order.itens.reduce((total, line) => total + line.quantidade, 0)}</td>
                       <td className="px-4 py-3 text-ink-soft">
-                        {paymentLabels[order.paymentMethod]}
+                        {paymentLabels[order.metodoPagamento]}
                       </td>
-                      <td className="px-4 py-3 text-ink-soft">{dateFormat.format(new Date(order.createdAt))}</td>
-                      <td className="px-4 py-3 font-semibold">{currency.format(order.total)}</td>
+                      <td className="px-4 py-3 text-ink-soft">{dateFormat.format(new Date(order.criadoEm))}</td>
+                      <td className="px-4 py-3 font-semibold">{currency.format(order.valorTotalPedido)}</td>
                     </tr>
                   ))}
                 </Table>

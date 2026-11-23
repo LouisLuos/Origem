@@ -1,4 +1,5 @@
 import { apiRequest } from './api'
+import type { CatalogItem } from './catalogTypes'
 
 export interface Artisan {
   id: string
@@ -12,6 +13,7 @@ export interface Artisan {
   coverUrl: string
   coverAlt: string
   email?: string | null
+  pieces?: CatalogItem[]
 }
 
 interface ArtisanListResponse {
