@@ -1,5 +1,4 @@
 import { prisma } from '../config/database.js';
-import { buildArtisanId } from '../utils/string.util.js';
 import { isUuid } from '../utils/uuid.util.js';
 import type { ProdutoPublico } from './produto.repository.js';
 
@@ -25,7 +24,7 @@ const selecaoVitrine = {
   atelie: {
     select: {
       poloCultural: true,
-      artesao: { select: { usuario: { select: { nome: true } } } },
+      artesao: { select: { id: true, usuario: { select: { nome: true } } } },
     },
   },
   fotos: { select: { url: true, isPrincipal: true }, orderBy: { ordem: 'asc' } },
@@ -40,7 +39,7 @@ type PecaVitrineRegistro = {
   preco: { toNumber(): number };
   quantidadeEstoque: number;
   status: string;
-  atelie: { poloCultural: string; artesao: { usuario: { nome: string } } };
+  atelie: { poloCultural: string; artesao: { id: string; usuario: { nome: string } } };
   fotos: { url: string; isPrincipal: boolean }[];
 };
 
@@ -57,7 +56,7 @@ export function mapPecaParaProdutoPublico(peca: PecaVitrineRegistro): ProdutoPub
     status: peca.status,
     title: peca.titulo,
     artisan: artesao,
-    artisanId: buildArtisanId(artesao),
+    artisanId: peca.atelie.artesao.id,
     hub: peca.atelie.poloCultural,
     technique: peca.tipologia,
     price: peca.preco.toNumber(),

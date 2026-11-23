@@ -537,10 +537,6 @@ export type EnderecoUncheckedUpdateOneWithoutAtelieNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.EnderecoUpdateToOneWithWhereWithoutAtelieInput, Prisma.EnderecoUpdateWithoutAtelieInput>, Prisma.EnderecoUncheckedUpdateWithoutAtelieInput>
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnderecoCreateNestedOneWithoutPedidosInput = {
   create?: Prisma.XOR<Prisma.EnderecoCreateWithoutPedidosInput, Prisma.EnderecoUncheckedCreateWithoutPedidosInput>
   connectOrCreate?: Prisma.EnderecoCreateOrConnectWithoutPedidosInput
