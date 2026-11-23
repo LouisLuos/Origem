@@ -408,7 +408,8 @@ export const ModelName = {
   AuthLoginAttempt: 'AuthLoginAttempt',
   AuditoriaSeguranca: 'AuditoriaSeguranca',
   ReservaGrupo: 'ReservaGrupo',
-  Reserva: 'Reserva'
+  Reserva: 'Reserva',
+  LogNotificacao: 'LogNotificacao'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -424,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "usuario" | "artesao" | "atelie" | "atelieCurador" | "endereco" | "peca" | "fotoPeca" | "usuarioPapel" | "authLoginAttempt" | "auditoriaSeguranca" | "reservaGrupo" | "reserva"
+    modelProps: "usuario" | "artesao" | "atelie" | "atelieCurador" | "endereco" | "peca" | "fotoPeca" | "usuarioPapel" | "authLoginAttempt" | "auditoriaSeguranca" | "reservaGrupo" | "reserva" | "logNotificacao"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1316,6 +1317,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    LogNotificacao: {
+      payload: Prisma.$LogNotificacaoPayload<ExtArgs>
+      fields: Prisma.LogNotificacaoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LogNotificacaoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LogNotificacaoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>
+        }
+        findFirst: {
+          args: Prisma.LogNotificacaoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LogNotificacaoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>
+        }
+        findMany: {
+          args: Prisma.LogNotificacaoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>[]
+        }
+        create: {
+          args: Prisma.LogNotificacaoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>
+        }
+        createMany: {
+          args: Prisma.LogNotificacaoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LogNotificacaoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>[]
+        }
+        delete: {
+          args: Prisma.LogNotificacaoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>
+        }
+        update: {
+          args: Prisma.LogNotificacaoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>
+        }
+        deleteMany: {
+          args: Prisma.LogNotificacaoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LogNotificacaoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LogNotificacaoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>[]
+        }
+        upsert: {
+          args: Prisma.LogNotificacaoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LogNotificacaoPayload>
+        }
+        aggregate: {
+          args: Prisma.LogNotificacaoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLogNotificacao>
+        }
+        groupBy: {
+          args: Prisma.LogNotificacaoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LogNotificacaoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LogNotificacaoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LogNotificacaoCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1523,6 +1598,36 @@ export const ReservaScalarFieldEnum = {
 export type ReservaScalarFieldEnum = (typeof ReservaScalarFieldEnum)[keyof typeof ReservaScalarFieldEnum]
 
 
+export const LogNotificacaoScalarFieldEnum = {
+  id: 'id',
+  eventoOrigem: 'eventoOrigem',
+  pedidoId: 'pedidoId',
+  subpedidoId: 'subpedidoId',
+  usuarioId: 'usuarioId',
+  atelieId: 'atelieId',
+  destinatario: 'destinatario',
+  canal: 'canal',
+  template: 'template',
+  status: 'status',
+  tentativas: 'tentativas',
+  maxTentativas: 'maxTentativas',
+  provedor: 'provedor',
+  provedorMensagemId: 'provedorMensagemId',
+  erroCodigo: 'erroCodigo',
+  erroSanitizado: 'erroSanitizado',
+  idempotencyKey: 'idempotencyKey',
+  jobId: 'jobId',
+  correlationId: 'correlationId',
+  criadoEm: 'criadoEm',
+  ultimaTentativaEm: 'ultimaTentativaEm',
+  proximaTentativaEm: 'proximaTentativaEm',
+  enviadoEm: 'enviadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type LogNotificacaoScalarFieldEnum = (typeof LogNotificacaoScalarFieldEnum)[keyof typeof LogNotificacaoScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1655,6 +1760,34 @@ export type EnumStatusReservaFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'StatusReserva[]'
  */
 export type ListEnumStatusReservaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusReserva[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CanalNotificacao'
+ */
+export type EnumCanalNotificacaoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CanalNotificacao'>
+    
+
+
+/**
+ * Reference to a field of type 'CanalNotificacao[]'
+ */
+export type ListEnumCanalNotificacaoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CanalNotificacao[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusNotificacao'
+ */
+export type EnumStatusNotificacaoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusNotificacao'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusNotificacao[]'
+ */
+export type ListEnumStatusNotificacaoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusNotificacao[]'>
     
 
 
@@ -1834,6 +1967,7 @@ export type GlobalOmitConfig = {
   auditoriaSeguranca?: Prisma.AuditoriaSegurancaOmit
   reservaGrupo?: Prisma.ReservaGrupoOmit
   reserva?: Prisma.ReservaOmit
+  logNotificacao?: Prisma.LogNotificacaoOmit
 }
 
 /* Types for Logging */

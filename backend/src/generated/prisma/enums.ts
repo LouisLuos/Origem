@@ -37,3 +37,23 @@ export const StatusReserva = {
 } as const
 
 export type StatusReserva = (typeof StatusReserva)[keyof typeof StatusReserva]
+
+
+export const CanalNotificacao = {
+  EMAIL: 'EMAIL',
+  WHATSAPP: 'WHATSAPP'
+} as const
+
+export type CanalNotificacao = (typeof CanalNotificacao)[keyof typeof CanalNotificacao]
+
+
+export const StatusNotificacao = {
+  ENFILEIRADA: 'ENFILEIRADA',
+  PROCESSANDO: 'PROCESSANDO',
+  ENVIADA: 'ENVIADA',
+  FALHA_TRANSITORIA: 'FALHA_TRANSITORIA',
+  FALHA_PERMANENTE: 'FALHA_PERMANENTE',
+  IGNORADA: 'IGNORADA'
+} as const
+
+export type StatusNotificacao = (typeof StatusNotificacao)[keyof typeof StatusNotificacao]

@@ -80,3 +80,9 @@ export type ReservaGrupo = Prisma.ReservaGrupoModel
  * Reserva temporária de unidades de uma peça (compatível com lotes limitados da HU-06 e peça única da HU-09).
  */
 export type Reserva = Prisma.ReservaModel
+/**
+ * Model LogNotificacao
+ * Auditoria e rastreamento idempotente de notificações transacionais multicanal (HU-17).
+ * Não armazena segredos, tokens nem conteúdo sensível; `destinatario` deve ser gravado mascarado.
+ */
+export type LogNotificacao = Prisma.LogNotificacaoModel

@@ -7,6 +7,7 @@ import { authRoutes } from './auth.routes.js';
 import { PECAS_ROUTE_PATH, pecaRoutes } from './peca.routes.js';
 import { atelieCadastroRoutes } from './atelieCadastro.routes.js';
 import { estoqueRoutes } from './estoque.routes.js';
+import { notificacaoRoutes } from './notificacao.routes.js';
 
 export const routes = Router();
 
@@ -33,3 +34,6 @@ routes.use('/atelies', atelieCadastroRoutes);
 
 // Endpoints de governança de ateliês, finanças protegidas e curadores.
 routes.use('/atelies', atelieRoutes);
+
+// Consulta auditada das próprias notificações transacionais do usuário autenticado (HU-17).
+routes.use('/notificacoes', notificacaoRoutes);

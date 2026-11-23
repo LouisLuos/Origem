@@ -62,7 +62,8 @@ export const ModelName = {
   AuthLoginAttempt: 'AuthLoginAttempt',
   AuditoriaSeguranca: 'AuditoriaSeguranca',
   ReservaGrupo: 'ReservaGrupo',
-  Reserva: 'Reserva'
+  Reserva: 'Reserva',
+  LogNotificacao: 'LogNotificacao'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -247,6 +248,36 @@ export const ReservaScalarFieldEnum = {
 } as const
 
 export type ReservaScalarFieldEnum = (typeof ReservaScalarFieldEnum)[keyof typeof ReservaScalarFieldEnum]
+
+
+export const LogNotificacaoScalarFieldEnum = {
+  id: 'id',
+  eventoOrigem: 'eventoOrigem',
+  pedidoId: 'pedidoId',
+  subpedidoId: 'subpedidoId',
+  usuarioId: 'usuarioId',
+  atelieId: 'atelieId',
+  destinatario: 'destinatario',
+  canal: 'canal',
+  template: 'template',
+  status: 'status',
+  tentativas: 'tentativas',
+  maxTentativas: 'maxTentativas',
+  provedor: 'provedor',
+  provedorMensagemId: 'provedorMensagemId',
+  erroCodigo: 'erroCodigo',
+  erroSanitizado: 'erroSanitizado',
+  idempotencyKey: 'idempotencyKey',
+  jobId: 'jobId',
+  correlationId: 'correlationId',
+  criadoEm: 'criadoEm',
+  ultimaTentativaEm: 'ultimaTentativaEm',
+  proximaTentativaEm: 'proximaTentativaEm',
+  enviadoEm: 'enviadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type LogNotificacaoScalarFieldEnum = (typeof LogNotificacaoScalarFieldEnum)[keyof typeof LogNotificacaoScalarFieldEnum]
 
 
 export const SortOrder = {

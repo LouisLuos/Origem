@@ -278,7 +278,7 @@ model LogNotificacao {
   template           String            @db.VarChar(80)
   status             StatusNotificacao @default(ENFILEIRADA)
   tentativas         Int               @default(0)
-  maxTentativas      Int               @default(5) @map("max_tentativas")
+  maxTentativas      Int               @default(3) @map("max_tentativas")
   provedor           String?           @db.VarChar(40)
   provedorMensagemId String?           @map("provedor_mensagem_id") @db.VarChar(160)
   erroCodigo         String?           @map("erro_codigo") @db.VarChar(64)

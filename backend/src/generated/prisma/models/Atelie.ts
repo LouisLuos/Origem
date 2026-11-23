@@ -202,6 +202,7 @@ export type AtelieWhereInput = {
   endereco?: Prisma.XOR<Prisma.EnderecoNullableScalarRelationFilter, Prisma.EnderecoWhereInput> | null
   curadores?: Prisma.AtelieCuradorListRelationFilter
   pecas?: Prisma.PecaListRelationFilter
+  logsNotificacoes?: Prisma.LogNotificacaoListRelationFilter
 }
 
 export type AtelieOrderByWithRelationInput = {
@@ -216,6 +217,7 @@ export type AtelieOrderByWithRelationInput = {
   endereco?: Prisma.EnderecoOrderByWithRelationInput
   curadores?: Prisma.AtelieCuradorOrderByRelationAggregateInput
   pecas?: Prisma.PecaOrderByRelationAggregateInput
+  logsNotificacoes?: Prisma.LogNotificacaoOrderByRelationAggregateInput
 }
 
 export type AtelieWhereUniqueInput = Prisma.AtLeast<{
@@ -233,6 +235,7 @@ export type AtelieWhereUniqueInput = Prisma.AtLeast<{
   endereco?: Prisma.XOR<Prisma.EnderecoNullableScalarRelationFilter, Prisma.EnderecoWhereInput> | null
   curadores?: Prisma.AtelieCuradorListRelationFilter
   pecas?: Prisma.PecaListRelationFilter
+  logsNotificacoes?: Prisma.LogNotificacaoListRelationFilter
 }, "id" | "artesaoId">
 
 export type AtelieOrderByWithAggregationInput = {
@@ -272,6 +275,7 @@ export type AtelieCreateInput = {
   endereco?: Prisma.EnderecoCreateNestedOneWithoutAtelieInput
   curadores?: Prisma.AtelieCuradorCreateNestedManyWithoutAtelieInput
   pecas?: Prisma.PecaCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieUncheckedCreateInput = {
@@ -285,6 +289,7 @@ export type AtelieUncheckedCreateInput = {
   endereco?: Prisma.EnderecoUncheckedCreateNestedOneWithoutAtelieInput
   curadores?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutAtelieInput
   pecas?: Prisma.PecaUncheckedCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieUpdateInput = {
@@ -298,6 +303,7 @@ export type AtelieUpdateInput = {
   endereco?: Prisma.EnderecoUpdateOneWithoutAtelieNestedInput
   curadores?: Prisma.AtelieCuradorUpdateManyWithoutAtelieNestedInput
   pecas?: Prisma.PecaUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieUncheckedUpdateInput = {
@@ -311,6 +317,7 @@ export type AtelieUncheckedUpdateInput = {
   endereco?: Prisma.EnderecoUncheckedUpdateOneWithoutAtelieNestedInput
   curadores?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutAtelieNestedInput
   pecas?: Prisma.PecaUncheckedUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieCreateManyInput = {
@@ -458,6 +465,22 @@ export type AtelieUpdateOneRequiredWithoutPecasNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.AtelieUpdateToOneWithWhereWithoutPecasInput, Prisma.AtelieUpdateWithoutPecasInput>, Prisma.AtelieUncheckedUpdateWithoutPecasInput>
 }
 
+export type AtelieCreateNestedOneWithoutLogsNotificacoesInput = {
+  create?: Prisma.XOR<Prisma.AtelieCreateWithoutLogsNotificacoesInput, Prisma.AtelieUncheckedCreateWithoutLogsNotificacoesInput>
+  connectOrCreate?: Prisma.AtelieCreateOrConnectWithoutLogsNotificacoesInput
+  connect?: Prisma.AtelieWhereUniqueInput
+}
+
+export type AtelieUpdateOneWithoutLogsNotificacoesNestedInput = {
+  create?: Prisma.XOR<Prisma.AtelieCreateWithoutLogsNotificacoesInput, Prisma.AtelieUncheckedCreateWithoutLogsNotificacoesInput>
+  connectOrCreate?: Prisma.AtelieCreateOrConnectWithoutLogsNotificacoesInput
+  upsert?: Prisma.AtelieUpsertWithoutLogsNotificacoesInput
+  disconnect?: Prisma.AtelieWhereInput | boolean
+  delete?: Prisma.AtelieWhereInput | boolean
+  connect?: Prisma.AtelieWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.AtelieUpdateToOneWithWhereWithoutLogsNotificacoesInput, Prisma.AtelieUpdateWithoutLogsNotificacoesInput>, Prisma.AtelieUncheckedUpdateWithoutLogsNotificacoesInput>
+}
+
 export type AtelieCreateWithoutArtesaoInput = {
   id?: string
   nomeComercial: string
@@ -468,6 +491,7 @@ export type AtelieCreateWithoutArtesaoInput = {
   endereco?: Prisma.EnderecoCreateNestedOneWithoutAtelieInput
   curadores?: Prisma.AtelieCuradorCreateNestedManyWithoutAtelieInput
   pecas?: Prisma.PecaCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieUncheckedCreateWithoutArtesaoInput = {
@@ -480,6 +504,7 @@ export type AtelieUncheckedCreateWithoutArtesaoInput = {
   endereco?: Prisma.EnderecoUncheckedCreateNestedOneWithoutAtelieInput
   curadores?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutAtelieInput
   pecas?: Prisma.PecaUncheckedCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieCreateOrConnectWithoutArtesaoInput = {
@@ -508,6 +533,7 @@ export type AtelieUpdateWithoutArtesaoInput = {
   endereco?: Prisma.EnderecoUpdateOneWithoutAtelieNestedInput
   curadores?: Prisma.AtelieCuradorUpdateManyWithoutAtelieNestedInput
   pecas?: Prisma.PecaUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieUncheckedUpdateWithoutArtesaoInput = {
@@ -520,6 +546,7 @@ export type AtelieUncheckedUpdateWithoutArtesaoInput = {
   endereco?: Prisma.EnderecoUncheckedUpdateOneWithoutAtelieNestedInput
   curadores?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutAtelieNestedInput
   pecas?: Prisma.PecaUncheckedUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieCreateWithoutCuradoresInput = {
@@ -532,6 +559,7 @@ export type AtelieCreateWithoutCuradoresInput = {
   artesao: Prisma.ArtesaoCreateNestedOneWithoutAtelieInput
   endereco?: Prisma.EnderecoCreateNestedOneWithoutAtelieInput
   pecas?: Prisma.PecaCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieUncheckedCreateWithoutCuradoresInput = {
@@ -544,6 +572,7 @@ export type AtelieUncheckedCreateWithoutCuradoresInput = {
   atualizadoEm?: Date | string
   endereco?: Prisma.EnderecoUncheckedCreateNestedOneWithoutAtelieInput
   pecas?: Prisma.PecaUncheckedCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieCreateOrConnectWithoutCuradoresInput = {
@@ -572,6 +601,7 @@ export type AtelieUpdateWithoutCuradoresInput = {
   artesao?: Prisma.ArtesaoUpdateOneRequiredWithoutAtelieNestedInput
   endereco?: Prisma.EnderecoUpdateOneWithoutAtelieNestedInput
   pecas?: Prisma.PecaUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieUncheckedUpdateWithoutCuradoresInput = {
@@ -584,6 +614,7 @@ export type AtelieUncheckedUpdateWithoutCuradoresInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endereco?: Prisma.EnderecoUncheckedUpdateOneWithoutAtelieNestedInput
   pecas?: Prisma.PecaUncheckedUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieCreateWithoutEnderecoInput = {
@@ -596,6 +627,7 @@ export type AtelieCreateWithoutEnderecoInput = {
   artesao: Prisma.ArtesaoCreateNestedOneWithoutAtelieInput
   curadores?: Prisma.AtelieCuradorCreateNestedManyWithoutAtelieInput
   pecas?: Prisma.PecaCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieUncheckedCreateWithoutEnderecoInput = {
@@ -608,6 +640,7 @@ export type AtelieUncheckedCreateWithoutEnderecoInput = {
   atualizadoEm?: Date | string
   curadores?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutAtelieInput
   pecas?: Prisma.PecaUncheckedCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieCreateOrConnectWithoutEnderecoInput = {
@@ -636,6 +669,7 @@ export type AtelieUpdateWithoutEnderecoInput = {
   artesao?: Prisma.ArtesaoUpdateOneRequiredWithoutAtelieNestedInput
   curadores?: Prisma.AtelieCuradorUpdateManyWithoutAtelieNestedInput
   pecas?: Prisma.PecaUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieUncheckedUpdateWithoutEnderecoInput = {
@@ -648,6 +682,7 @@ export type AtelieUncheckedUpdateWithoutEnderecoInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   curadores?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutAtelieNestedInput
   pecas?: Prisma.PecaUncheckedUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieCreateWithoutPecasInput = {
@@ -660,6 +695,7 @@ export type AtelieCreateWithoutPecasInput = {
   artesao: Prisma.ArtesaoCreateNestedOneWithoutAtelieInput
   endereco?: Prisma.EnderecoCreateNestedOneWithoutAtelieInput
   curadores?: Prisma.AtelieCuradorCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieUncheckedCreateWithoutPecasInput = {
@@ -672,6 +708,7 @@ export type AtelieUncheckedCreateWithoutPecasInput = {
   atualizadoEm?: Date | string
   endereco?: Prisma.EnderecoUncheckedCreateNestedOneWithoutAtelieInput
   curadores?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutAtelieInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutAtelieInput
 }
 
 export type AtelieCreateOrConnectWithoutPecasInput = {
@@ -700,6 +737,7 @@ export type AtelieUpdateWithoutPecasInput = {
   artesao?: Prisma.ArtesaoUpdateOneRequiredWithoutAtelieNestedInput
   endereco?: Prisma.EnderecoUpdateOneWithoutAtelieNestedInput
   curadores?: Prisma.AtelieCuradorUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutAtelieNestedInput
 }
 
 export type AtelieUncheckedUpdateWithoutPecasInput = {
@@ -712,6 +750,75 @@ export type AtelieUncheckedUpdateWithoutPecasInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endereco?: Prisma.EnderecoUncheckedUpdateOneWithoutAtelieNestedInput
   curadores?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutAtelieNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutAtelieNestedInput
+}
+
+export type AtelieCreateWithoutLogsNotificacoesInput = {
+  id?: string
+  nomeComercial: string
+  poloCultural: string
+  status?: string
+  criadoEm?: Date | string
+  atualizadoEm?: Date | string
+  artesao: Prisma.ArtesaoCreateNestedOneWithoutAtelieInput
+  endereco?: Prisma.EnderecoCreateNestedOneWithoutAtelieInput
+  curadores?: Prisma.AtelieCuradorCreateNestedManyWithoutAtelieInput
+  pecas?: Prisma.PecaCreateNestedManyWithoutAtelieInput
+}
+
+export type AtelieUncheckedCreateWithoutLogsNotificacoesInput = {
+  id?: string
+  artesaoId: string
+  nomeComercial: string
+  poloCultural: string
+  status?: string
+  criadoEm?: Date | string
+  atualizadoEm?: Date | string
+  endereco?: Prisma.EnderecoUncheckedCreateNestedOneWithoutAtelieInput
+  curadores?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutAtelieInput
+  pecas?: Prisma.PecaUncheckedCreateNestedManyWithoutAtelieInput
+}
+
+export type AtelieCreateOrConnectWithoutLogsNotificacoesInput = {
+  where: Prisma.AtelieWhereUniqueInput
+  create: Prisma.XOR<Prisma.AtelieCreateWithoutLogsNotificacoesInput, Prisma.AtelieUncheckedCreateWithoutLogsNotificacoesInput>
+}
+
+export type AtelieUpsertWithoutLogsNotificacoesInput = {
+  update: Prisma.XOR<Prisma.AtelieUpdateWithoutLogsNotificacoesInput, Prisma.AtelieUncheckedUpdateWithoutLogsNotificacoesInput>
+  create: Prisma.XOR<Prisma.AtelieCreateWithoutLogsNotificacoesInput, Prisma.AtelieUncheckedCreateWithoutLogsNotificacoesInput>
+  where?: Prisma.AtelieWhereInput
+}
+
+export type AtelieUpdateToOneWithWhereWithoutLogsNotificacoesInput = {
+  where?: Prisma.AtelieWhereInput
+  data: Prisma.XOR<Prisma.AtelieUpdateWithoutLogsNotificacoesInput, Prisma.AtelieUncheckedUpdateWithoutLogsNotificacoesInput>
+}
+
+export type AtelieUpdateWithoutLogsNotificacoesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nomeComercial?: Prisma.StringFieldUpdateOperationsInput | string
+  poloCultural?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  artesao?: Prisma.ArtesaoUpdateOneRequiredWithoutAtelieNestedInput
+  endereco?: Prisma.EnderecoUpdateOneWithoutAtelieNestedInput
+  curadores?: Prisma.AtelieCuradorUpdateManyWithoutAtelieNestedInput
+  pecas?: Prisma.PecaUpdateManyWithoutAtelieNestedInput
+}
+
+export type AtelieUncheckedUpdateWithoutLogsNotificacoesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  artesaoId?: Prisma.StringFieldUpdateOperationsInput | string
+  nomeComercial?: Prisma.StringFieldUpdateOperationsInput | string
+  poloCultural?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endereco?: Prisma.EnderecoUncheckedUpdateOneWithoutAtelieNestedInput
+  curadores?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutAtelieNestedInput
+  pecas?: Prisma.PecaUncheckedUpdateManyWithoutAtelieNestedInput
 }
 
 
@@ -722,11 +829,13 @@ export type AtelieUncheckedUpdateWithoutPecasInput = {
 export type AtelieCountOutputType = {
   curadores: number
   pecas: number
+  logsNotificacoes: number
 }
 
 export type AtelieCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   curadores?: boolean | AtelieCountOutputTypeCountCuradoresArgs
   pecas?: boolean | AtelieCountOutputTypeCountPecasArgs
+  logsNotificacoes?: boolean | AtelieCountOutputTypeCountLogsNotificacoesArgs
 }
 
 /**
@@ -753,6 +862,13 @@ export type AtelieCountOutputTypeCountPecasArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.PecaWhereInput
 }
 
+/**
+ * AtelieCountOutputType without action
+ */
+export type AtelieCountOutputTypeCountLogsNotificacoesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LogNotificacaoWhereInput
+}
+
 
 export type AtelieSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -766,6 +882,7 @@ export type AtelieSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   endereco?: boolean | Prisma.Atelie$enderecoArgs<ExtArgs>
   curadores?: boolean | Prisma.Atelie$curadoresArgs<ExtArgs>
   pecas?: boolean | Prisma.Atelie$pecasArgs<ExtArgs>
+  logsNotificacoes?: boolean | Prisma.Atelie$logsNotificacoesArgs<ExtArgs>
   _count?: boolean | Prisma.AtelieCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["atelie"]>
 
@@ -807,6 +924,7 @@ export type AtelieInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   endereco?: boolean | Prisma.Atelie$enderecoArgs<ExtArgs>
   curadores?: boolean | Prisma.Atelie$curadoresArgs<ExtArgs>
   pecas?: boolean | Prisma.Atelie$pecasArgs<ExtArgs>
+  logsNotificacoes?: boolean | Prisma.Atelie$logsNotificacoesArgs<ExtArgs>
   _count?: boolean | Prisma.AtelieCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type AtelieIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -823,6 +941,7 @@ export type $AteliePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     endereco: Prisma.$EnderecoPayload<ExtArgs> | null
     curadores: Prisma.$AtelieCuradorPayload<ExtArgs>[]
     pecas: Prisma.$PecaPayload<ExtArgs>[]
+    logsNotificacoes: Prisma.$LogNotificacaoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1230,6 +1349,7 @@ export interface Prisma__AtelieClient<T, Null = never, ExtArgs extends runtime.T
   endereco<T extends Prisma.Atelie$enderecoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Atelie$enderecoArgs<ExtArgs>>): Prisma.Prisma__EnderecoClient<runtime.Types.Result.GetResult<Prisma.$EnderecoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   curadores<T extends Prisma.Atelie$curadoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Atelie$curadoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AtelieCuradorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pecas<T extends Prisma.Atelie$pecasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Atelie$pecasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PecaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  logsNotificacoes<T extends Prisma.Atelie$logsNotificacoesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Atelie$logsNotificacoesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LogNotificacaoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1731,6 +1851,30 @@ export type Atelie$pecasArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.PecaScalarFieldEnum | Prisma.PecaScalarFieldEnum[]
+}
+
+/**
+ * Atelie.logsNotificacoes
+ */
+export type Atelie$logsNotificacoesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LogNotificacao
+   */
+  select?: Prisma.LogNotificacaoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LogNotificacao
+   */
+  omit?: Prisma.LogNotificacaoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LogNotificacaoInclude<ExtArgs> | null
+  where?: Prisma.LogNotificacaoWhereInput
+  orderBy?: Prisma.LogNotificacaoOrderByWithRelationInput | Prisma.LogNotificacaoOrderByWithRelationInput[]
+  cursor?: Prisma.LogNotificacaoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LogNotificacaoScalarFieldEnum | Prisma.LogNotificacaoScalarFieldEnum[]
 }
 
 /**

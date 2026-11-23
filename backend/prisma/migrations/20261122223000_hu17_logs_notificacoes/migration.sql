@@ -31,7 +31,7 @@ CREATE TABLE "logs_notificacoes" (
     "template" VARCHAR(80) NOT NULL,
     "status" "StatusNotificacao" NOT NULL DEFAULT 'ENFILEIRADA',
     "tentativas" INTEGER NOT NULL DEFAULT 0,
-    "max_tentativas" INTEGER NOT NULL DEFAULT 5,
+    "max_tentativas" INTEGER NOT NULL DEFAULT 3,
     "provedor" VARCHAR(40),
     "provedor_mensagem_id" VARCHAR(160),
     "erro_codigo" VARCHAR(64),
