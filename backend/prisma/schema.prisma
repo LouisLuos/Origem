@@ -55,6 +55,12 @@ model Artesao {
   biografiaCultural     String   @map("biografia_cultural") @db.Text
   tipoChavePix          String   @map("tipo_chave_pix") @db.VarChar
   chavePixCriptografada String   @map("chave_pix_criptografada") @db.VarChar
+  tecnicaPrincipal      String?  @map("tecnica_principal") @db.VarChar
+  anoInicio             Int?     @map("ano_inicio")
+  fotoUrl               String?  @map("foto_url") @db.Text
+  fotoAlt               String?  @map("foto_alt") @db.VarChar
+  coverUrl              String?  @map("cover_url") @db.Text
+  coverAlt              String?  @map("cover_alt") @db.VarChar
   criadoEm              DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
   atualizadoEm          DateTime @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
   usuario               Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)

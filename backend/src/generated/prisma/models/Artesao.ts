@@ -20,8 +20,18 @@ export type ArtesaoModel = runtime.Types.Result.DefaultSelection<Prisma.$Artesao
 
 export type AggregateArtesao = {
   _count: ArtesaoCountAggregateOutputType | null
+  _avg: ArtesaoAvgAggregateOutputType | null
+  _sum: ArtesaoSumAggregateOutputType | null
   _min: ArtesaoMinAggregateOutputType | null
   _max: ArtesaoMaxAggregateOutputType | null
+}
+
+export type ArtesaoAvgAggregateOutputType = {
+  anoInicio: number | null
+}
+
+export type ArtesaoSumAggregateOutputType = {
+  anoInicio: number | null
 }
 
 export type ArtesaoMinAggregateOutputType = {
@@ -30,6 +40,12 @@ export type ArtesaoMinAggregateOutputType = {
   biografiaCultural: string | null
   tipoChavePix: string | null
   chavePixCriptografada: string | null
+  tecnicaPrincipal: string | null
+  anoInicio: number | null
+  fotoUrl: string | null
+  fotoAlt: string | null
+  coverUrl: string | null
+  coverAlt: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -40,6 +56,12 @@ export type ArtesaoMaxAggregateOutputType = {
   biografiaCultural: string | null
   tipoChavePix: string | null
   chavePixCriptografada: string | null
+  tecnicaPrincipal: string | null
+  anoInicio: number | null
+  fotoUrl: string | null
+  fotoAlt: string | null
+  coverUrl: string | null
+  coverAlt: string | null
   criadoEm: Date | null
   atualizadoEm: Date | null
 }
@@ -50,11 +72,25 @@ export type ArtesaoCountAggregateOutputType = {
   biografiaCultural: number
   tipoChavePix: number
   chavePixCriptografada: number
+  tecnicaPrincipal: number
+  anoInicio: number
+  fotoUrl: number
+  fotoAlt: number
+  coverUrl: number
+  coverAlt: number
   criadoEm: number
   atualizadoEm: number
   _all: number
 }
 
+
+export type ArtesaoAvgAggregateInputType = {
+  anoInicio?: true
+}
+
+export type ArtesaoSumAggregateInputType = {
+  anoInicio?: true
+}
 
 export type ArtesaoMinAggregateInputType = {
   id?: true
@@ -62,6 +98,12 @@ export type ArtesaoMinAggregateInputType = {
   biografiaCultural?: true
   tipoChavePix?: true
   chavePixCriptografada?: true
+  tecnicaPrincipal?: true
+  anoInicio?: true
+  fotoUrl?: true
+  fotoAlt?: true
+  coverUrl?: true
+  coverAlt?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -72,6 +114,12 @@ export type ArtesaoMaxAggregateInputType = {
   biografiaCultural?: true
   tipoChavePix?: true
   chavePixCriptografada?: true
+  tecnicaPrincipal?: true
+  anoInicio?: true
+  fotoUrl?: true
+  fotoAlt?: true
+  coverUrl?: true
+  coverAlt?: true
   criadoEm?: true
   atualizadoEm?: true
 }
@@ -82,6 +130,12 @@ export type ArtesaoCountAggregateInputType = {
   biografiaCultural?: true
   tipoChavePix?: true
   chavePixCriptografada?: true
+  tecnicaPrincipal?: true
+  anoInicio?: true
+  fotoUrl?: true
+  fotoAlt?: true
+  coverUrl?: true
+  coverAlt?: true
   criadoEm?: true
   atualizadoEm?: true
   _all?: true
@@ -125,6 +179,18 @@ export type ArtesaoAggregateArgs<ExtArgs extends runtime.Types.Extensions.Intern
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: ArtesaoAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: ArtesaoSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: ArtesaoMinAggregateInputType
@@ -155,6 +221,8 @@ export type ArtesaoGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   _count?: ArtesaoCountAggregateInputType | true
+  _avg?: ArtesaoAvgAggregateInputType
+  _sum?: ArtesaoSumAggregateInputType
   _min?: ArtesaoMinAggregateInputType
   _max?: ArtesaoMaxAggregateInputType
 }
@@ -165,9 +233,17 @@ export type ArtesaoGroupByOutputType = {
   biografiaCultural: string
   tipoChavePix: string
   chavePixCriptografada: string
+  tecnicaPrincipal: string | null
+  anoInicio: number | null
+  fotoUrl: string | null
+  fotoAlt: string | null
+  coverUrl: string | null
+  coverAlt: string | null
   criadoEm: Date
   atualizadoEm: Date
   _count: ArtesaoCountAggregateOutputType | null
+  _avg: ArtesaoAvgAggregateOutputType | null
+  _sum: ArtesaoSumAggregateOutputType | null
   _min: ArtesaoMinAggregateOutputType | null
   _max: ArtesaoMaxAggregateOutputType | null
 }
@@ -196,6 +272,12 @@ export type ArtesaoWhereInput = {
   biografiaCultural?: Prisma.StringFilter<"Artesao"> | string
   tipoChavePix?: Prisma.StringFilter<"Artesao"> | string
   chavePixCriptografada?: Prisma.StringFilter<"Artesao"> | string
+  tecnicaPrincipal?: Prisma.StringNullableFilter<"Artesao"> | string | null
+  anoInicio?: Prisma.IntNullableFilter<"Artesao"> | number | null
+  fotoUrl?: Prisma.StringNullableFilter<"Artesao"> | string | null
+  fotoAlt?: Prisma.StringNullableFilter<"Artesao"> | string | null
+  coverUrl?: Prisma.StringNullableFilter<"Artesao"> | string | null
+  coverAlt?: Prisma.StringNullableFilter<"Artesao"> | string | null
   criadoEm?: Prisma.DateTimeFilter<"Artesao"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Artesao"> | Date | string
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
@@ -208,6 +290,12 @@ export type ArtesaoOrderByWithRelationInput = {
   biografiaCultural?: Prisma.SortOrder
   tipoChavePix?: Prisma.SortOrder
   chavePixCriptografada?: Prisma.SortOrder
+  tecnicaPrincipal?: Prisma.SortOrderInput | Prisma.SortOrder
+  anoInicio?: Prisma.SortOrderInput | Prisma.SortOrder
+  fotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  fotoAlt?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverAlt?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
   usuario?: Prisma.UsuarioOrderByWithRelationInput
@@ -223,6 +311,12 @@ export type ArtesaoWhereUniqueInput = Prisma.AtLeast<{
   biografiaCultural?: Prisma.StringFilter<"Artesao"> | string
   tipoChavePix?: Prisma.StringFilter<"Artesao"> | string
   chavePixCriptografada?: Prisma.StringFilter<"Artesao"> | string
+  tecnicaPrincipal?: Prisma.StringNullableFilter<"Artesao"> | string | null
+  anoInicio?: Prisma.IntNullableFilter<"Artesao"> | number | null
+  fotoUrl?: Prisma.StringNullableFilter<"Artesao"> | string | null
+  fotoAlt?: Prisma.StringNullableFilter<"Artesao"> | string | null
+  coverUrl?: Prisma.StringNullableFilter<"Artesao"> | string | null
+  coverAlt?: Prisma.StringNullableFilter<"Artesao"> | string | null
   criadoEm?: Prisma.DateTimeFilter<"Artesao"> | Date | string
   atualizadoEm?: Prisma.DateTimeFilter<"Artesao"> | Date | string
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
@@ -235,11 +329,19 @@ export type ArtesaoOrderByWithAggregationInput = {
   biografiaCultural?: Prisma.SortOrder
   tipoChavePix?: Prisma.SortOrder
   chavePixCriptografada?: Prisma.SortOrder
+  tecnicaPrincipal?: Prisma.SortOrderInput | Prisma.SortOrder
+  anoInicio?: Prisma.SortOrderInput | Prisma.SortOrder
+  fotoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  fotoAlt?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  coverAlt?: Prisma.SortOrderInput | Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
   _count?: Prisma.ArtesaoCountOrderByAggregateInput
+  _avg?: Prisma.ArtesaoAvgOrderByAggregateInput
   _max?: Prisma.ArtesaoMaxOrderByAggregateInput
   _min?: Prisma.ArtesaoMinOrderByAggregateInput
+  _sum?: Prisma.ArtesaoSumOrderByAggregateInput
 }
 
 export type ArtesaoScalarWhereWithAggregatesInput = {
@@ -251,6 +353,12 @@ export type ArtesaoScalarWhereWithAggregatesInput = {
   biografiaCultural?: Prisma.StringWithAggregatesFilter<"Artesao"> | string
   tipoChavePix?: Prisma.StringWithAggregatesFilter<"Artesao"> | string
   chavePixCriptografada?: Prisma.StringWithAggregatesFilter<"Artesao"> | string
+  tecnicaPrincipal?: Prisma.StringNullableWithAggregatesFilter<"Artesao"> | string | null
+  anoInicio?: Prisma.IntNullableWithAggregatesFilter<"Artesao"> | number | null
+  fotoUrl?: Prisma.StringNullableWithAggregatesFilter<"Artesao"> | string | null
+  fotoAlt?: Prisma.StringNullableWithAggregatesFilter<"Artesao"> | string | null
+  coverUrl?: Prisma.StringNullableWithAggregatesFilter<"Artesao"> | string | null
+  coverAlt?: Prisma.StringNullableWithAggregatesFilter<"Artesao"> | string | null
   criadoEm?: Prisma.DateTimeWithAggregatesFilter<"Artesao"> | Date | string
   atualizadoEm?: Prisma.DateTimeWithAggregatesFilter<"Artesao"> | Date | string
 }
@@ -260,6 +368,12 @@ export type ArtesaoCreateInput = {
   biografiaCultural: string
   tipoChavePix: string
   chavePixCriptografada: string
+  tecnicaPrincipal?: string | null
+  anoInicio?: number | null
+  fotoUrl?: string | null
+  fotoAlt?: string | null
+  coverUrl?: string | null
+  coverAlt?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   usuario: Prisma.UsuarioCreateNestedOneWithoutArtesaoInput
@@ -272,6 +386,12 @@ export type ArtesaoUncheckedCreateInput = {
   biografiaCultural: string
   tipoChavePix: string
   chavePixCriptografada: string
+  tecnicaPrincipal?: string | null
+  anoInicio?: number | null
+  fotoUrl?: string | null
+  fotoAlt?: string | null
+  coverUrl?: string | null
+  coverAlt?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   atelie?: Prisma.AtelieUncheckedCreateNestedOneWithoutArtesaoInput
@@ -282,6 +402,12 @@ export type ArtesaoUpdateInput = {
   biografiaCultural?: Prisma.StringFieldUpdateOperationsInput | string
   tipoChavePix?: Prisma.StringFieldUpdateOperationsInput | string
   chavePixCriptografada?: Prisma.StringFieldUpdateOperationsInput | string
+  tecnicaPrincipal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  anoInicio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fotoAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutArtesaoNestedInput
@@ -294,6 +420,12 @@ export type ArtesaoUncheckedUpdateInput = {
   biografiaCultural?: Prisma.StringFieldUpdateOperationsInput | string
   tipoChavePix?: Prisma.StringFieldUpdateOperationsInput | string
   chavePixCriptografada?: Prisma.StringFieldUpdateOperationsInput | string
+  tecnicaPrincipal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  anoInicio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fotoAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atelie?: Prisma.AtelieUncheckedUpdateOneWithoutArtesaoNestedInput
@@ -305,6 +437,12 @@ export type ArtesaoCreateManyInput = {
   biografiaCultural: string
   tipoChavePix: string
   chavePixCriptografada: string
+  tecnicaPrincipal?: string | null
+  anoInicio?: number | null
+  fotoUrl?: string | null
+  fotoAlt?: string | null
+  coverUrl?: string | null
+  coverAlt?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -314,6 +452,12 @@ export type ArtesaoUpdateManyMutationInput = {
   biografiaCultural?: Prisma.StringFieldUpdateOperationsInput | string
   tipoChavePix?: Prisma.StringFieldUpdateOperationsInput | string
   chavePixCriptografada?: Prisma.StringFieldUpdateOperationsInput | string
+  tecnicaPrincipal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  anoInicio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fotoAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -324,6 +468,12 @@ export type ArtesaoUncheckedUpdateManyInput = {
   biografiaCultural?: Prisma.StringFieldUpdateOperationsInput | string
   tipoChavePix?: Prisma.StringFieldUpdateOperationsInput | string
   chavePixCriptografada?: Prisma.StringFieldUpdateOperationsInput | string
+  tecnicaPrincipal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  anoInicio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fotoAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -339,8 +489,18 @@ export type ArtesaoCountOrderByAggregateInput = {
   biografiaCultural?: Prisma.SortOrder
   tipoChavePix?: Prisma.SortOrder
   chavePixCriptografada?: Prisma.SortOrder
+  tecnicaPrincipal?: Prisma.SortOrder
+  anoInicio?: Prisma.SortOrder
+  fotoUrl?: Prisma.SortOrder
+  fotoAlt?: Prisma.SortOrder
+  coverUrl?: Prisma.SortOrder
+  coverAlt?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
+}
+
+export type ArtesaoAvgOrderByAggregateInput = {
+  anoInicio?: Prisma.SortOrder
 }
 
 export type ArtesaoMaxOrderByAggregateInput = {
@@ -349,6 +509,12 @@ export type ArtesaoMaxOrderByAggregateInput = {
   biografiaCultural?: Prisma.SortOrder
   tipoChavePix?: Prisma.SortOrder
   chavePixCriptografada?: Prisma.SortOrder
+  tecnicaPrincipal?: Prisma.SortOrder
+  anoInicio?: Prisma.SortOrder
+  fotoUrl?: Prisma.SortOrder
+  fotoAlt?: Prisma.SortOrder
+  coverUrl?: Prisma.SortOrder
+  coverAlt?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
 }
@@ -359,8 +525,18 @@ export type ArtesaoMinOrderByAggregateInput = {
   biografiaCultural?: Prisma.SortOrder
   tipoChavePix?: Prisma.SortOrder
   chavePixCriptografada?: Prisma.SortOrder
+  tecnicaPrincipal?: Prisma.SortOrder
+  anoInicio?: Prisma.SortOrder
+  fotoUrl?: Prisma.SortOrder
+  fotoAlt?: Prisma.SortOrder
+  coverUrl?: Prisma.SortOrder
+  coverAlt?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
   atualizadoEm?: Prisma.SortOrder
+}
+
+export type ArtesaoSumOrderByAggregateInput = {
+  anoInicio?: Prisma.SortOrder
 }
 
 export type ArtesaoScalarRelationFilter = {
@@ -400,6 +576,18 @@ export type ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ArtesaoUpdateToOneWithWhereWithoutUsuarioInput, Prisma.ArtesaoUpdateWithoutUsuarioInput>, Prisma.ArtesaoUncheckedUpdateWithoutUsuarioInput>
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type ArtesaoCreateNestedOneWithoutAtelieInput = {
   create?: Prisma.XOR<Prisma.ArtesaoCreateWithoutAtelieInput, Prisma.ArtesaoUncheckedCreateWithoutAtelieInput>
   connectOrCreate?: Prisma.ArtesaoCreateOrConnectWithoutAtelieInput
@@ -419,6 +607,12 @@ export type ArtesaoCreateWithoutUsuarioInput = {
   biografiaCultural: string
   tipoChavePix: string
   chavePixCriptografada: string
+  tecnicaPrincipal?: string | null
+  anoInicio?: number | null
+  fotoUrl?: string | null
+  fotoAlt?: string | null
+  coverUrl?: string | null
+  coverAlt?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   atelie?: Prisma.AtelieCreateNestedOneWithoutArtesaoInput
@@ -429,6 +623,12 @@ export type ArtesaoUncheckedCreateWithoutUsuarioInput = {
   biografiaCultural: string
   tipoChavePix: string
   chavePixCriptografada: string
+  tecnicaPrincipal?: string | null
+  anoInicio?: number | null
+  fotoUrl?: string | null
+  fotoAlt?: string | null
+  coverUrl?: string | null
+  coverAlt?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   atelie?: Prisma.AtelieUncheckedCreateNestedOneWithoutArtesaoInput
@@ -455,6 +655,12 @@ export type ArtesaoUpdateWithoutUsuarioInput = {
   biografiaCultural?: Prisma.StringFieldUpdateOperationsInput | string
   tipoChavePix?: Prisma.StringFieldUpdateOperationsInput | string
   chavePixCriptografada?: Prisma.StringFieldUpdateOperationsInput | string
+  tecnicaPrincipal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  anoInicio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fotoAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atelie?: Prisma.AtelieUpdateOneWithoutArtesaoNestedInput
@@ -465,6 +671,12 @@ export type ArtesaoUncheckedUpdateWithoutUsuarioInput = {
   biografiaCultural?: Prisma.StringFieldUpdateOperationsInput | string
   tipoChavePix?: Prisma.StringFieldUpdateOperationsInput | string
   chavePixCriptografada?: Prisma.StringFieldUpdateOperationsInput | string
+  tecnicaPrincipal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  anoInicio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fotoAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atelie?: Prisma.AtelieUncheckedUpdateOneWithoutArtesaoNestedInput
@@ -475,6 +687,12 @@ export type ArtesaoCreateWithoutAtelieInput = {
   biografiaCultural: string
   tipoChavePix: string
   chavePixCriptografada: string
+  tecnicaPrincipal?: string | null
+  anoInicio?: number | null
+  fotoUrl?: string | null
+  fotoAlt?: string | null
+  coverUrl?: string | null
+  coverAlt?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   usuario: Prisma.UsuarioCreateNestedOneWithoutArtesaoInput
@@ -486,6 +704,12 @@ export type ArtesaoUncheckedCreateWithoutAtelieInput = {
   biografiaCultural: string
   tipoChavePix: string
   chavePixCriptografada: string
+  tecnicaPrincipal?: string | null
+  anoInicio?: number | null
+  fotoUrl?: string | null
+  fotoAlt?: string | null
+  coverUrl?: string | null
+  coverAlt?: string | null
   criadoEm?: Date | string
   atualizadoEm?: Date | string
 }
@@ -511,6 +735,12 @@ export type ArtesaoUpdateWithoutAtelieInput = {
   biografiaCultural?: Prisma.StringFieldUpdateOperationsInput | string
   tipoChavePix?: Prisma.StringFieldUpdateOperationsInput | string
   chavePixCriptografada?: Prisma.StringFieldUpdateOperationsInput | string
+  tecnicaPrincipal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  anoInicio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fotoAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutArtesaoNestedInput
@@ -522,6 +752,12 @@ export type ArtesaoUncheckedUpdateWithoutAtelieInput = {
   biografiaCultural?: Prisma.StringFieldUpdateOperationsInput | string
   tipoChavePix?: Prisma.StringFieldUpdateOperationsInput | string
   chavePixCriptografada?: Prisma.StringFieldUpdateOperationsInput | string
+  tecnicaPrincipal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  anoInicio?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fotoAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  coverAlt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -534,6 +770,12 @@ export type ArtesaoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   biografiaCultural?: boolean
   tipoChavePix?: boolean
   chavePixCriptografada?: boolean
+  tecnicaPrincipal?: boolean
+  anoInicio?: boolean
+  fotoUrl?: boolean
+  fotoAlt?: boolean
+  coverUrl?: boolean
+  coverAlt?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
@@ -546,6 +788,12 @@ export type ArtesaoSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   biografiaCultural?: boolean
   tipoChavePix?: boolean
   chavePixCriptografada?: boolean
+  tecnicaPrincipal?: boolean
+  anoInicio?: boolean
+  fotoUrl?: boolean
+  fotoAlt?: boolean
+  coverUrl?: boolean
+  coverAlt?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
@@ -557,6 +805,12 @@ export type ArtesaoSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   biografiaCultural?: boolean
   tipoChavePix?: boolean
   chavePixCriptografada?: boolean
+  tecnicaPrincipal?: boolean
+  anoInicio?: boolean
+  fotoUrl?: boolean
+  fotoAlt?: boolean
+  coverUrl?: boolean
+  coverAlt?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
@@ -568,11 +822,17 @@ export type ArtesaoSelectScalar = {
   biografiaCultural?: boolean
   tipoChavePix?: boolean
   chavePixCriptografada?: boolean
+  tecnicaPrincipal?: boolean
+  anoInicio?: boolean
+  fotoUrl?: boolean
+  fotoAlt?: boolean
+  coverUrl?: boolean
+  coverAlt?: boolean
   criadoEm?: boolean
   atualizadoEm?: boolean
 }
 
-export type ArtesaoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "biografiaCultural" | "tipoChavePix" | "chavePixCriptografada" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["artesao"]>
+export type ArtesaoOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "biografiaCultural" | "tipoChavePix" | "chavePixCriptografada" | "tecnicaPrincipal" | "anoInicio" | "fotoUrl" | "fotoAlt" | "coverUrl" | "coverAlt" | "criadoEm" | "atualizadoEm", ExtArgs["result"]["artesao"]>
 export type ArtesaoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   atelie?: boolean | Prisma.Artesao$atelieArgs<ExtArgs>
@@ -596,6 +856,12 @@ export type $ArtesaoPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     biografiaCultural: string
     tipoChavePix: string
     chavePixCriptografada: string
+    tecnicaPrincipal: string | null
+    anoInicio: number | null
+    fotoUrl: string | null
+    fotoAlt: string | null
+    coverUrl: string | null
+    coverAlt: string | null
     criadoEm: Date
     atualizadoEm: Date
   }, ExtArgs["result"]["artesao"]>
@@ -1028,6 +1294,12 @@ export interface ArtesaoFieldRefs {
   readonly biografiaCultural: Prisma.FieldRef<"Artesao", 'String'>
   readonly tipoChavePix: Prisma.FieldRef<"Artesao", 'String'>
   readonly chavePixCriptografada: Prisma.FieldRef<"Artesao", 'String'>
+  readonly tecnicaPrincipal: Prisma.FieldRef<"Artesao", 'String'>
+  readonly anoInicio: Prisma.FieldRef<"Artesao", 'Int'>
+  readonly fotoUrl: Prisma.FieldRef<"Artesao", 'String'>
+  readonly fotoAlt: Prisma.FieldRef<"Artesao", 'String'>
+  readonly coverUrl: Prisma.FieldRef<"Artesao", 'String'>
+  readonly coverAlt: Prisma.FieldRef<"Artesao", 'String'>
   readonly criadoEm: Prisma.FieldRef<"Artesao", 'DateTime'>
   readonly atualizadoEm: Prisma.FieldRef<"Artesao", 'DateTime'>
 }

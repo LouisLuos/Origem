@@ -108,6 +108,12 @@ export const ArtesaoScalarFieldEnum = {
   biografiaCultural: 'biografiaCultural',
   tipoChavePix: 'tipoChavePix',
   chavePixCriptografada: 'chavePixCriptografada',
+  tecnicaPrincipal: 'tecnicaPrincipal',
+  anoInicio: 'anoInicio',
+  fotoUrl: 'fotoUrl',
+  fotoAlt: 'fotoAlt',
+  coverUrl: 'coverUrl',
+  coverAlt: 'coverAlt',
   criadoEm: 'criadoEm',
   atualizadoEm: 'atualizadoEm'
 } as const
