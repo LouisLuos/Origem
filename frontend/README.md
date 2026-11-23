@@ -22,8 +22,10 @@ npm run lint
   e mantém os dados em memória: peças criadas pelo painel do artesão somem quando o serviço reinicia.
   No plano gratuito a primeira requisição após um período parado pode levar cerca de 1 minuto.
 - O código da Fake API fica na branch `fake-api` deste repositório (pasta `fake_api/`); foi removido da `main` no commit `0b7e7f9`.
-- A URL da API vem de `NEXT_PUBLIC_API_URL` (padrão: `http://localhost:3000/api/v1`). Ela é embutida no
-  build, então alterar a variável na Vercel exige um novo deploy.
+- O navegador chama a API em `/api/v1` no próprio domínio do front; o rewrite em `next.config.ts` repassa
+  para `BACKEND_API_URL` (padrão: `http://localhost:3001/api/v1`). Assim o cookie de sessão HttpOnly é de
+  primeira parte (SameSite=Lax) mesmo com front e back em domínios diferentes. A variável é lida no build,
+  então alterá-la na Vercel exige um novo deploy.
 
 ## Stack e por quê
 

@@ -73,7 +73,7 @@ npm run dev
 **Usando a API publicada em vez da local:** crie o arquivo `frontend/.env.local` com:
 
 ```
-NEXT_PUBLIC_API_URL=https://origem-bnhv.onrender.com/api/v1
+BACKEND_API_URL=https://origem-bnhv.onrender.com/api/v1
 ```
 
 Mais detalhes em [`frontend/README.md`](./frontend/README.md) e nos contratos da API em [`docs/05-desenvolvimento-web/contratos-api.md`](./docs/05-desenvolvimento-web/contratos-api.md).
