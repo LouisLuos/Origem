@@ -32,6 +32,7 @@ model Usuario {
   reservasGrupos   ReservaGrupo[]
   reservas         Reserva[]
   logsNotificacoes LogNotificacao[]
+  pedidos          Pedido[]
 
   @@map("usuarios")
 }
@@ -107,6 +108,7 @@ model Endereco {
   criadoEm    DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
   atelie      Atelie?  @relation(fields: [atelieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   usuario     Usuario? @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  pedidos     Pedido[]
 
   @@index([usuarioId])
   @@map("enderecos")
@@ -214,6 +216,7 @@ model ReservaGrupo {
   criadoEm       DateTime  @default(now()) @map("criado_em") @db.Timestamp(3)
   usuario        Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   itens          Reserva[]
+  pedidos        Pedido[]
 
   @@unique([usuarioId, idempotencyKey])
   @@index([usuarioId, criadoEm])
@@ -301,4 +304,169 @@ model LogNotificacao {
   @@index([status, criadoEm])
   @@index([eventoOrigem, canal])
   @@map("logs_notificacoes")
+}
+
+enum StatusPedido {
+  PENDENTE_PAGAMENTO
+  APROVADO
+  RECUSADO
+  EXPIRADO
+  CANCELADO
+  RECONCILIACAO_ESTORNO
+
+  @@map("StatusPedido")
+}
+
+enum MetodoPagamento {
+  PIX
+  CARTAO_CREDITO
+
+  @@map("MetodoPagamento")
+}
+
+enum StatusPagamento {
+  CRIADO
+  PENDENTE
+  APROVADO
+  RECUSADO
+  EXPIRADO
+  CANCELADO
+  ESTORNADO
+  ERRO_COMUNICACAO
+
+  @@map("StatusPagamento")
+}
+
+enum StatusProcessamentoWebhook {
+  RECEBIDO
+  PROCESSADO
+  IGNORADO_DUPLICADO
+  ERRO
+
+  @@map("StatusProcessamentoWebhook")
+}
+
+enum StatusEventoOutbox {
+  PENDENTE
+  PUBLICADO
+  FALHA
+
+  @@map("StatusEventoOutbox")
+}
+
+/// Pedido consolidado multi-origem (HU-10), vinculado ao grupo de reservas da HU-06.
+/// Preserva snapshots imutáveis de itens, fretes por ateliê e endereço de entrega sem criar
+/// tabelas de subpedidos (que pertencem à HU-12).
+model Pedido {
+  id                      String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  codigoPedido            String          @unique @map("codigo_pedido") @db.VarChar(32)
+  usuarioId               String          @map("usuario_id") @db.Uuid
+  reservaGrupoId          String          @map("reserva_grupo_id") @db.Uuid
+  enderecoEntregaId       String?         @map("endereco_entrega_id") @db.Uuid
+  enderecoEntregaSnapshot Json            @map("endereco_entrega_snapshot")
+  fretesPorOrigem         Json            @map("fretes_por_origem")
+  itensSnapshot           Json            @map("itens_snapshot")
+  valorTotalPecas         Decimal         @map("valor_total_pecas") @db.Decimal(10, 2)
+  valorTotalFrete         Decimal         @map("valor_total_frete") @db.Decimal(10, 2)
+  valorTotalPedido        Decimal         @map("valor_total_pedido") @db.Decimal(10, 2)
+  status                  StatusPedido    @default(PENDENTE_PAGAMENTO)
+  metodoPagamento         MetodoPagamento @map("metodo_pagamento")
+  idempotencyKey          String          @map("idempotency_key") @db.VarChar(128)
+  payloadHash             String          @map("payload_hash") @db.VarChar(64)
+  subpedidosGerados       Boolean         @default(false) @map("subpedidos_gerados")
+  subpedidosGeradosEm     DateTime?       @map("subpedidos_gerados_em") @db.Timestamp(3)
+  pagoEm                  DateTime?       @map("pago_em") @db.Timestamp(3)
+  canceladoEm             DateTime?       @map("cancelado_em") @db.Timestamp(3)
+  reconciliacaoMotivo     String?         @map("reconciliacao_motivo") @db.VarChar(500)
+  criadoEm                DateTime        @default(now()) @map("criado_em") @db.Timestamp(3)
+  atualizadoEm            DateTime        @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  usuario                 Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reservaGrupo            ReservaGrupo    @relation(fields: [reservaGrupoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  enderecoEntrega         Endereco?       @relation(fields: [enderecoEntregaId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  pagamentos              Pagamento[]
+
+  @@unique([usuarioId, idempotencyKey])
+  @@index([usuarioId, criadoEm])
+  @@index([status, criadoEm])
+  @@index([reservaGrupoId])
+  @@map("pedidos")
+}
+
+/// Tentativa de captura financeira vinculada a um pedido consolidado (HU-10).
+/// Nunca armazena PAN completo, CVV ou credenciais do gateway.
+model Pagamento {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pedidoId             String             @map("pedido_id") @db.Uuid
+  gateway              String             @db.VarChar(40)
+  ambiente             String             @default("sandbox") @db.VarChar(20)
+  metodo               MetodoPagamento
+  status               StatusPagamento    @default(CRIADO)
+  valor                Decimal            @db.Decimal(10, 2)
+  idempotencyKey       String             @unique @map("idempotency_key") @db.VarChar(128)
+  externalPaymentId    String?            @map("external_payment_id") @db.VarChar(128)
+  gatewayStatusRaw     String?            @map("gateway_status_raw") @db.VarChar(64)
+  gatewayStatusDetail  String?            @map("gateway_status_detail") @db.VarChar(120)
+  expiraEm             DateTime?          @map("expira_em") @db.Timestamp(3)
+  gatewayExpiraEm      DateTime?          @map("gateway_expira_em") @db.Timestamp(3)
+  pixCopiaECola        String?            @map("pix_copia_e_cola") @db.Text
+  pixQrCodeBase64      String?            @map("pix_qr_code_base64") @db.Text
+  pixTicketUrl         String?            @map("pix_ticket_url") @db.VarChar(512)
+  cartaoBandeira       String?            @map("cartao_bandeira") @db.VarChar(32)
+  cartaoUltimosDigitos String?            @map("cartao_ultimos_digitos") @db.VarChar(4)
+  parcelas             Int                @default(1)
+  erroSanitizado       String?            @map("erro_sanitizado") @db.VarChar(500)
+  criadoEm             DateTime           @default(now()) @map("criado_em") @db.Timestamp(3)
+  aprovadoEm           DateTime?          @map("aprovado_em") @db.Timestamp(3)
+  recusadoEm           DateTime?          @map("recusado_em") @db.Timestamp(3)
+  atualizadoEm         DateTime           @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  pedido               Pedido             @relation(fields: [pedidoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  webhooks             WebhookPagamento[]
+
+  @@index([pedidoId, criadoEm])
+  @@index([status, expiraEm])
+  @@map("pagamentos")
+}
+
+/// Deduplicação persistente e auditoria mínima de webhooks financeiros (HU-10 / TC09).
+model WebhookPagamento {
+  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gateway             String                     @db.VarChar(40)
+  eventoExternoId     String                     @map("evento_externo_id") @db.VarChar(160)
+  tipoEvento          String                     @map("tipo_evento") @db.VarChar(80)
+  externalPaymentId   String?                    @map("external_payment_id") @db.VarChar(128)
+  pagamentoId         String?                    @map("pagamento_id") @db.Uuid
+  assinaturaValida    Boolean                    @default(false) @map("assinatura_valida")
+  statusProcessamento StatusProcessamentoWebhook @default(RECEBIDO) @map("status_processamento")
+  payloadHash         String                     @map("payload_hash") @db.VarChar(64)
+  resumoAuditoria     Json?                      @map("resumo_auditoria")
+  erroSanitizado      String?                    @map("erro_sanitizado") @db.VarChar(500)
+  recebidoEm          DateTime                   @default(now()) @map("recebido_em") @db.Timestamp(3)
+  processadoEm        DateTime?                  @map("processado_em") @db.Timestamp(3)
+  pagamento           Pagamento?                 @relation(fields: [pagamentoId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([gateway, eventoExternoId])
+  @@index([gateway, externalPaymentId])
+  @@index([pagamentoId, recebidoEm])
+  @@index([statusProcessamento, recebidoEm])
+  @@map("webhooks_pagamento")
+}
+
+/// Outbox transacional para publicação confiável de eventos de domínio (ex.: PagamentoAprovado)
+/// na mesma transação ACID da aprovação financeira, consumido pelo relay da HU-17.
+model OutboxEventoNotificacao {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tipoEvento           String             @map("tipo_evento") @db.VarChar(80)
+  aggregateId          String             @map("aggregate_id") @db.Uuid
+  idempotencyKey       String             @unique @map("idempotency_key") @db.VarChar(160)
+  payload              Json
+  status               StatusEventoOutbox @default(PENDENTE)
+  tentativasPublicacao Int                @default(0) @map("tentativas_publicacao")
+  erroSanitizado       String?            @map("erro_sanitizado") @db.VarChar(500)
+  criadoEm             DateTime           @default(now()) @map("criado_em") @db.Timestamp(3)
+  publicadoEm          DateTime?          @map("publicado_em") @db.Timestamp(3)
+  atualizadoEm         DateTime           @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+
+  @@index([aggregateId, tipoEvento])
+  @@index([status, criadoEm])
+  @@map("outbox_eventos_notificacao")
 }
