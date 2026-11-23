@@ -1,4 +1,12 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'
+/**
+ * No navegador, a API é chamada pelo mesmo domínio do front (`/api/v1`) e repassada ao backend
+ * pelo rewrite do `next.config.ts`; isso mantém o cookie de sessão como primeira parte.
+ * No servidor (ex.: generateMetadata) não há domínio relativo, então usa-se a URL direta do backend.
+ */
+const API_URL =
+  typeof window === 'undefined'
+    ? (process.env.BACKEND_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1').replace(/\/+$/, '')
+    : '/api/v1'
 
 export class ApiError extends Error {
   readonly status: number
