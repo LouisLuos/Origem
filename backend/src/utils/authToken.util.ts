@@ -6,6 +6,7 @@ import type {
   AuthRequestCredentials,
 } from '../repositories/contracts/auth.contracts.js';
 import type { AuthUserRecord } from '../repositories/contracts/authentication.contracts.js';
+import { isUuid } from './uuid.util.js';
 
 const COOKIE_NAME = 'origem_session';
 const jwtSecret = new TextEncoder().encode(env.JWT_SECRET);
@@ -44,16 +45,53 @@ export function extractSessionToken(credentials: AuthRequestCredentials): string
   return credentials.bearerToken ?? readCookieToken(credentials.cookieHeader);
 }
 
-export const jwtAuthIdentityProvider: AuthIdentityProvider = {
-  async verify(credentials) {
-    const token = extractSessionToken(credentials);
-    if (!token) return { status: 'UNAUTHENTICATED', reason: 'Sessão inválida ou expirada.' };
+/** `INEXISTENTE` quando o usuário do token não existe mais; `null` quando nenhuma sessão foi revogada. */
+export type ConsultaSessoesValidasDesde = (usuarioId: string) => Promise<Date | null | 'INEXISTENTE'>;
 
-    try {
-      const { payload } = await jwtVerify(token, jwtSecret, { algorithms: ['HS256'] });
-      if (typeof payload.sub !== 'string' || typeof payload.email !== 'string') {
-        return { status: 'UNAUTHENTICATED', reason: 'Sessão inválida ou expirada.' };
+const consultarSessoesValidasDesdeNoBanco: ConsultaSessoesValidasDesde = async (usuarioId) => {
+  if (!isUuid(usuarioId)) return 'INEXISTENTE';
+  const { prisma } = await import('../config/database.js');
+  const usuario = await prisma.usuario.findUnique({
+    where: { id: usuarioId },
+    select: { sessoesValidasDesde: true },
+  });
+  return usuario ? usuario.sessoesValidasDesde : 'INEXISTENTE';
+};
+
+/** HU-02, Cenário 3: tokens emitidos antes da última redefinição de senha deixam de valer. */
+export function sessaoRevogada(emitidoEmSegundos: number | undefined, validasDesde: Date | null): boolean {
+  if (!validasDesde) return false;
+  if (typeof emitidoEmSegundos !== 'number') return true;
+  // `iat` tem resolução de segundos: o token emitido no mesmo segundo da troca continua válido.
+  return emitidoEmSegundos < Math.floor(validasDesde.getTime() / 1000);
+}
+
+const SESSAO_INVALIDA = { status: 'UNAUTHENTICATED', reason: 'Sessão inválida ou expirada.' } as const;
+
+export function createJwtAuthIdentityProvider(
+  consultarSessoesValidasDesde: ConsultaSessoesValidasDesde = consultarSessoesValidasDesdeNoBanco,
+): AuthIdentityProvider {
+  return {
+    async verify(credentials) {
+      const token = extractSessionToken(credentials);
+      if (!token) return SESSAO_INVALIDA;
+
+      let payload;
+      try {
+        ({ payload } = await jwtVerify(token, jwtSecret, { algorithms: ['HS256'] }));
+      } catch {
+        return SESSAO_INVALIDA;
       }
+      if (typeof payload.sub !== 'string' || typeof payload.email !== 'string') {
+        return SESSAO_INVALIDA;
+      }
+
+      // Falha ao consultar o banco propaga para o middleware, que responde 503 (fail-closed).
+      const validasDesde = await consultarSessoesValidasDesde(payload.sub);
+      if (validasDesde === 'INEXISTENTE' || sessaoRevogada(payload.iat, validasDesde)) {
+        return SESSAO_INVALIDA;
+      }
+
       return {
         status: 'AUTHENTICATED',
         identity: {
@@ -62,11 +100,11 @@ export const jwtAuthIdentityProvider: AuthIdentityProvider = {
           ...(typeof payload.jti === 'string' ? { sessionId: payload.jti } : {}),
         },
       };
-    } catch {
-      return { status: 'UNAUTHENTICATED', reason: 'Sessão inválida ou expirada.' };
-    }
-  },
-};
+    },
+  };
+}
+
+export const jwtAuthIdentityProvider = createJwtAuthIdentityProvider();
 
 export const authCookie = {
   name: COOKIE_NAME,

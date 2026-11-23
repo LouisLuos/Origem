@@ -25,6 +25,8 @@ model Usuario {
   senhaHash       String         @map("senha_hash") @db.VarChar
   status          String         @default("ATIVO") @db.VarChar
   criadoEm        DateTime       @default(now()) @map("criado_em") @db.Timestamp(3)
+  sessoesValidasDesde DateTime?  @map("sessoes_validas_desde") @db.Timestamp(3)
+  recuperacoesSenha RecuperacaoSenha[]
   papeis          UsuarioPapel[]
   artesao         Artesao?
   curadorias      AtelieCurador[]
@@ -173,6 +175,20 @@ model AuthLoginAttempt {
   updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamp(3)
 
   @@map("auth_login_attempts")
+}
+
+/// Token descartável de recuperação de senha (HU-02). Guarda somente o SHA-256 do token.
+model RecuperacaoSenha {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuarioId String    @map("usuario_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiraEm  DateTime  @map("expira_em") @db.Timestamp(3)
+  usadoEm   DateTime? @map("usado_em") @db.Timestamp(3)
+  criadoEm  DateTime  @default(now()) @map("criado_em") @db.Timestamp(3)
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([usuarioId])
+  @@map("recuperacoes_senha")
 }
 
 /// Trilha de auditoria de segurança, somente inserção (trigger na migration).
