@@ -26,7 +26,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR" className={dmSans.variable} data-scroll-behavior="smooth">
-      <body className="bg-creme text-aubergine antialiased">
+      <body className="flex min-h-dvh flex-col bg-creme text-aubergine antialiased">
         <Providers>
           <a
             href="#main-content"
@@ -35,7 +35,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             Pular para o conteúdo principal
           </a>
           <Header />
-          {children}
+          {/* Ocupa a sobra da tela para o rodapé ficar no fim mesmo em páginas curtas. */}
+          <div className="flex flex-1 flex-col">{children}</div>
           <Footer />
         </Providers>
       </body>
