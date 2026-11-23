@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { AuthUserRecord } from '../../src/repositories/contracts/authentication.contracts.js';
-import { jwtAuthIdentityProvider, sessionTokenService } from '../../src/utils/authToken.util.js';
+import {
+  createJwtAuthIdentityProvider,
+  sessionTokenService,
+} from '../../src/utils/authToken.util.js';
+
+const jwtAuthIdentityProvider = createJwtAuthIdentityProvider(async () => null);
 
 const user: AuthUserRecord = {
   id: 'b6c8c888-f0a0-4eed-9223-26f6bb6d9d65',

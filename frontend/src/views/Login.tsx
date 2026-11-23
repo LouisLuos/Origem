@@ -172,6 +172,15 @@ export function Login() {
             className="py-2.5"
           />
 
+          {mode === 'login' && (
+            <Link
+              href="/recuperar-senha"
+              className="-mt-2 self-end text-sm font-medium text-terracota-600 underline-offset-4 hover:underline"
+            >
+              Esqueci minha senha
+            </Link>
+          )}
+
           {mode === 'register' && (
             <p className="text-sm text-ink-soft">
               Sua conta começa como comprador. Você poderá solicitar um perfil avançado após entrar.

@@ -60,6 +60,7 @@ export const ModelName = {
   FotoPeca: 'FotoPeca',
   UsuarioPapel: 'UsuarioPapel',
   AuthLoginAttempt: 'AuthLoginAttempt',
+  RecuperacaoSenha: 'RecuperacaoSenha',
   AuditoriaSeguranca: 'AuditoriaSeguranca',
   ReservaGrupo: 'ReservaGrupo',
   Reserva: 'Reserva',
@@ -94,7 +95,8 @@ export const UsuarioScalarFieldEnum = {
   telefoneWhatsapp: 'telefoneWhatsapp',
   senhaHash: 'senhaHash',
   status: 'status',
-  criadoEm: 'criadoEm'
+  criadoEm: 'criadoEm',
+  sessoesValidasDesde: 'sessoesValidasDesde'
 } as const
 
 export type UsuarioScalarFieldEnum = (typeof UsuarioScalarFieldEnum)[keyof typeof UsuarioScalarFieldEnum]
@@ -211,6 +213,18 @@ export const AuthLoginAttemptScalarFieldEnum = {
 } as const
 
 export type AuthLoginAttemptScalarFieldEnum = (typeof AuthLoginAttemptScalarFieldEnum)[keyof typeof AuthLoginAttemptScalarFieldEnum]
+
+
+export const RecuperacaoSenhaScalarFieldEnum = {
+  id: 'id',
+  usuarioId: 'usuarioId',
+  tokenHash: 'tokenHash',
+  expiraEm: 'expiraEm',
+  usadoEm: 'usadoEm',
+  criadoEm: 'criadoEm'
+} as const
+
+export type RecuperacaoSenhaScalarFieldEnum = (typeof RecuperacaoSenhaScalarFieldEnum)[keyof typeof RecuperacaoSenhaScalarFieldEnum]
 
 
 export const AuditoriaSegurancaScalarFieldEnum = {

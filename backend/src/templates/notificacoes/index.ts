@@ -15,6 +15,10 @@ import {
   renderizarPagamentoAprovadoComprador,
   type PagamentoAprovadoCompradorDados,
 } from './pagamentoAprovadoComprador.template.js';
+import {
+  renderizarRecuperacaoSenha,
+  type RecuperacaoSenhaDados,
+} from './recuperacaoSenha.template.js';
 
 export type PayloadTemplateNotificacao =
   | {
@@ -32,6 +36,10 @@ export type PayloadTemplateNotificacao =
   | {
       readonly template: 'ATUALIZACAO_STATUS_PEDIDO';
       readonly dados: AtualizacaoStatusPedidoDados;
+    }
+  | {
+      readonly template: 'RECUPERACAO_SENHA';
+      readonly dados: RecuperacaoSenhaDados;
     };
 
 export interface NotificacaoRenderizada {
@@ -64,6 +72,10 @@ export function renderizarTemplateNotificacao(
       const render = renderizarAtualizacaoStatusPedido(entrada.dados);
       return { template: entrada.template, ...render };
     }
+    case 'RECUPERACAO_SENHA': {
+      const render = renderizarRecuperacaoSenha(entrada.dados);
+      return { template: entrada.template, ...render };
+    }
   }
 }
 
@@ -72,6 +84,7 @@ export {
   renderizarAtualizacaoStatusPedido,
   renderizarNovaEncomendaAtelie,
   renderizarPagamentoAprovadoComprador,
+  renderizarRecuperacaoSenha,
 };
 export {
   escapeHtml,
@@ -85,4 +98,5 @@ export type {
   AtualizacaoStatusPedidoDados,
   NovaEncomendaAtelieDados,
   PagamentoAprovadoCompradorDados,
+  RecuperacaoSenhaDados,
 };

@@ -9,8 +9,10 @@ import {
   type CriarGrupoReservaInput,
   type ExpiracaoReservasResultado,
   type GrupoReservaResultado,
+  type PedidoVinculadoReservaResumo,
   type ReservaEstoqueRepository,
   type ReservaItemPersistido,
+  type StatusPedidoVinculadoReserva,
   type StatusReserva,
 } from './contracts/reservas.contracts.js';
 import { AppError } from '../utils/AppError.js';
@@ -18,6 +20,68 @@ import { isUuid } from '../utils/uuid.util.js';
 
 type PrismaTransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 export type { PrismaTransactionClient };
+
+export interface PrismaReservaDbClient {
+  $transaction<T>(
+    fn: (tx: PrismaTransactionClient) => Promise<T>,
+    options?: { maxWait?: number; timeout?: number },
+  ): Promise<T>;
+}
+
+export const STATUS_PEDIDOS_ATIVOS_RESERVA: ReadonlySet<StatusPedidoVinculadoReserva> = new Set([
+  'PENDENTE_PAGAMENTO',
+  'APROVADO',
+  'RECONCILIACAO_ESTORNO',
+]);
+
+const STATUS_PEDIDOS_ATIVOS_LISTA: StatusPedidoVinculadoReserva[] = [
+  'PENDENTE_PAGAMENTO',
+  'APROVADO',
+  'RECONCILIACAO_ESTORNO',
+];
+
+export function ehPedidoAtivoParaReserva(status: string): boolean {
+  return STATUS_PEDIDOS_ATIVOS_RESERVA.has(status as StatusPedidoVinculadoReserva);
+}
+
+export function resumirPedidoVinculadoReserva(
+  pedidos: ReadonlyArray<{ readonly id: string; readonly codigoPedido: string; readonly status: string }>,
+): {
+  readonly possuiPedidoAtivo: boolean;
+  readonly pedidoVinculado: PedidoVinculadoReservaResumo | null;
+} {
+  if (pedidos.length === 0) {
+    return { possuiPedidoAtivo: false, pedidoVinculado: null };
+  }
+
+  const ativo = pedidos.find((p) => ehPedidoAtivoParaReserva(p.status));
+  const escolhido = ativo ?? pedidos[0]!;
+  const ehAtivo = ehPedidoAtivoParaReserva(escolhido.status);
+
+  return {
+    possuiPedidoAtivo: ehAtivo,
+    pedidoVinculado: {
+      pedidoId: escolhido.id,
+      codigoPedido: escolhido.codigoPedido,
+      status: escolhido.status as StatusPedidoVinculadoReserva,
+      ativo: ehAtivo,
+    },
+  };
+}
+
+export function calcularMenorExpiraEmGrupo(
+  itens: ReadonlyArray<{ readonly expiraEm: Date }>,
+  fallback: Date,
+): Date {
+  if (itens.length === 0) return fallback;
+  let menor = itens[0]!.expiraEm;
+  for (let i = 1; i < itens.length; i += 1) {
+    if (itens[i]!.expiraEm.getTime() < menor.getTime()) {
+      menor = itens[i]!.expiraEm;
+    }
+  }
+  return menor;
+}
 
 export interface ItemReservaCheckoutCarregado {
   readonly reservaId: string;
@@ -139,6 +203,28 @@ async function lockPecasOrdenadas(
   return new Map(rows.map((row) => [row.id, { ...row }]));
 }
 
+async function garantirSemPedidoAtivoParaCancelamento(
+  tx: PrismaTransactionClient,
+  grupoId: string,
+): Promise<void> {
+  const pedidoAtivo = await tx.pedido.findFirst({
+    where: {
+      reservaGrupoId: grupoId,
+      status: { in: STATUS_PEDIDOS_ATIVOS_LISTA },
+    },
+    orderBy: { criadoEm: 'desc' },
+    select: { id: true, codigoPedido: true, status: true },
+  });
+
+  if (pedidoAtivo) {
+    throw new AppError(
+      `A reserva está vinculada ao pedido ativo ${pedidoAtivo.codigoPedido} (${pedidoAtivo.status}) e não pode ser cancelada diretamente.`,
+      409,
+      RESERVA_ERROR_CODES.RESERVA_VINCULADA_A_PEDIDO_ATIVO,
+    );
+  }
+}
+
 /**
  * Expira atomicamente reservas vencidas para peças já travadas por `FOR UPDATE`,
  * devolvendo o saldo apenas para linhas que efetivamente transicionarem de `ATIVA` para `EXPIRADA`.
@@ -148,13 +234,24 @@ async function expirarPecasTravadas(
   pecaIdsOrdenados: readonly string[],
   agora: Date,
   pecasTravadas: Map<string, PecaLockedRow>,
-  filtroGrupoId?: string,
+  filtroGrupoIds?: string | readonly string[],
 ): Promise<{ reservasExpiradas: number; unidadesDevolvidas: number; pecasAtualizadas: number }> {
   if (pecaIdsOrdenados.length === 0) {
     return { reservasExpiradas: 0, unidadesDevolvidas: 0, pecasAtualizadas: 0 };
   }
 
-  const expiradas = filtroGrupoId
+  const grupoIds =
+    filtroGrupoIds === undefined
+      ? undefined
+      : typeof filtroGrupoIds === 'string'
+        ? [filtroGrupoIds]
+        : [...filtroGrupoIds];
+
+  if (grupoIds !== undefined && grupoIds.length === 0) {
+    return { reservasExpiradas: 0, unidadesDevolvidas: 0, pecasAtualizadas: 0 };
+  }
+
+  const expiradas = grupoIds
     ? await tx.$queryRaw<ExpiredRow[]>`
         UPDATE "reservas"
         SET
@@ -163,7 +260,7 @@ async function expirarPecasTravadas(
           "estoque_devolvido_em" = ${agora}::timestamp(3),
           "atualizado_em" = ${agora}::timestamp(3)
         WHERE "peca_id" = ANY(${pecaIdsOrdenados}::uuid[])
-          AND "grupo_id" = ${filtroGrupoId}::uuid
+          AND "grupo_id" = ANY(${grupoIds}::uuid[])
           AND "status" = 'ATIVA'::"StatusReserva"
           AND "expira_em" <= ${agora}::timestamp(3)
         RETURNING "peca_id", "quantidade"
@@ -230,6 +327,7 @@ export async function cancelarGrupoReservaNaTransacao(
   grupoId: string,
   usuarioId: string,
   agora: Date = new Date(),
+  opcoes?: { readonly bloquearSePedidoAtivo?: boolean },
 ): Promise<CancelamentoReservaResultado> {
   if (!isUuid(grupoId) || !isUuid(usuarioId)) {
     throw new AppError(
@@ -254,6 +352,10 @@ export async function cancelarGrupoReservaNaTransacao(
 
   const pecaIdsOrdenados = ordenarPecaIds(grupo.itens.map((item) => item.pecaId));
   await lockPecasOrdenadas(tx, pecaIdsOrdenados);
+
+  if (opcoes?.bloquearSePedidoAtivo) {
+    await garantirSemPedidoAtivoParaCancelamento(tx, grupoId);
+  }
 
   const atualizados = await tx.$queryRaw<ExpiredRow[]>`
     UPDATE "reservas"
@@ -578,336 +680,457 @@ export async function carregarGrupoReservaParaCheckout(
   return desfecho.grupo;
 }
 
-export const prismaReservaEstoqueRepository: ReservaEstoqueRepository = {
-  async criarGrupoReserva(input: CriarGrupoReservaInput): Promise<GrupoReservaResultado> {
-    if (!isUuid(input.usuarioId)) {
-      throw new AppError('Identificador de usuário autenticado inválido.', 401);
-    }
+export function createPrismaReservaEstoqueRepository(
+  db: PrismaReservaDbClient = prisma,
+): ReservaEstoqueRepository {
+  return {
+    async criarGrupoReserva(input: CriarGrupoReservaInput): Promise<GrupoReservaResultado> {
+      if (!isUuid(input.usuarioId)) {
+        throw new AppError('Identificador de usuário autenticado inválido.', 401);
+      }
 
-    const agora = input.agora ?? new Date();
-    const expiraEm = input.expiraEm ?? new Date(agora.getTime() + RESERVA_TTL_MS);
-    const pecaIdsOrdenados = ordenarPecaIds(input.itens.map((item) => item.pecaId));
+      const agora = input.agora ?? new Date();
+      const expiraEm = input.expiraEm ?? new Date(agora.getTime() + RESERVA_TTL_MS);
+      const pecaIdsOrdenados = ordenarPecaIds(input.itens.map((item) => item.pecaId));
 
-    return prisma.$transaction(async (tx) => {
-      // 1. Garante atomicamente a posse da chave de idempotência para este comprador.
-      // Requisições simultâneas com o mesmo (usuario_id, idempotency_key) aguardam o COMMIT/ROLLBACK aqui.
-      const inserido = await tx.$queryRaw<Array<{ id: string; criado_em: Date }>>`
-        INSERT INTO "reservas_grupos" ("usuario_id", "idempotency_key", "payload_hash", "criado_em")
-        VALUES (${input.usuarioId}::uuid, ${input.idempotencyKey}, ${input.payloadHash}, ${agora}::timestamp(3))
-        ON CONFLICT ("usuario_id", "idempotency_key") DO NOTHING
-        RETURNING "id", "criado_em"
-      `;
+      return db.$transaction(async (tx) => {
+        // 1. Garante atomicamente a posse da chave de idempotência para este comprador.
+        // Requisições simultâneas com o mesmo (usuario_id, idempotency_key) aguardam o COMMIT/ROLLBACK aqui.
+        const inserido = await tx.$queryRaw<Array<{ id: string; criado_em: Date }>>`
+          INSERT INTO "reservas_grupos" ("usuario_id", "idempotency_key", "payload_hash", "criado_em")
+          VALUES (${input.usuarioId}::uuid, ${input.idempotencyKey}, ${input.payloadHash}, ${agora}::timestamp(3))
+          ON CONFLICT ("usuario_id", "idempotency_key") DO NOTHING
+          RETURNING "id", "criado_em"
+        `;
 
-      if (inserido.length === 0) {
-        const existente = await tx.reservaGrupo.findUnique({
-          where: {
-            usuarioId_idempotencyKey: {
-              usuarioId: input.usuarioId,
-              idempotencyKey: input.idempotencyKey,
-            },
-          },
-          include: {
-            itens: {
-              where: {
+        if (inserido.length === 0) {
+          const existente = await tx.reservaGrupo.findUnique({
+            where: {
+              usuarioId_idempotencyKey: {
                 usuarioId: input.usuarioId,
                 idempotencyKey: input.idempotencyKey,
               },
+            },
+            include: {
+              itens: {
+                where: {
+                  usuarioId: input.usuarioId,
+                  idempotencyKey: input.idempotencyKey,
+                },
+                orderBy: { pecaId: 'asc' },
+              },
+              pedidos: {
+                select: {
+                  id: true,
+                  codigoPedido: true,
+                  status: true,
+                  criadoEm: true,
+                },
+                orderBy: { criadoEm: 'desc' },
+                take: 5,
+              },
+            },
+          });
+
+          if (!existente) {
+            throw new AppError(
+              'Não foi possível recuperar a reserva idempotente.',
+              409,
+              RESERVA_ERROR_CODES.CHAVE_IDEMPOTENCIA_CONFLITO,
+            );
+          }
+
+          if (existente.payloadHash !== input.payloadHash) {
+            throw new AppError(
+              'A chave de idempotência já foi utilizada com uma combinação diferente de peças e quantidades.',
+              409,
+              RESERVA_ERROR_CODES.CHAVE_IDEMPOTENCIA_CONFLITO,
+            );
+          }
+
+          const { possuiPedidoAtivo, pedidoVinculado } = resumirPedidoVinculadoReserva(
+            existente.pedidos,
+          );
+          const menorExpiraEm = calcularMenorExpiraEmGrupo(existente.itens, existente.criadoEm);
+
+          return {
+            grupoId: existente.id,
+            usuarioId: existente.usuarioId,
+            idempotencyKey: existente.idempotencyKey,
+            idempotente: true,
+            criadoEm: existente.criadoEm.toISOString(),
+            expiraEm: menorExpiraEm.toISOString(),
+            ttlMinutos: RESERVA_TTL_MINUTOS,
+            servidorAgora: agora.toISOString(),
+            possuiPedidoAtivo,
+            pedidoVinculado,
+            itens: existente.itens.map(mapReservaRow),
+          };
+        }
+
+        const grupo = inserido[0]!;
+
+        // 2. Adquire locks pessimistas nas peças em ordem determinística (peca_id ASC).
+        const pecasTravadas = await lockPecasOrdenadas(tx, pecaIdsOrdenados);
+
+        for (const item of input.itens) {
+          if (!pecasTravadas.has(item.pecaId)) {
+            throw new AppError(`Peça '${item.pecaId}' não encontrada no acervo.`, 404);
+          }
+        }
+
+        // 3. Libera preventivamente quaisquer reservas vencidas destas peças travadas (expiração lazy).
+        await expirarPecasTravadas(tx, pecaIdsOrdenados, agora, pecasTravadas);
+
+        // 4. Valida disponibilidade integral antes de debitar qualquer unidade (all-or-nothing ACID).
+        for (const item of input.itens) {
+          const peca = pecasTravadas.get(item.pecaId)!;
+          if (peca.status !== 'DISPONIVEL') {
+            throw new AppError(
+              `A peça "${peca.titulo}" não está disponível para reserva no momento (status: ${peca.status}).`,
+              409,
+              RESERVA_ERROR_CODES.PECA_INDISPONIVEL,
+            );
+          }
+          if (peca.quantidade_estoque < item.quantidade) {
+            throw new AppError(
+              peca.quantidade_estoque === 0
+                ? `A peça "${peca.titulo}" está esgotada.`
+                : `Estoque insuficiente para "${peca.titulo}": solicitado ${item.quantidade}, disponível ${peca.quantidade_estoque}.`,
+              409,
+              RESERVA_ERROR_CODES.ESTOQUE_INSUFICIENTE,
+            );
+          }
+        }
+
+        // 5. Decrementa cada peça de forma condicional atômica e grava as linhas de reserva vinculadas ao grupo.
+        const itensPersistidos: ReservaItemPersistido[] = [];
+
+        for (const item of input.itens) {
+          const atualizadas = await tx.$queryRaw<
+            Array<{ id: string; quantidade_estoque: number; status: StatusPeca }>
+          >`
+            UPDATE "pecas"
+            SET
+              "quantidade_estoque" = "quantidade_estoque" - ${item.quantidade},
+              "status" = CASE
+                WHEN "quantidade_estoque" - ${item.quantidade} = 0 THEN 'RESERVADA'::"StatusPeca"
+                ELSE "status"
+              END,
+              "atualizado_em" = ${agora}::timestamp(3)
+            WHERE "id" = ${item.pecaId}::uuid
+              AND "status" = 'DISPONIVEL'::"StatusPeca"
+              AND "quantidade_estoque" >= ${item.quantidade}
+            RETURNING "id", "quantidade_estoque", "status"
+          `;
+
+          if (atualizadas.length === 0) {
+            const titulo = pecasTravadas.get(item.pecaId)?.titulo ?? item.pecaId;
+            throw new AppError(
+              `Estoque insuficiente para reservar "${titulo}".`,
+              409,
+              RESERVA_ERROR_CODES.ESTOQUE_INSUFICIENTE,
+            );
+          }
+
+          const criada = await tx.reserva.create({
+            data: {
+              grupoId: grupo.id,
+              usuarioId: input.usuarioId,
+              pecaId: item.pecaId,
+              quantidade: item.quantidade,
+              status: 'ATIVA',
+              idempotencyKey: input.idempotencyKey,
+              criadoEm: agora,
+              expiraEm,
+              atualizadoEm: agora,
+              finalizadoEm: null,
+              estoqueDevolvidoEm: null,
+            },
+          });
+
+          itensPersistidos.push(mapReservaRow(criada));
+        }
+
+        return {
+          grupoId: grupo.id,
+          usuarioId: input.usuarioId,
+          idempotencyKey: input.idempotencyKey,
+          idempotente: false,
+          criadoEm: grupo.criado_em.toISOString(),
+          expiraEm: expiraEm.toISOString(),
+          ttlMinutos: RESERVA_TTL_MINUTOS,
+          servidorAgora: agora.toISOString(),
+          possuiPedidoAtivo: false,
+          pedidoVinculado: null,
+          itens: itensPersistidos,
+        };
+      }, TX_OPTIONS);
+    },
+
+    async listarReservasUsuario(
+      usuarioId: string,
+      agoraParam: Date = new Date(),
+    ): Promise<GrupoReservaResultado[]> {
+      if (!isUuid(usuarioId)) return [];
+      const agora = agoraParam;
+
+      return db.$transaction(async (tx) => {
+        // 1. Identifica reservas vencidas do próprio comprador que NÃO possuam pedido ativo (HU-10).
+        const expiradasCandidatas = await tx.$queryRaw<
+          Array<{ grupo_id: string; peca_id: string }>
+        >`
+          SELECT DISTINCT r."grupo_id", r."peca_id"
+          FROM "reservas" r
+          WHERE r."usuario_id" = ${usuarioId}::uuid
+            AND r."status" = 'ATIVA'::"StatusReserva"
+            AND r."expira_em" <= ${agora}::timestamp(3)
+            AND NOT EXISTS (
+              SELECT 1
+              FROM "pedidos" p
+              WHERE p."reserva_grupo_id" = r."grupo_id"
+                AND p."status" IN (
+                  'PENDENTE_PAGAMENTO'::"StatusPedido",
+                  'APROVADO'::"StatusPedido",
+                  'RECONCILIACAO_ESTORNO'::"StatusPedido"
+                )
+            )
+          ORDER BY r."peca_id" ASC, r."grupo_id" ASC
+        `;
+
+        if (expiradasCandidatas.length > 0) {
+          const pecaIdsOrdenados = ordenarPecaIds(expiradasCandidatas.map((c) => c.peca_id));
+          const grupoIdsCandidatos = Array.from(
+            new Set(expiradasCandidatas.map((c) => c.grupo_id)),
+          );
+
+          const pecasTravadas = await lockPecasOrdenadas(tx, pecaIdsOrdenados);
+
+          // Revalida vínculo com pedido ativo pós-lock para eliminar corrida com checkout concorrente.
+          const pedidosAtivosConcorrentes = await tx.pedido.findMany({
+            where: {
+              reservaGrupoId: { in: grupoIdsCandidatos },
+              status: { in: STATUS_PEDIDOS_ATIVOS_LISTA },
+            },
+            select: { reservaGrupoId: true },
+          });
+          const gruposComPedidoAtivo = new Set(
+            pedidosAtivosConcorrentes.map((p) => p.reservaGrupoId),
+          );
+          const grupoIdsElegiveis = grupoIdsCandidatos.filter(
+            (grupoId) => !gruposComPedidoAtivo.has(grupoId),
+          );
+
+          if (grupoIdsElegiveis.length > 0) {
+            await expirarPecasTravadas(
+              tx,
+              pecaIdsOrdenados,
+              agora,
+              pecasTravadas,
+              grupoIdsElegiveis,
+            );
+          }
+        }
+
+        // 2. Carrega grupos recentes do usuário já refletindo expiração e vínculo com pedido (HU-09/HU-10).
+        const grupos = await tx.reservaGrupo.findMany({
+          where: { usuarioId },
+          include: {
+            itens: {
+              where: { usuarioId },
               orderBy: { pecaId: 'asc' },
             },
+            pedidos: {
+              select: {
+                id: true,
+                codigoPedido: true,
+                status: true,
+                criadoEm: true,
+              },
+              orderBy: { criadoEm: 'desc' },
+              take: 5,
+            },
           },
+          orderBy: { criadoEm: 'desc' },
+          take: 25,
         });
 
-        if (!existente) {
-          throw new AppError(
-            'Não foi possível recuperar a reserva idempotente.',
-            409,
-            RESERVA_ERROR_CODES.CHAVE_IDEMPOTENCIA_CONFLITO,
-          );
-        }
+        const servidorAgora = agora.toISOString();
 
-        if (existente.payloadHash !== input.payloadHash) {
-          throw new AppError(
-            'A chave de idempotência já foi utilizada com uma combinação diferente de peças e quantidades.',
-            409,
-            RESERVA_ERROR_CODES.CHAVE_IDEMPOTENCIA_CONFLITO,
-          );
-        }
+        return grupos
+          .filter((g) => g.itens.length > 0)
+          .map((g) => {
+            const { possuiPedidoAtivo, pedidoVinculado } = resumirPedidoVinculadoReserva(
+              g.pedidos,
+            );
+            const menorExpiraEm = calcularMenorExpiraEmGrupo(g.itens, g.criadoEm);
 
-        const primeiroItem = existente.itens[0];
-        return {
-          grupoId: existente.id,
-          usuarioId: existente.usuarioId,
-          idempotencyKey: existente.idempotencyKey,
-          idempotente: true,
-          criadoEm: existente.criadoEm.toISOString(),
-          expiraEm: (primeiroItem?.expiraEm ?? existente.criadoEm).toISOString(),
-          ttlMinutos: RESERVA_TTL_MINUTOS,
-          itens: existente.itens.map(mapReservaRow),
-        };
-      }
+            return {
+              grupoId: g.id,
+              usuarioId: g.usuarioId,
+              idempotencyKey: g.idempotencyKey,
+              idempotente: false,
+              criadoEm: g.criadoEm.toISOString(),
+              expiraEm: menorExpiraEm.toISOString(),
+              ttlMinutos: RESERVA_TTL_MINUTOS,
+              servidorAgora,
+              possuiPedidoAtivo,
+              pedidoVinculado,
+              itens: g.itens.map(mapReservaRow),
+            };
+          });
+      }, TX_OPTIONS);
+    },
 
-      const grupo = inserido[0]!;
+    async cancelarPorGrupo(
+      grupoId: string,
+      usuarioId: string,
+      agoraParam?: Date,
+    ): Promise<CancelamentoReservaResultado> {
+      return db.$transaction(
+        (tx) =>
+          cancelarGrupoReservaNaTransacao(tx, grupoId, usuarioId, agoraParam, {
+            bloquearSePedidoAtivo: true,
+          }),
+        TX_OPTIONS,
+      );
+    },
 
-      // 2. Adquire locks pessimistas nas peças em ordem determinística (peca_id ASC).
-      const pecasTravadas = await lockPecasOrdenadas(tx, pecaIdsOrdenados);
-
-      for (const item of input.itens) {
-        if (!pecasTravadas.has(item.pecaId)) {
-          throw new AppError(`Peça '${item.pecaId}' não encontrada no acervo.`, 404);
-        }
-      }
-
-      // 3. Libera preventivamente quaisquer reservas vencidas destas peças travadas (expiração lazy).
-      await expirarPecasTravadas(tx, pecaIdsOrdenados, agora, pecasTravadas);
-
-      // 4. Valida disponibilidade integral antes de debitar qualquer unidade (all-or-nothing ACID).
-      for (const item of input.itens) {
-        const peca = pecasTravadas.get(item.pecaId)!;
-        if (peca.status !== 'DISPONIVEL') {
-          throw new AppError(
-            `A peça "${peca.titulo}" não está disponível para reserva no momento (status: ${peca.status}).`,
-            409,
-            RESERVA_ERROR_CODES.PECA_INDISPONIVEL,
-          );
-        }
-        if (peca.quantidade_estoque < item.quantidade) {
-          throw new AppError(
-            peca.quantidade_estoque === 0
-              ? `A peça "${peca.titulo}" está esgotada.`
-              : `Estoque insuficiente para "${peca.titulo}": solicitado ${item.quantidade}, disponível ${peca.quantidade_estoque}.`,
-            409,
-            RESERVA_ERROR_CODES.ESTOQUE_INSUFICIENTE,
-          );
-        }
-      }
-
-      // 5. Decrementa cada peça de forma condicional atômica e grava as linhas de reserva vinculadas ao grupo.
-      const itensPersistidos: ReservaItemPersistido[] = [];
-
-      for (const item of input.itens) {
-        const atualizadas = await tx.$queryRaw<
-          Array<{ id: string; quantidade_estoque: number; status: StatusPeca }>
-        >`
-          UPDATE "pecas"
-          SET
-            "quantidade_estoque" = "quantidade_estoque" - ${item.quantidade},
-            "status" = CASE
-              WHEN "quantidade_estoque" - ${item.quantidade} = 0 THEN 'RESERVADA'::"StatusPeca"
-              ELSE "status"
-            END,
-            "atualizado_em" = ${agora}::timestamp(3)
-          WHERE "id" = ${item.pecaId}::uuid
-            AND "status" = 'DISPONIVEL'::"StatusPeca"
-            AND "quantidade_estoque" >= ${item.quantidade}
-          RETURNING "id", "quantidade_estoque", "status"
-        `;
-
-        if (atualizadas.length === 0) {
-          const titulo = pecasTravadas.get(item.pecaId)?.titulo ?? item.pecaId;
-          throw new AppError(
-            `Estoque insuficiente para reservar "${titulo}".`,
-            409,
-            RESERVA_ERROR_CODES.ESTOQUE_INSUFICIENTE,
-          );
-        }
-
-        const criada = await tx.reserva.create({
-          data: {
-            grupoId: grupo.id,
-            usuarioId: input.usuarioId,
-            pecaId: item.pecaId,
-            quantidade: item.quantidade,
-            status: 'ATIVA',
-            idempotencyKey: input.idempotencyKey,
-            criadoEm: agora,
-            expiraEm,
-            atualizadoEm: agora,
-            finalizadoEm: null,
-            estoqueDevolvidoEm: null,
-          },
-        });
-
-        itensPersistidos.push(mapReservaRow(criada));
-      }
-
-      return {
-        grupoId: grupo.id,
-        usuarioId: input.usuarioId,
-        idempotencyKey: input.idempotencyKey,
-        idempotente: false,
-        criadoEm: grupo.criado_em.toISOString(),
-        expiraEm: expiraEm.toISOString(),
-        ttlMinutos: RESERVA_TTL_MINUTOS,
-        itens: itensPersistidos,
-      };
-    }, TX_OPTIONS);
-  },
-
-  async listarReservasUsuario(usuarioId: string): Promise<GrupoReservaResultado[]> {
-    if (!isUuid(usuarioId)) return [];
-    const grupos = await prisma.reservaGrupo.findMany({
-      where: { usuarioId },
-      include: {
-        itens: {
-          where: { usuarioId },
-          orderBy: { pecaId: 'asc' },
-        },
-      },
-      orderBy: { criadoEm: 'desc' },
-      take: 25,
-    });
-
-    return grupos
-      .filter((g) => g.itens.length > 0)
-      .map((g) => ({
-        grupoId: g.id,
-        usuarioId: g.usuarioId,
-        idempotencyKey: g.idempotencyKey,
-        idempotente: false,
-        criadoEm: g.criadoEm.toISOString(),
-        expiraEm: (g.itens[0]?.expiraEm ?? g.criadoEm).toISOString(),
-        ttlMinutos: RESERVA_TTL_MINUTOS,
-        itens: g.itens.map(mapReservaRow),
-      }));
-  },
-
-  async cancelarPorGrupo(
-    grupoId: string,
-    usuarioId: string,
-    agoraParam?: Date,
-  ): Promise<CancelamentoReservaResultado> {
-    return prisma.$transaction(
-      (tx) => cancelarGrupoReservaNaTransacao(tx, grupoId, usuarioId, agoraParam),
-      TX_OPTIONS,
-    );
-  },
-
-  async cancelarReservaItem(
-    reservaId: string,
-    usuarioId: string,
-    agoraParam?: Date,
-  ): Promise<CancelamentoReservaResultado> {
-    if (!isUuid(reservaId) || !isUuid(usuarioId)) {
-      throw new AppError('Identificador de reserva inválido.', 422, RESERVA_ERROR_CODES.RESERVA_DADOS_INVALIDOS);
-    }
-
-    const agora = agoraParam ?? new Date();
-
-    return prisma.$transaction(async (tx) => {
-      const reserva = await tx.reserva.findUnique({ where: { id: reservaId } });
-      if (!reserva) {
-        throw new AppError('Reserva não encontrada.', 404);
-      }
-
-      if (reserva.usuarioId !== usuarioId) {
-        throw new AppError('Você não tem permissão para cancelar esta reserva.', 403);
-      }
-
-      await lockPecasOrdenadas(tx, [reserva.pecaId]);
-
-      const atualizados = await tx.$queryRaw<ExpiredRow[]>`
-        UPDATE "reservas"
-        SET
-          "status" = 'CANCELADA'::"StatusReserva",
-          "finalizado_em" = ${agora}::timestamp(3),
-          "estoque_devolvido_em" = ${agora}::timestamp(3),
-          "atualizado_em" = ${agora}::timestamp(3)
-        WHERE "id" = ${reservaId}::uuid
-          AND "usuario_id" = ${usuarioId}::uuid
-          AND "status" = 'ATIVA'::"StatusReserva"
-        RETURNING "peca_id", "quantidade"
-      `;
-
-      let unidadesDevolvidas = 0;
-      if (atualizados.length > 0) {
-        const incremento = atualizados[0]!.quantidade;
-        unidadesDevolvidas = incremento;
-        await tx.$queryRaw`
-          UPDATE "pecas"
-          SET
-            "quantidade_estoque" = "quantidade_estoque" + ${incremento},
-            "status" = CASE
-              WHEN "status" = 'RESERVADA'::"StatusPeca" AND ("quantidade_estoque" + ${incremento}) > 0
-                THEN 'DISPONIVEL'::"StatusPeca"
-              ELSE "status"
-            END,
-            "atualizado_em" = ${agora}::timestamp(3)
-          WHERE "id" = ${reserva.pecaId}::uuid
-        `;
-      }
-
-      const itemAtualizado = await tx.reserva.findUnique({ where: { id: reservaId } });
-      if (!itemAtualizado) {
-        throw new AppError('Reserva não encontrada.', 404);
-      }
-
-      if (atualizados.length === 0 && itemAtualizado.status === 'CONFIRMADA') {
+    async cancelarReservaItem(
+      reservaId: string,
+      usuarioId: string,
+      agoraParam?: Date,
+    ): Promise<CancelamentoReservaResultado> {
+      if (!isUuid(reservaId) || !isUuid(usuarioId)) {
         throw new AppError(
-          'A reserva já foi confirmada e não pode ser cancelada por esta rota.',
+          'Identificador de reserva inválido.',
+          422,
+          RESERVA_ERROR_CODES.RESERVA_DADOS_INVALIDOS,
+        );
+      }
+
+      const agora = agoraParam ?? new Date();
+
+      return db.$transaction(async (tx) => {
+        const reserva = await tx.reserva.findUnique({ where: { id: reservaId } });
+        if (!reserva) {
+          throw new AppError('Reserva não encontrada.', 404);
+        }
+
+        if (reserva.usuarioId !== usuarioId) {
+          throw new AppError('Você não tem permissão para cancelar esta reserva.', 403);
+        }
+
+        await lockPecasOrdenadas(tx, [reserva.pecaId]);
+        await garantirSemPedidoAtivoParaCancelamento(tx, reserva.grupoId);
+
+        const atualizados = await tx.$queryRaw<ExpiredRow[]>`
+          UPDATE "reservas"
+          SET
+            "status" = 'CANCELADA'::"StatusReserva",
+            "finalizado_em" = ${agora}::timestamp(3),
+            "estoque_devolvido_em" = ${agora}::timestamp(3),
+            "atualizado_em" = ${agora}::timestamp(3)
+          WHERE "id" = ${reservaId}::uuid
+            AND "usuario_id" = ${usuarioId}::uuid
+            AND "status" = 'ATIVA'::"StatusReserva"
+          RETURNING "peca_id", "quantidade"
+        `;
+
+        let unidadesDevolvidas = 0;
+        if (atualizados.length > 0) {
+          const incremento = atualizados[0]!.quantidade;
+          unidadesDevolvidas = incremento;
+          await tx.$queryRaw`
+            UPDATE "pecas"
+            SET
+              "quantidade_estoque" = "quantidade_estoque" + ${incremento},
+              "status" = CASE
+                WHEN "status" = 'RESERVADA'::"StatusPeca" AND ("quantidade_estoque" + ${incremento}) > 0
+                  THEN 'DISPONIVEL'::"StatusPeca"
+                ELSE "status"
+              END,
+              "atualizado_em" = ${agora}::timestamp(3)
+            WHERE "id" = ${reserva.pecaId}::uuid
+          `;
+        }
+
+        const itemAtualizado = await tx.reserva.findUnique({ where: { id: reservaId } });
+        if (!itemAtualizado) {
+          throw new AppError('Reserva não encontrada.', 404);
+        }
+
+        if (atualizados.length === 0 && itemAtualizado.status === 'CONFIRMADA') {
+          throw new AppError(
+            'A reserva já foi confirmada e não pode ser cancelada por esta rota.',
+            409,
+            RESERVA_ERROR_CODES.RESERVA_TRANSICAO_INVALIDA,
+          );
+        }
+
+        return {
+          grupoId: itemAtualizado.grupoId,
+          usuarioId,
+          jaFinalizada: atualizados.length === 0,
+          itensCancelados: atualizados.length,
+          unidadesDevolvidas,
+          itens: [mapReservaRow(itemAtualizado)],
+        };
+      }, TX_OPTIONS);
+    },
+
+    async confirmarPorGrupo(
+      grupoId: string,
+      usuarioId: string,
+      agoraParam?: Date,
+    ): Promise<ConfirmacaoReservaResultado> {
+      const desfecho = await db.$transaction(
+        (tx) => confirmarGrupoReservaNaTransacao(tx, grupoId, usuarioId, agoraParam),
+        TX_OPTIONS,
+      );
+
+      if (desfecho.tipo === 'NAO_ENCONTRADA') {
+        throw new AppError('Grupo de reservas não encontrado.', 404);
+      }
+      if (desfecho.tipo === 'PROIBIDA') {
+        throw new AppError('Você não tem permissão para confirmar esta reserva.', 403);
+      }
+      if (desfecho.tipo === 'EXPIRADA_OU_CANCELADA') {
+        throw new AppError(
+          'A reserva já expirou ou foi cancelada e não pode ser confirmada.',
           409,
           RESERVA_ERROR_CODES.RESERVA_TRANSICAO_INVALIDA,
         );
       }
 
-      return {
-        grupoId: itemAtualizado.grupoId,
-        usuarioId,
-        jaFinalizada: atualizados.length === 0,
-        itensCancelados: atualizados.length,
-        unidadesDevolvidas,
-        itens: [mapReservaRow(itemAtualizado)],
-      };
-    }, TX_OPTIONS);
-  },
+      return desfecho.resultado;
+    },
 
-  async confirmarPorGrupo(
-    grupoId: string,
-    usuarioId: string,
-    agoraParam?: Date,
-  ): Promise<ConfirmacaoReservaResultado> {
-    const desfecho = await prisma.$transaction(
-      (tx) => confirmarGrupoReservaNaTransacao(tx, grupoId, usuarioId, agoraParam),
-      TX_OPTIONS,
-    );
+    async expirarReservasVencidas(agoraParam?: Date): Promise<ExpiracaoReservasResultado> {
+      const agora = agoraParam ?? new Date();
 
-    if (desfecho.tipo === 'NAO_ENCONTRADA') {
-      throw new AppError('Grupo de reservas não encontrado.', 404);
-    }
-    if (desfecho.tipo === 'PROIBIDA') {
-      throw new AppError('Você não tem permissão para confirmar esta reserva.', 403);
-    }
-    if (desfecho.tipo === 'EXPIRADA_OU_CANCELADA') {
-      throw new AppError(
-        'A reserva já expirou ou foi cancelada e não pode ser confirmada.',
-        409,
-        RESERVA_ERROR_CODES.RESERVA_TRANSICAO_INVALIDA,
-      );
-    }
+      return db.$transaction(async (tx) => {
+        const candidatas = await tx.$queryRaw<Array<{ peca_id: string }>>`
+          SELECT DISTINCT "peca_id"
+          FROM "reservas"
+          WHERE "status" = 'ATIVA'::"StatusReserva"
+            AND "expira_em" <= ${agora}::timestamp(3)
+          ORDER BY "peca_id" ASC
+          LIMIT ${EXPIRATION_BATCH_PECAS_LIMIT}
+        `;
 
-    return desfecho.resultado;
-  },
+        if (candidatas.length === 0) {
+          return { reservasExpiradas: 0, unidadesDevolvidas: 0, pecasAtualizadas: 0 };
+        }
 
-  async expirarReservasVencidas(agoraParam?: Date): Promise<ExpiracaoReservasResultado> {
-    const agora = agoraParam ?? new Date();
+        const pecaIdsOrdenados = candidatas.map((c) => c.peca_id);
+        const pecasTravadas = await lockPecasOrdenadas(tx, pecaIdsOrdenados);
 
-    return prisma.$transaction(async (tx) => {
-      const candidatas = await tx.$queryRaw<Array<{ peca_id: string }>>`
-        SELECT DISTINCT "peca_id"
-        FROM "reservas"
-        WHERE "status" = 'ATIVA'::"StatusReserva"
-          AND "expira_em" <= ${agora}::timestamp(3)
-        ORDER BY "peca_id" ASC
-        LIMIT ${EXPIRATION_BATCH_PECAS_LIMIT}
-      `;
+        return expirarPecasTravadas(tx, pecaIdsOrdenados, agora, pecasTravadas);
+      }, TX_OPTIONS);
+    },
+  };
+}
 
-      if (candidatas.length === 0) {
-        return { reservasExpiradas: 0, unidadesDevolvidas: 0, pecasAtualizadas: 0 };
-      }
-
-      const pecaIdsOrdenados = candidatas.map((c) => c.peca_id);
-      const pecasTravadas = await lockPecasOrdenadas(tx, pecaIdsOrdenados);
-
-      return expirarPecasTravadas(tx, pecaIdsOrdenados, agora, pecasTravadas);
-    }, TX_OPTIONS);
-  },
-};
+export const prismaReservaEstoqueRepository: ReservaEstoqueRepository =
+  createPrismaReservaEstoqueRepository();

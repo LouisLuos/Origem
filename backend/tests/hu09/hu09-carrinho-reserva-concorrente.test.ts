@@ -132,7 +132,7 @@ function createConcurrentPessimisticReservaRepository(initialPecaStock: number) 
       return withPecaLock(async () => {
         const grupo = grupos.get(grupoId);
         if (!grupo || grupo.usuarioId !== usuarioId) {
-          throw new AppError('Reserva não encontrada.', 404, RESERVA_ERROR_CODES.RESERVA_NAO_ENCONTRADA);
+          throw new AppError('Reserva não encontrada.', 404);
         }
 
         let devolvidas = 0;
@@ -164,11 +164,11 @@ function createConcurrentPessimisticReservaRepository(initialPecaStock: number) 
       });
     },
 
-    async cancelarPorItem(reservaId: string, usuarioId: string): Promise<CancelamentoReservaResultado> {
+    async cancelarReservaItem(reservaId: string, usuarioId: string): Promise<CancelamentoReservaResultado> {
       return withPecaLock(async () => {
         const item = reservas.get(reservaId);
         if (!item || item.usuarioId !== usuarioId) {
-          throw new AppError('Item de reserva não encontrado.', 404, RESERVA_ERROR_CODES.RESERVA_NAO_ENCONTRADA);
+          throw new AppError('Item de reserva não encontrado.', 404);
         }
         let devolvidas = 0;
         const itensAtualizados: ReservaItemPersistido[] = [];
@@ -198,13 +198,13 @@ function createConcurrentPessimisticReservaRepository(initialPecaStock: number) 
     async confirmarPorGrupo(grupoId: string, usuarioId: string): Promise<ConfirmacaoReservaResultado> {
       const grupo = grupos.get(grupoId);
       if (!grupo || grupo.usuarioId !== usuarioId) {
-        throw new AppError('Reserva não encontrada.', 404, RESERVA_ERROR_CODES.RESERVA_NAO_ENCONTRADA);
+        throw new AppError('Reserva não encontrada.', 404);
       }
       return {
         grupoId,
         usuarioId,
+        jaConfirmada: false,
         itensConfirmados: grupo.itens.length,
-        unidadesConfirmadas: grupo.itens.reduce((acc, it) => acc + it.quantidade, 0),
         itens: grupo.itens.map((it) => ({ ...it, status: 'CONFIRMADA' })),
       };
     },
@@ -234,7 +234,7 @@ function createConcurrentPessimisticReservaRepository(initialPecaStock: number) 
         return {
           reservasExpiradas: expiradas,
           unidadesDevolvidas: devolvidas,
-          pecasAfetadas: Array.from(pecasAfetadas),
+          pecasAtualizadas: pecasAfetadas.size,
         };
       });
     },

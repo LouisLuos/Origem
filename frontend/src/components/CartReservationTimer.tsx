@@ -1,95 +1,72 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { AlertCircle, Clock, RotateCcw } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { AlertCircle, Clock, RotateCcw, XCircle } from 'lucide-react'
 import { Badge, Button, cn } from '@/design-system'
-import { readStorage, writeStorage } from '@/services/storage'
-
-const STORAGE_KEY = 'origem:cart_reservation_expires_at'
-const DEFAULT_TTL_SECONDS = 900 // 15 minutos normativos (Invariante 1)
+import { computeRemainingSeconds } from '@/utils/cartReservation.util'
 
 export interface CartReservationTimerProps {
-  /** Duração da reserva em segundos (padrão normativo: 15 minutos = 900s). */
-  initialSeconds?: number
-  /** Disparado quando o tempo de reserva é zerado. */
-  onExpire?: () => void
-  /** Disparado quando o usuário solicita reiniciar a contagem. */
-  onReset?: () => void
-  className?: string
+  /** Instante ISO de expiração autoritativo retornado pelo PostgreSQL/backend (`expiraEm`). */
+  readonly expiresAtIso?: string | null
+  /** Compensação de relógio (`servidorAgora - Date.now()`) calculada na resposta do servidor. */
+  readonly serverOffsetMs?: number
+  /** Indica expiração já confirmada pelo servidor mesmo sem grupo ativo. */
+  readonly isExpiredExternal?: boolean
+  /** Bloqueia ações durante chamada de renovação ou cancelamento na API. */
+  readonly isBusy?: boolean
+  /** Chamado uma única vez por expiração quando o cronômetro chega a 00:00. */
+  readonly onExpire?: () => void
+  /** Solicita nova reserva real no backend (gera novo grupoId + Idempotency-Key). */
+  readonly onRenew?: () => void
+  /** Opcional: cancela explicitamente a reserva ativa e devolve estoque ao catálogo. */
+  readonly onCancel?: () => void
+  readonly className?: string
 }
 
 export function CartReservationTimer({
-  initialSeconds = DEFAULT_TTL_SECONDS,
+  expiresAtIso,
+  serverOffsetMs = 0,
+  isExpiredExternal = false,
+  isBusy = false,
   onExpire,
-  onReset,
+  onRenew,
+  onCancel,
   className,
 }: CartReservationTimerProps) {
-  const [secondsLeft, setSecondsLeft] = useState(initialSeconds)
-  const [isExpired, setIsExpired] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
-
-  // Lê ou inicializa o timestamp absoluto de expiração no storage para não resetar no F5
-  useEffect(() => {
-    const now = Date.now()
-    const storedExpiresAt = readStorage<number | null>(STORAGE_KEY, null)
-
-    let targetTime: number
-
-    if (typeof storedExpiresAt === 'number' && storedExpiresAt > 0) {
-      targetTime = storedExpiresAt
-    } else {
-      targetTime = now + initialSeconds * 1000
-      writeStorage(STORAGE_KEY, targetTime)
-    }
-
-    const remaining = Math.max(0, Math.floor((targetTime - now) / 1000))
-    setSecondsLeft(remaining)
-    setIsExpired(remaining <= 0)
-    setHydrated(true)
-  }, [initialSeconds])
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  const expiredNotifiedForRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!hydrated) return
+    if (!expiresAtIso) return
 
-    if (secondsLeft <= 0) {
-      if (!isExpired) {
-        setIsExpired(true)
-        onExpire?.()
-      }
-      return
+    const tick = () => setNowMs(Date.now())
+    const syncId = window.setTimeout(tick, 0)
+    const intervalId = window.setInterval(tick, 1000)
+
+    return () => {
+      window.clearTimeout(syncId)
+      window.clearInterval(intervalId)
     }
+  }, [expiresAtIso])
 
-    const timer = setInterval(() => {
-      const now = Date.now()
-      const stored = readStorage<number | null>(STORAGE_KEY, null)
-      if (!stored) return
+  const remainingSeconds = computeRemainingSeconds(expiresAtIso, serverOffsetMs, nowMs)
+  const isExpired = isExpiredExternal || (Boolean(expiresAtIso) && remainingSeconds <= 0)
 
-      const remaining = Math.max(0, Math.floor((stored - now) / 1000))
-      setSecondsLeft(remaining)
+  useEffect(() => {
+    if (!expiresAtIso || remainingSeconds > 0 || isExpiredExternal) return
+    if (expiredNotifiedForRef.current === expiresAtIso) return
+    expiredNotifiedForRef.current = expiresAtIso
+    onExpire?.()
+  }, [expiresAtIso, remainingSeconds, isExpiredExternal, onExpire])
 
-      if (remaining <= 0) {
-        setIsExpired(true)
-        onExpire?.()
-        clearInterval(timer)
-      }
-    }, 1000)
+  if (!expiresAtIso && !isExpiredExternal) {
+    return null
+  }
 
-    return () => clearInterval(timer)
-  }, [hydrated, secondsLeft, isExpired, onExpire])
-
-  const handleReset = useCallback(() => {
-    const nextExpiresAt = Date.now() + initialSeconds * 1000
-    writeStorage(STORAGE_KEY, nextExpiresAt)
-    setSecondsLeft(initialSeconds)
-    setIsExpired(false)
-    onReset?.()
-  }, [initialSeconds, onReset])
-
-  const minutes = Math.floor(secondsLeft / 60)
-  const seconds = secondsLeft % 60
+  const minutes = Math.floor(remainingSeconds / 60)
+  const seconds = remainingSeconds % 60
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-
-  const isLowTime = secondsLeft > 0 && secondsLeft <= 120
+  const isLowTime = !isExpired && remainingSeconds > 0 && remainingSeconds <= 120
 
   if (isExpired) {
     return (
@@ -103,19 +80,23 @@ export function CartReservationTimer({
         <div className="flex items-center gap-2">
           <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span>
-            <strong>Reserva expirada:</strong> O prazo de 15 minutos encerrou e as peças retornaram à vitrine.
+            <strong>Reserva expirada:</strong> O prazo de 15 minutos no servidor encerrou e as peças retornaram à vitrine.
           </span>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-          className="border-danger/40 text-danger hover:bg-danger/10"
-        >
-          <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-          Renovar reserva
-        </Button>
+        {onRenew && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={isBusy}
+            aria-busy={isBusy}
+            onClick={onRenew}
+            className="border-danger/40 text-danger hover:bg-danger/10"
+          >
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+            {isBusy ? 'Renovando…' : 'Renovar reserva'}
+          </Button>
+        )}
       </div>
     )
   }
@@ -143,21 +124,29 @@ export function CartReservationTimer({
           {isLowTime ? (
             <strong className="text-warning">Atenção:</strong>
           ) : (
-            <span>Peças garantidas por:</span>
+            <span>Reserva confirmada no servidor por:</span>
           )}
         </span>
-        <span className="font-mono text-sm font-bold text-ink">
-          {formattedTime}
-        </span>
+        <span className="font-mono text-sm font-bold text-ink">{formattedTime}</span>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Badge tone={isLowTime ? 'terracota' : 'oliva'}>
           {isLowTime ? 'Últimos minutos' : 'Reserva ativa (15 min)'}
         </Badge>
-        <span className="hidden text-[11px] sm:inline text-ink-soft/80">
-          Invariante 1 contra venda concorrente
-        </span>
+        {onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={isBusy}
+            onClick={onCancel}
+            className="h-7 px-2 text-xs text-ink-soft hover:text-terracota-600"
+          >
+            <XCircle className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
+            Liberar reserva
+          </Button>
+        )}
       </div>
     </div>
   )

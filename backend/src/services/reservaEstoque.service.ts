@@ -11,7 +11,7 @@ import type { CriacaoReservaValidada } from '../validators/reserva.validator.js'
 
 export interface ReservaEstoqueService {
   reservar(usuarioId: string, entrada: CriacaoReservaValidada): Promise<GrupoReservaResultado>;
-  listarMinhas(usuarioId: string): Promise<GrupoReservaResultado[]>;
+  listarMinhas(usuarioId: string, agora?: Date): Promise<GrupoReservaResultado[]>;
   cancelarGrupo(grupoId: string, usuarioId: string): Promise<CancelamentoReservaResultado>;
   cancelarItem(reservaId: string, usuarioId: string): Promise<CancelamentoReservaResultado>;
   confirmarGrupo(grupoId: string, usuarioId: string): Promise<ConfirmacaoReservaResultado>;
@@ -37,8 +37,8 @@ export function createReservaEstoqueService(
       });
     },
 
-    async listarMinhas(usuarioId) {
-      return repository.listarReservasUsuario(usuarioId);
+    async listarMinhas(usuarioId, agora) {
+      return repository.listarReservasUsuario(usuarioId, agora);
     },
 
     async cancelarGrupo(grupoId, usuarioId) {

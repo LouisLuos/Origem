@@ -87,6 +87,11 @@ export type UsuarioPapel = Prisma.UsuarioPapelModel
  */
 export type AuthLoginAttempt = Prisma.AuthLoginAttemptModel
 /**
+ * Model RecuperacaoSenha
+ * Token descartável de recuperação de senha (HU-02). Guarda somente o SHA-256 do token.
+ */
+export type RecuperacaoSenha = Prisma.RecuperacaoSenhaModel
+/**
  * Model AuditoriaSeguranca
  * Trilha de auditoria de segurança, somente inserção (trigger na migration).
  * Identificadores são texto e sem FK para que o registro sobreviva a exclusões e aceite IDs

@@ -11,6 +11,8 @@ export interface CartAtelierGroupProps {
   hub: string
   lines: CartLine[]
   shipping?: number
+  reservedByProduct?: ReadonlyMap<string, number>
+  disabledControls?: boolean
   onQuantityChange: (productId: string, quantity: number) => void
   onRemoveItem: (productId: string) => void
 }
@@ -20,6 +22,8 @@ export function CartAtelierGroup({
   hub,
   lines,
   shipping,
+  reservedByProduct,
+  disabledControls = false,
   onQuantityChange,
   onRemoveItem,
 }: CartAtelierGroupProps) {
@@ -52,7 +56,12 @@ export function CartAtelierGroup({
 
       {/* Lista de Peças deste Ateliê */}
       <ul className="flex flex-col divide-y divide-border">
-        {lines.map(({ product, quantity }) => (
+        {lines.map(({ product, quantity }) => {
+          const reservedByUser = reservedByProduct?.get(product.id.trim().toLowerCase()) ?? 0
+          const maxAllowed = availableQuantity(product, reservedByUser)
+          const publicStock = typeof product.stock === 'number' ? product.stock : undefined
+
+          return (
           <li key={product.id} className="flex gap-4 py-5 first:pt-4">
             <Link
               href={`/produtos/${product.id}`}
@@ -77,20 +86,33 @@ export function CartAtelierGroup({
                   {product.title}
                 </Link>
 
-                {typeof product.stock === 'number' && product.stock > 0 && product.stock <= 3 && (
-                  <span className="text-xs font-medium text-warning">
-                    Restam poucas unidades ({product.stock} {product.stock === 1 ? 'disponível' : 'disponíveis'})
+                {reservedByUser > 0 ? (
+                  <span className="text-xs font-medium text-oliva-600">
+                    Reservado em seu nome ({reservedByUser}{' '}
+                    {reservedByUser === 1 ? 'unidade' : 'unidades'})
+                    {publicStock !== undefined && publicStock > 0
+                      ? ` · +${publicStock} em estoque`
+                      : ''}
                   </span>
-                )}
-                {typeof product.stock === 'number' && product.stock > 3 && (
-                  <span className="text-xs text-ink-soft/70">
-                    Estoque disponível: {product.stock}
-                  </span>
-                )}
-                {product.stock === 0 && (
-                  <span className="text-xs font-medium text-terracota-600">
-                    Esgotado — remova para continuar
-                  </span>
+                ) : (
+                  <>
+                    {publicStock !== undefined && publicStock > 0 && publicStock <= 3 && (
+                      <span className="text-xs font-medium text-warning">
+                        Restam poucas unidades ({publicStock}{' '}
+                        {publicStock === 1 ? 'disponível' : 'disponíveis'})
+                      </span>
+                    )}
+                    {publicStock !== undefined && publicStock > 3 && (
+                      <span className="text-xs text-ink-soft/70">
+                        Estoque disponível: {publicStock}
+                      </span>
+                    )}
+                    {publicStock === 0 && (
+                      <span className="text-xs font-medium text-terracota-600">
+                        Esgotado — remova para continuar
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -100,7 +122,7 @@ export function CartAtelierGroup({
                   <button
                     type="button"
                     onClick={() => onQuantityChange(product.id, quantity - 1)}
-                    disabled={quantity <= 1}
+                    disabled={disabledControls || quantity <= 1}
                     aria-label={`Diminuir quantidade de ${product.title}`}
                     className="flex h-8 w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
@@ -115,7 +137,7 @@ export function CartAtelierGroup({
                   <button
                     type="button"
                     onClick={() => onQuantityChange(product.id, quantity + 1)}
-                    disabled={quantity >= availableQuantity(product)}
+                    disabled={disabledControls || quantity >= maxAllowed}
                     aria-label={`Aumentar quantidade de ${product.title}`}
                     className="flex h-8 w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
@@ -129,9 +151,10 @@ export function CartAtelierGroup({
                   </span>
                   <button
                     type="button"
+                    disabled={disabledControls}
                     onClick={() => onRemoveItem(product.id)}
                     aria-label={`Remover ${product.title} do carrinho`}
-                    className="flex cursor-pointer items-center gap-1 text-xs text-ink-soft transition-colors hover:text-terracota-600"
+                    className="flex cursor-pointer items-center gap-1 text-xs text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     Remover
@@ -140,7 +163,8 @@ export function CartAtelierGroup({
               </div>
             </div>
           </li>
-        ))}
+          )
+        })}
       </ul>
 
       {/* Rodapé com Frete Fracionado deste Ateliê e Subtotal da Origem */}
