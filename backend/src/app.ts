@@ -8,6 +8,7 @@ import { PECAS_ROUTE_PATH, pecaJsonBodyParser } from './routes/peca.routes.js';
 import { DIRETORIO_FOTOS_LOCAIS, resolverDriverFotos } from './config/fotosStorage.js';
 import { ROTA_PUBLICA_FOTOS_LOCAIS } from './repositories/localDiskFotosPeca.storage.js';
 import { AppError } from './utils/AppError.js';
+import { parseCorsOrigins } from './utils/corsOrigins.util.js';
 
 export const app = express();
 
@@ -15,8 +16,8 @@ export const app = express();
 const allowedOrigins = [
   'http://localhost:5173', // Script npm run dev do Next.js
   'http://localhost:3000', // Execução nativa do Next.js
-  env.CORS_ORIGIN,
-].filter(Boolean) as string[];
+  ...parseCorsOrigins(env.CORS_ORIGIN), // Lista separada por vírgula (ex.: produção e previews)
+];
 
 app.use(
   cors({
