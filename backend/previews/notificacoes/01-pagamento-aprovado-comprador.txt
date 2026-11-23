@@ -1,0 +1,15 @@
+Assunto: Pagamento aprovado · Pedido ORIGEM-2026-FICTICIO-001 (R$ 578,90)
+
+[PRÉ-VISUALIZAÇÃO LOCAL COM DADOS FICTÍCIOS]
+
+ORIGEM · PAGAMENTO APROVADO
+Olá, Comprador Exemplo (Dados Fictícios).
+Seu pagamento do pedido ORIGEM-2026-FICTICIO-001 foi aprovado em 22/11/2026 às 14:45 via Pix.
+ITENS DO PEDIDO:
+- Moradia Sertaneja em Barro Cozido (Fictício) (Ateliê Alto do Moura (Fictício) · Caruaru): 1x — R$ 340,00
+- Moringa de Xilogravura e Terracota (Fictício) (Casa da Xilo de Olinda (Fictício) · Olinda): 2x — R$ 180,00
+Peças: R$ 520,00
+Frete consolidado: R$ 58,90
+Total pago: R$ 578,90
+
+Acompanhe em: http://localhost:5173/pedido/ORIGEM-2026-FICTICIO-001

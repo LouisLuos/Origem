@@ -1,0 +1,165 @@
+# Plano de Testes — Sistema Origem
+
+**Disciplina:** Requisitos, Projeto de Software e Validação
+**Squad:** Equipe 7 — Projeto 'Origem'
+**Versão:** 1.0 — 21/09/2026
+
+**Autores:** Cauã dos Santos, Eduardo Henrique, Luiz Henrique, Marcos Antônio, Matheus Freitas, Pedro Vinicius, Vinicius Gabriel
+
+---
+
+## Introdução
+
+**Objeto de Teste:** Sistema Origem - Marketplace da Economia Criativa e do Artesanato de Pernambuco.
+
+**Descrição:** O Origem é uma plataforma e-commerce (marketplace multi-origem) voltada ao artesanato autoral pernambucano. O sistema suporta a venda de peças artesanais exclusivas (estoque unitário), lidando com fracionamento de pedidos por ateliê, cálculo de frete por cubagem e regras de seguro. Inclui também o controle financeiro de repasses via Pix retidos em custódia (D+7), SLA de postagem de 7 dias úteis e conformidade com devoluções legais (CDC). Atores principais: Visitante, Comprador, Artesão/Mestre, Curador e Administrador.
+
+**Objetivo de Teste:** Validar a conformidade, confiabilidade e segurança do sistema Origem, garantindo que as regras de negócio críticas (Invariantes) operem corretamente, com foco especial em:
+- Prevenir vendas duplicadas (overselling) em cenários concorrentes
+- Blindar acessos financeiros
+- Assegurar os fluxos do carrinho multi-origem
+- Validar a máquina de estados de custódia e sinistros
+
+**Justificativa:** O Origem não é um e-commerce comum — é um marketplace com escassez real (peças únicas ou lotes limitados) e múltiplos ateliês. Um erro na concorrência do carrinho gera venda do mesmo item exclusivo para mais pessoas do que o estoque permite. O fluxo de custódia do Pix e o SLA lidam com dinheiro e confiança dos artesãos.
+
+---
+
+## Escopo
+
+### Incluído
+- Login, Autenticação e Perfil Unificado
+- Cadastros e Parametrização de Ateliês e Peças (Cubagem)
+- Carrinho Multi-Origem, Reserva Concorrente (15 min) e Checkout (Pix/Cartão)
+- Desmembramento de Subpedidos e SLA de Postagem
+- Custódia D+7, Repasses via Pix e Tratamento de Disputas/CDC
+
+### Fora do escopo
+- Módulo de encomendas sob medida e chat interno em tempo real
+- Rateio financeiro para múltiplos titulares de cooperativas
+- Integração final e movimentação de dinheiro real em produção (testes com webhooks em sandbox/mocks)
+
+---
+
+## Equipe
+
+| Nome | Papel | Responsabilidades |
+|---|---|---|
+| Cauã | Tech Lead | Testabilidade da arquitetura, testes de integração, estratégia técnica e ambientes |
+| Eduardo | UX/UI | Testes de usabilidade e responsividade (mobile/desktop) |
+| Luiz | PO | Alinhamento dos testes com regras de negócio, cenários BDD, UAT |
+| Marcos | QA | Planejamento, casos de teste detalhados, testes funcionais e registro de defeitos |
+| Matheus | Dev FullStack | Testes de unidade/integração, correções, mocks de APIs |
+| Pedro | Banco de Dados | Testes de estresse/concorrência (PostgreSQL, locks), índices FTS, migrations |
+| Vinicius | Dev FullStack | Testes de unidade/integração, correções, fluxos assíncronos (filas/webhooks) |
+
+---
+
+## Riscos e Contingências
+
+| Risco | Impacto | Probabilidade | Mitigação |
+|---|---|---|---|
+| Venda duplicada (overselling) de peças únicas | Alto | Alto | Testes de carga simulando concorrência; locks no banco de dados |
+| Repasse Pix (D+7) liberado indevidamente durante disputa | Alto | Médio | Cobertura via Tabela de Decisão para travar o status da custódia |
+| Curador alterar/visualizar chave Pix do titular | Alto | Médio | Testes de integração no Middleware de autorização validando HTTP 403 |
+| Atrasos no desenvolvimento web impedindo testes | Alto | Alto | Shift Left com revisões estáticas e testes de componente iniciais |
+
+---
+
+## Estratégia de Testes
+
+**Tipos de Teste:** Funcionais (reserva, checkout, regras financeiras) e não funcionais (desempenho FTS, segurança em autenticação, transações concorrentes).
+
+**Técnicas de Teste:**
+- **Caixa Preta:**
+  - Particionamento de equivalência e Análise de valor de limite: peso mínimo de cubagem (50g), prazo legal de arrependimento (7 dias)
+  - Tabela de decisão: regras de repasse de custódia e resolução de sinistros/avarias
+  - Transição de estado: ciclo de vida da peça (Disponível → Reservada → Esgotada) e repasses financeiros
+- **Caixa Branca:**
+  - Cobertura de ramificações nos métodos críticos de backend (cálculo de frete, bloqueios transacionais) via testes unitários
+
+**Níveis de Teste:**
+- **Unidade:** invariantes de domínio e cálculos de comissão
+- **Integração:** módulo de Autorização (RBAC), carrinho, webhooks de pagamento simulado
+- **Sistema:** ponta a ponta — busca, reserva concorrente, desmembramento logístico
+- **Aceitação:** jornadas BDD/Gherkin pelo Comprador e Artesão
+
+**Ferramentas e Ambientes:**
+- API: Postman ou Insomnia
+- Automação/Unidade: Jest ou JUnit
+- Carga/concorrência: K6 ou JMeter
+- Ambiente: servidor local com PostgreSQL e seed data
+
+**Critérios de Aceitação:**
+- Reserva concorrente de peças com estoque = 1 não pode gerar overselling sob nenhuma condição de estresse
+- Bloqueio de qualquer tentativa de Curadores editarem a chave Pix do Artesão Titular
+- Cálculo de frete e desmembramento em subpedidos 100% acurado por ateliê de origem
+- Nenhum defeito crítico de domínio aberto antes da entrega final
+
+---
+
+## Cenários de Teste
+
+| ID | Cenário |
+|---|---|
+| TS01 | Verificar bloqueio de segurança após múltiplas tentativas de login |
+| TS02 | Verificar restrição de acesso do Curador aos dados bancários/Pix do titular |
+| TS03 | Verificar validação de peso limite inferior na catalogação de peças |
+| TS04 | Verificar concorrência e prevenção de overselling no carrinho de compras |
+| TS05 | Verificar o desmembramento exato de pedido consolidado logístico |
+| TS06 | Verificar congelamento de custódia financeira devido à disputa/avaria |
+
+---
+
+## Casos de Teste
+
+### TC01 — Login bloqueado após 5 tentativas (Força Bruta) — *TS01*
+**Pré-condições:** Usuário cadastrado com conta ativa.
+**Passos:**
+1. Inserir senha inválida 5 vezes consecutivas para o mesmo email.
+2. Tentar acessar pela 6ª vez.
+**Resultado esperado:** O sistema bloqueia novas tentativas por 15 minutos e retorna HTTP 429 Too Many Requests.
+
+### TC02 — Blindagem de acesso financeiro por Curador (Invariante 5.5) — *TS02*
+**Pré-condições:** Usuário autenticado apenas com o papel "CURADOR".
+**Passos:**
+1. Disparar requisição PATCH para a Chave Pix do ateliê com o token do curador.
+**Resultado esperado:** Requisição rejeitada com HTTP 403 Forbidden. Chave Pix original permanece inalterada.
+
+### TC03 — Rejeição de peça por peso abaixo do limite de cubagem — *TS03*
+**Pré-condições:** Artesão autenticado na tela de publicação.
+**Passos:**
+1. Preencher dados válidos, mas informar "peso embalado" = 30 gramas.
+2. Clicar em publicar peça.
+**Resultado esperado:** Sistema barra a operação, retorna HTTP 422 e alerta: "O peso mínimo embalado é 50g".
+
+### TC04 — Reserva concorrente de peça única (Invariante 1) — *TS04*
+**Pré-condições:** Peça única no catálogo com estoque = 1.
+**Passos:**
+1. Simular 50 requisições simultâneas de reserva para o ID da peça, com contas diferentes.
+**Resultado esperado:** Exatamente 1 reserva com sucesso (HTTP 201). 49 rejeitadas (HTTP 409). Nenhuma venda duplicada no banco.
+
+### TC05 — Desmembramento exato de pedido consolidado multi-origem — *TS05*
+**Pré-condições:** Pedido único contendo peças de 3 ateliês distintos.
+**Passos:**
+1. Processar evento de "Pagamento Aprovado" para a transação consolidada.
+**Resultado esperado:** Geração automática de exatamente 3 subpedidos independentes, com valores históricos fixados imutavelmente.
+
+### TC06 — Congelamento compulsório do repasse Pix por Disputa de Avaria — *TS06*
+**Pré-condições:** Subpedido entregue há menos de 48h. Repasse aguardando na custódia D+7.
+**Passos:**
+1. Comprador abre queixa anexando fotos do dano.
+**Resultado esperado:** Status transita imediatamente para "CONGELADO_POR_DISPUTA", bloqueando a transferência Pix automática.
+
+---
+
+## Atividades e Estimativas
+
+| Atividade | Descrição | Responsável | Prazo |
+|---|---|---|---|
+| Planejamento | Revisão do backlog e definição de estratégia/escopo | Luiz (PO), Marcos (QA) | 3 dias |
+| Escrita de Casos de Teste | Documentação BDD para regras críticas e invariantes | Marcos (QA), Luiz (PO) | 4 dias |
+| Configuração de Ambiente | Mocks de pagamento/frete, sandbox Pix, seed transacional | Cauã, Pedro, Matheus/Vinicius | 2 dias |
+| Execução de Testes Estáticos | Revisões de especificação, modelagem, contratos de API | Cauã, Luiz, Marcos | Contínuo |
+| Execução de Testes Dinâmicos | Carga (concorrência), usabilidade, E2E | Marcos, Eduardo, Pedro | 6 dias |
+| Registro de Defeitos | Reportar falhas no gerenciador de tarefas | Marcos, Eduardo | Contínuo |
+| Reexecução de Testes | Validar correções após commits | Marcos, Matheus/Vinicius | Contínuo |

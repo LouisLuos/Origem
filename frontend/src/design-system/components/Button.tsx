@@ -1,0 +1,71 @@
+import { forwardRef } from 'react'
+import type { ButtonHTMLAttributes, ComponentProps } from 'react'
+import Link from 'next/link'
+import { cn } from '../cn'
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'light'
+type Size = 'sm' | 'md' | 'lg'
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: Variant
+  size?: Size
+}
+
+const variantClasses: Record<Variant, string> = {
+  primary:
+    'bg-terracota text-creme-50 hover:bg-terracota-600 active:bg-terracota-700 shadow-soft',
+  secondary:
+    'bg-oliva text-creme-50 hover:bg-oliva-600 active:bg-oliva-700 shadow-soft',
+  outline:
+    'bg-transparent text-aubergine border border-aubergine/30 hover:border-aubergine hover:bg-aubergine/5',
+  ghost: 'bg-transparent text-aubergine hover:bg-aubergine/5',
+  light: 'bg-creme-50 text-aubergine hover:bg-creme-100 shadow-soft',
+}
+
+const sizeClasses: Record<Size, string> = {
+  sm: 'text-sm px-4 py-2 gap-1.5',
+  md: 'text-base px-6 py-3 gap-2',
+  lg: 'text-lg px-8 py-4 gap-2.5',
+}
+
+const baseClasses =
+  'inline-flex items-center justify-center font-semibold transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed'
+
+/**
+ * Botão base do Design System Origem.
+ * Cantos retos e cores terrosas reforçam uma identidade artesanal e gráfica;
+ * o anel de foco (globals.css) garante navegação por teclado (RNF-07).
+ */
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = 'primary', size = 'md', className, children, ...props },
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        baseClasses,
+        variantClasses[variant],
+        sizeClasses[size],
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  )
+})
+
+export interface ButtonLinkProps extends ComponentProps<typeof Link> {
+  variant?: Variant
+  size?: Size
+}
+
+/** Navegação com a aparência de `Button`: um link de verdade, que abre em nova aba e é anunciado como link. */
+export function ButtonLink({ variant = 'primary', size = 'md', className, children, ...props }: ButtonLinkProps) {
+  return (
+    <Link className={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)} {...props}>
+      {children}
+    </Link>
+  )
+}

@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.origem.OrigemApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.206 s -- in com.origem.OrigemApplicationTests

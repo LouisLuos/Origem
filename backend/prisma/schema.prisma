@@ -1,0 +1,494 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PapelUsuario {
+  COMPRADOR
+  ARTESAO
+  CURADOR
+  ADMIN
+
+  @@map("PapelUsuario")
+}
+
+model Usuario {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nome            String         @db.VarChar
+  email           String         @unique @db.VarChar
+  cpfCnpj         String         @unique @map("cpf_cnpj") @db.VarChar
+  telefoneWhatsapp String        @map("telefone_whatsapp") @db.VarChar
+  senhaHash       String         @map("senha_hash") @db.VarChar
+  status          String         @default("ATIVO") @db.VarChar
+  criadoEm        DateTime       @default(now()) @map("criado_em") @db.Timestamp(3)
+  sessoesValidasDesde DateTime?  @map("sessoes_validas_desde") @db.Timestamp(3)
+  recuperacoesSenha RecuperacaoSenha[]
+  papeis          UsuarioPapel[]
+  artesao         Artesao?
+  curadorias      AtelieCurador[]
+  enderecos        Endereco[]
+  reservasGrupos   ReservaGrupo[]
+  reservas         Reserva[]
+  logsNotificacoes LogNotificacao[]
+  pedidos          Pedido[]
+
+  @@map("usuarios")
+}
+
+enum StatusPeca {
+  DISPONIVEL
+  RESERVADA
+  VENDIDA
+  ARQUIVADA
+
+  @@map("StatusPeca")
+}
+
+/// Perfil de artesão titular com Chave Pix cifrada usando AES-256-GCM.
+model Artesao {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuarioId             String   @unique @map("usuario_id") @db.Uuid
+  biografiaCultural     String   @map("biografia_cultural") @db.Text
+  tipoChavePix          String   @map("tipo_chave_pix") @db.VarChar
+  chavePixCriptografada String   @map("chave_pix_criptografada") @db.VarChar
+  tecnicaPrincipal      String?  @map("tecnica_principal") @db.VarChar
+  anoInicio             Int?     @map("ano_inicio")
+  fotoUrl               String?  @map("foto_url") @db.Text
+  fotoAlt               String?  @map("foto_alt") @db.VarChar
+  coverUrl              String?  @map("cover_url") @db.Text
+  coverAlt              String?  @map("cover_alt") @db.VarChar
+  criadoEm              DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
+  atualizadoEm          DateTime @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  usuario               Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  atelie                Atelie?
+
+  @@map("artesaos")
+}
+
+/// Ateliê único por artesão titular no MVP.
+model Atelie {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  artesaoId     String          @unique @map("artesao_id") @db.Uuid
+  nomeComercial String          @map("nome_comercial") @db.VarChar
+  poloCultural  String          @map("polo_cultural") @db.VarChar
+  status        String          @default("ATIVO") @db.VarChar
+  criadoEm      DateTime        @default(now()) @map("criado_em") @db.Timestamp(3)
+  atualizadoEm  DateTime        @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  artesao       Artesao         @relation(fields: [artesaoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  endereco      Endereco?
+  curadores        AtelieCurador[]
+  pecas            Peca[]
+  logsNotificacoes LogNotificacao[]
+
+  @@map("atelies")
+}
+
+/// Vínculo associativo de curadores operacionais por ateliê.
+model AtelieCurador {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  atelieId  String   @map("atelie_id") @db.Uuid
+  usuarioId String   @map("usuario_id") @db.Uuid
+  criadoEm  DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
+  atelie    Atelie   @relation(fields: [atelieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([atelieId, usuarioId])
+  @@index([usuarioId])
+  @@map("atelies_curadores")
+}
+
+/// Endereço de expedição (1:1 estrito com ateliê).
+model Endereco {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cep         String   @db.VarChar(8)
+  logradouro  String   @db.VarChar
+  numero      String   @db.VarChar
+  complemento String?  @db.VarChar
+  bairro      String   @db.VarChar
+  cidade      String   @db.VarChar
+  uf          String   @db.VarChar(2)
+  atelieId    String?  @unique @map("atelie_id") @db.Uuid
+  usuarioId   String?  @map("usuario_id") @db.Uuid
+  criadoEm    DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
+  atelie      Atelie?  @relation(fields: [atelieId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  pedidos     Pedido[]
+
+  @@index([usuarioId])
+  @@map("enderecos")
+}
+
+/// Peça do acervo com cubagem física (restrições CHECK na migration).
+model Peca {
+  id                String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  atelieId          String     @map("atelie_id") @db.Uuid
+  titulo            String     @db.VarChar
+  descricao         String     @db.Text
+  tipologia         String     @db.VarChar
+  preco             Decimal    @db.Decimal(10, 2)
+  pesoGramas        Int        @map("peso_gramas")
+  comprimentoCm     Int        @map("comprimento_cm")
+  larguraCm         Int        @map("largura_cm")
+  alturaCm          Int        @map("altura_cm")
+  isFragil          Boolean    @default(false) @map("is_fragil")
+  quantidadeEstoque Int        @default(1) @map("quantidade_estoque")
+  status            StatusPeca @default(DISPONIVEL)
+  criadoEm          DateTime   @default(now()) @map("criado_em") @db.Timestamp(3)
+  atualizadoEm      DateTime   @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  atelie            Atelie     @relation(fields: [atelieId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  fotos             FotoPeca[]
+  reservas          Reserva[]
+
+  @@index([atelieId])
+  @@index([status])
+  @@map("pecas")
+}
+
+/// Fotos otimizadas da peça (no máximo uma principal por peça).
+model FotoPeca {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pecaId               String   @map("peca_id") @db.Uuid
+  url                  String   @db.VarChar
+  caminhoArmazenamento String   @map("caminho_armazenamento") @db.VarChar
+  isPrincipal          Boolean  @default(false) @map("is_principal")
+  ordem                Int
+  criadoEm             DateTime @default(now()) @map("criado_em") @db.Timestamp(3)
+  peca                 Peca     @relation(fields: [pecaId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([pecaId, ordem])
+  @@map("fotos_peca")
+}
+
+model UsuarioPapel {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuarioId String       @map("usuario_id") @db.Uuid
+  papel     PapelUsuario
+  usuario   Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, papel])
+  @@map("usuarios_papeis")
+}
+
+model AuthLoginAttempt {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String    @unique @db.VarChar
+  failedAttempts Int       @default(0) @map("failed_attempts")
+  lockedUntil    DateTime? @map("locked_until") @db.Timestamp(3)
+  updatedAt      DateTime  @default(now()) @map("updated_at") @db.Timestamp(3)
+
+  @@map("auth_login_attempts")
+}
+
+/// Token descartável de recuperação de senha (HU-02). Guarda somente o SHA-256 do token.
+model RecuperacaoSenha {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuarioId String    @map("usuario_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiraEm  DateTime  @map("expira_em") @db.Timestamp(3)
+  usadoEm   DateTime? @map("usado_em") @db.Timestamp(3)
+  criadoEm  DateTime  @default(now()) @map("criado_em") @db.Timestamp(3)
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([usuarioId])
+  @@map("recuperacoes_senha")
+}
+
+/// Trilha de auditoria de segurança, somente inserção (trigger na migration).
+/// Identificadores são texto e sem FK para que o registro sobreviva a exclusões e aceite IDs
+/// de recursos inexistentes informados em tentativas negadas.
+model AuditoriaSeguranca {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tipoEvento    String   @map("tipo_evento") @db.VarChar(40)
+  decisao       String   @db.VarChar(10)
+  motivo        String   @db.VarChar(40)
+  operacao      String   @db.VarChar(40)
+  usuarioId     String   @map("usuario_id") @db.VarChar(100)
+  atelieId      String   @map("atelie_id") @db.VarChar(100)
+  correlationId String   @map("correlation_id") @db.VarChar(128)
+  metodoHttp    String   @map("metodo_http") @db.VarChar(10)
+  caminho       String   @db.VarChar(512)
+  ocorridoEm    DateTime @map("ocorrido_em") @db.Timestamp(3)
+  registradoEm  DateTime @default(now()) @map("registrado_em") @db.Timestamp(3)
+
+  @@index([atelieId, ocorridoEm])
+  @@index([usuarioId, ocorridoEm])
+  @@map("auditoria_seguranca")
+}
+
+enum StatusReserva {
+  ATIVA
+  CONFIRMADA
+  CANCELADA
+  EXPIRADA
+
+  @@map("StatusReserva")
+}
+
+/// Cabeçalho de operação de reserva: agrupa 1 ou N itens reservados atomicamente
+/// e garante idempotência única por comprador + chave de idempotência.
+model ReservaGrupo {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuarioId      String    @map("usuario_id") @db.Uuid
+  idempotencyKey String    @map("idempotency_key") @db.VarChar(128)
+  payloadHash    String    @map("payload_hash") @db.VarChar(64)
+  criadoEm       DateTime  @default(now()) @map("criado_em") @db.Timestamp(3)
+  usuario        Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  itens          Reserva[]
+  pedidos        Pedido[]
+
+  @@unique([usuarioId, idempotencyKey])
+  @@index([usuarioId, criadoEm])
+  @@map("reservas_grupos")
+}
+
+/// Reserva temporária de unidades de uma peça (compatível com lotes limitados da HU-06 e peça única da HU-09).
+model Reserva {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  grupoId            String        @map("grupo_id") @db.Uuid
+  usuarioId          String        @map("usuario_id") @db.Uuid
+  pecaId             String        @map("peca_id") @db.Uuid
+  quantidade         Int
+  status             StatusReserva @default(ATIVA)
+  idempotencyKey     String        @map("idempotency_key") @db.VarChar(128)
+  criadoEm           DateTime      @default(now()) @map("criado_em") @db.Timestamp(3)
+  expiraEm           DateTime      @map("expira_em") @db.Timestamp(3)
+  atualizadoEm       DateTime      @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  finalizadoEm       DateTime?     @map("finalizado_em") @db.Timestamp(3)
+  estoqueDevolvidoEm DateTime?     @map("estoque_devolvido_em") @db.Timestamp(3)
+  grupo              ReservaGrupo  @relation(fields: [grupoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario            Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  peca               Peca          @relation(fields: [pecaId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([grupoId, pecaId])
+  @@unique([usuarioId, idempotencyKey, pecaId])
+  @@index([pecaId, status])
+  @@index([status, expiraEm])
+  @@index([usuarioId, status])
+  @@map("reservas")
+}
+
+enum CanalNotificacao {
+  EMAIL
+  WHATSAPP
+
+  @@map("CanalNotificacao")
+}
+
+enum StatusNotificacao {
+  ENFILEIRADA
+  PROCESSANDO
+  ENVIADA
+  FALHA_TRANSITORIA
+  FALHA_PERMANENTE
+  IGNORADA
+
+  @@map("StatusNotificacao")
+}
+
+/// Auditoria e rastreamento idempotente de notificações transacionais multicanal (HU-17).
+/// Não armazena segredos, tokens nem conteúdo sensível; `destinatario` deve ser gravado mascarado.
+model LogNotificacao {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventoOrigem       String            @map("evento_origem") @db.VarChar(80)
+  pedidoId           String?           @map("pedido_id") @db.Uuid
+  subpedidoId        String?           @map("subpedido_id") @db.Uuid
+  usuarioId          String?           @map("usuario_id") @db.Uuid
+  atelieId           String?           @map("atelie_id") @db.Uuid
+  destinatario       String            @db.VarChar(160)
+  canal              CanalNotificacao
+  template           String            @db.VarChar(80)
+  status             StatusNotificacao @default(ENFILEIRADA)
+  tentativas         Int               @default(0)
+  maxTentativas      Int               @default(3) @map("max_tentativas")
+  provedor           String?           @db.VarChar(40)
+  provedorMensagemId String?           @map("provedor_mensagem_id") @db.VarChar(160)
+  erroCodigo         String?           @map("erro_codigo") @db.VarChar(64)
+  erroSanitizado     String?           @map("erro_sanitizado") @db.VarChar(500)
+  idempotencyKey     String            @unique @map("idempotency_key") @db.VarChar(160)
+  jobId              String?           @map("job_id") @db.VarChar(160)
+  correlationId      String?           @map("correlation_id") @db.VarChar(128)
+  criadoEm           DateTime          @default(now()) @map("criado_em") @db.Timestamp(3)
+  ultimaTentativaEm  DateTime?         @map("ultima_tentativa_em") @db.Timestamp(3)
+  proximaTentativaEm DateTime?         @map("proxima_tentativa_em") @db.Timestamp(3)
+  enviadoEm          DateTime?         @map("enviado_em") @db.Timestamp(3)
+  atualizadoEm       DateTime          @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  usuario            Usuario?          @relation(fields: [usuarioId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atelie             Atelie?           @relation(fields: [atelieId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([pedidoId])
+  @@index([subpedidoId])
+  @@index([usuarioId, criadoEm])
+  @@index([atelieId, criadoEm])
+  @@index([status, criadoEm])
+  @@index([eventoOrigem, canal])
+  @@map("logs_notificacoes")
+}
+
+enum StatusPedido {
+  PENDENTE_PAGAMENTO
+  APROVADO
+  RECUSADO
+  EXPIRADO
+  CANCELADO
+  RECONCILIACAO_ESTORNO
+
+  @@map("StatusPedido")
+}
+
+enum MetodoPagamento {
+  PIX
+  CARTAO_CREDITO
+
+  @@map("MetodoPagamento")
+}
+
+enum StatusPagamento {
+  CRIADO
+  PENDENTE
+  APROVADO
+  RECUSADO
+  EXPIRADO
+  CANCELADO
+  ESTORNADO
+  ERRO_COMUNICACAO
+
+  @@map("StatusPagamento")
+}
+
+enum StatusProcessamentoWebhook {
+  RECEBIDO
+  PROCESSADO
+  IGNORADO_DUPLICADO
+  ERRO
+
+  @@map("StatusProcessamentoWebhook")
+}
+
+enum StatusEventoOutbox {
+  PENDENTE
+  PUBLICADO
+  FALHA
+
+  @@map("StatusEventoOutbox")
+}
+
+/// Pedido consolidado multi-origem (HU-10), vinculado ao grupo de reservas da HU-06.
+/// Preserva snapshots imutáveis de itens, fretes por ateliê e endereço de entrega sem criar
+/// tabelas de subpedidos (que pertencem à HU-12).
+model Pedido {
+  id                      String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  codigoPedido            String          @unique @map("codigo_pedido") @db.VarChar(32)
+  usuarioId               String          @map("usuario_id") @db.Uuid
+  reservaGrupoId          String          @map("reserva_grupo_id") @db.Uuid
+  enderecoEntregaId       String?         @map("endereco_entrega_id") @db.Uuid
+  enderecoEntregaSnapshot Json            @map("endereco_entrega_snapshot")
+  fretesPorOrigem         Json            @map("fretes_por_origem")
+  itensSnapshot           Json            @map("itens_snapshot")
+  valorTotalPecas         Decimal         @map("valor_total_pecas") @db.Decimal(10, 2)
+  valorTotalFrete         Decimal         @map("valor_total_frete") @db.Decimal(10, 2)
+  valorTotalPedido        Decimal         @map("valor_total_pedido") @db.Decimal(10, 2)
+  status                  StatusPedido    @default(PENDENTE_PAGAMENTO)
+  metodoPagamento         MetodoPagamento @map("metodo_pagamento")
+  idempotencyKey          String          @map("idempotency_key") @db.VarChar(128)
+  payloadHash             String          @map("payload_hash") @db.VarChar(64)
+  subpedidosGerados       Boolean         @default(false) @map("subpedidos_gerados")
+  subpedidosGeradosEm     DateTime?       @map("subpedidos_gerados_em") @db.Timestamp(3)
+  pagoEm                  DateTime?       @map("pago_em") @db.Timestamp(3)
+  canceladoEm             DateTime?       @map("cancelado_em") @db.Timestamp(3)
+  reconciliacaoMotivo     String?         @map("reconciliacao_motivo") @db.VarChar(500)
+  criadoEm                DateTime        @default(now()) @map("criado_em") @db.Timestamp(3)
+  atualizadoEm            DateTime        @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  usuario                 Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  reservaGrupo            ReservaGrupo    @relation(fields: [reservaGrupoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  enderecoEntrega         Endereco?       @relation(fields: [enderecoEntregaId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  pagamentos              Pagamento[]
+
+  @@unique([usuarioId, idempotencyKey])
+  @@index([usuarioId, criadoEm])
+  @@index([status, criadoEm])
+  @@index([reservaGrupoId])
+  @@map("pedidos")
+}
+
+/// Tentativa de captura financeira vinculada a um pedido consolidado (HU-10).
+/// Nunca armazena PAN completo, CVV ou credenciais do gateway.
+model Pagamento {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  pedidoId             String             @map("pedido_id") @db.Uuid
+  gateway              String             @db.VarChar(40)
+  ambiente             String             @default("sandbox") @db.VarChar(20)
+  metodo               MetodoPagamento
+  status               StatusPagamento    @default(CRIADO)
+  valor                Decimal            @db.Decimal(10, 2)
+  idempotencyKey       String             @unique @map("idempotency_key") @db.VarChar(128)
+  externalPaymentId    String?            @map("external_payment_id") @db.VarChar(128)
+  gatewayStatusRaw     String?            @map("gateway_status_raw") @db.VarChar(64)
+  gatewayStatusDetail  String?            @map("gateway_status_detail") @db.VarChar(120)
+  expiraEm             DateTime?          @map("expira_em") @db.Timestamp(3)
+  gatewayExpiraEm      DateTime?          @map("gateway_expira_em") @db.Timestamp(3)
+  pixCopiaECola        String?            @map("pix_copia_e_cola") @db.Text
+  pixQrCodeBase64      String?            @map("pix_qr_code_base64") @db.Text
+  pixTicketUrl         String?            @map("pix_ticket_url") @db.VarChar(512)
+  cartaoBandeira       String?            @map("cartao_bandeira") @db.VarChar(32)
+  cartaoUltimosDigitos String?            @map("cartao_ultimos_digitos") @db.VarChar(4)
+  parcelas             Int                @default(1)
+  erroSanitizado       String?            @map("erro_sanitizado") @db.VarChar(500)
+  criadoEm             DateTime           @default(now()) @map("criado_em") @db.Timestamp(3)
+  aprovadoEm           DateTime?          @map("aprovado_em") @db.Timestamp(3)
+  recusadoEm           DateTime?          @map("recusado_em") @db.Timestamp(3)
+  atualizadoEm         DateTime           @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  pedido               Pedido             @relation(fields: [pedidoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  webhooks             WebhookPagamento[]
+
+  @@index([pedidoId, criadoEm])
+  @@index([status, expiraEm])
+  @@map("pagamentos")
+}
+
+/// Deduplicação persistente e auditoria mínima de webhooks financeiros (HU-10 / TC09).
+model WebhookPagamento {
+  id                  String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  gateway             String                     @db.VarChar(40)
+  eventoExternoId     String                     @map("evento_externo_id") @db.VarChar(160)
+  tipoEvento          String                     @map("tipo_evento") @db.VarChar(80)
+  externalPaymentId   String?                    @map("external_payment_id") @db.VarChar(128)
+  pagamentoId         String?                    @map("pagamento_id") @db.Uuid
+  assinaturaValida    Boolean                    @default(false) @map("assinatura_valida")
+  statusProcessamento StatusProcessamentoWebhook @default(RECEBIDO) @map("status_processamento")
+  payloadHash         String                     @map("payload_hash") @db.VarChar(64)
+  resumoAuditoria     Json?                      @map("resumo_auditoria")
+  erroSanitizado      String?                    @map("erro_sanitizado") @db.VarChar(500)
+  recebidoEm          DateTime                   @default(now()) @map("recebido_em") @db.Timestamp(3)
+  processadoEm        DateTime?                  @map("processado_em") @db.Timestamp(3)
+  pagamento           Pagamento?                 @relation(fields: [pagamentoId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([gateway, eventoExternoId])
+  @@index([gateway, externalPaymentId])
+  @@index([pagamentoId, recebidoEm])
+  @@index([statusProcessamento, recebidoEm])
+  @@map("webhooks_pagamento")
+}
+
+/// Outbox transacional para publicação confiável de eventos de domínio (ex.: PagamentoAprovado)
+/// na mesma transação ACID da aprovação financeira, consumido pelo relay da HU-17.
+model OutboxEventoNotificacao {
+  id                   String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tipoEvento           String             @map("tipo_evento") @db.VarChar(80)
+  aggregateId          String             @map("aggregate_id") @db.Uuid
+  idempotencyKey       String             @unique @map("idempotency_key") @db.VarChar(160)
+  payload              Json
+  status               StatusEventoOutbox @default(PENDENTE)
+  tentativasPublicacao Int                @default(0) @map("tentativas_publicacao")
+  erroSanitizado       String?            @map("erro_sanitizado") @db.VarChar(500)
+  criadoEm             DateTime           @default(now()) @map("criado_em") @db.Timestamp(3)
+  publicadoEm          DateTime?          @map("publicado_em") @db.Timestamp(3)
+  atualizadoEm         DateTime           @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+
+  @@index([aggregateId, tipoEvento])
+  @@index([status, criadoEm])
+  @@map("outbox_eventos_notificacao")
+}
