@@ -1,32 +1,45 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
-import { ChevronRight, ShoppingBag } from 'lucide-react'
+import { useMemo } from 'react'
+import { AlertTriangle, ChevronRight, Clock, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
-import { Button, ButtonLink, Container, currency } from '@/design-system'
+import { useRouter } from 'next/navigation'
+import { Badge, Button, ButtonLink, Container, currency } from '@/design-system'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { CartAtelierGroup } from '@/components/CartAtelierGroup'
 import { CartReservationTimer } from '@/components/CartReservationTimer'
-import { useCatalog } from '@/context/CatalogContext'
+import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
-import { removeStorage } from '@/services/storage'
+import { useCatalog } from '@/context/CatalogContext'
+import { effectiveAvailableQuantity } from '@/utils/cartReservation.util'
 
 export function Cart() {
-  const { lines: cartLines, removeItem, setQuantity, hydrated: cartHydrated } = useCart()
+  const router = useRouter()
+  const { user } = useAuth()
+  const {
+    lines: cartLines,
+    removeItem,
+    setQuantity,
+    activeReservation,
+    activeOrderReservation,
+    isMutatingReservation,
+    reservationExpiredNotice,
+    serverOffsetMs,
+    reservationError,
+    reservedQtyByProduct,
+    reserveCart,
+    renewReservation,
+    cancelActiveReservation,
+    handleReservationExpired,
+  } = useCart()
   const { status, error, reload } = useCatalog()
 
   const subtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
-  const hasUnavailableItem = cartLines.some(
-    (line) =>
-      line.product.stock === 0 || line.quantity > (line.product.stock ?? line.quantity),
-  )
-
-  // Só limpa o timestamp quando o carrinho estiver hidratado E confirmado como vazio
-  useEffect(() => {
-    if (cartHydrated && status === 'ready' && cartLines.length === 0) {
-      removeStorage('origem:cart_reservation_expires_at')
-    }
-  }, [cartHydrated, status, cartLines.length])
+  const hasUnavailableItem = cartLines.some((line) => {
+    const reservedByUser = reservedQtyByProduct.get(line.product.id.trim().toLowerCase()) ?? 0
+    const effective = effectiveAvailableQuantity(line.product.stock, reservedByUser)
+    return effective <= 0 || line.quantity > effective
+  })
 
   // HU-09 (Cenário 1 BDD): Agrupamento visual de carrinho multi-origem por ateliê/polo
   const atelierGroups = useMemo(() => {
@@ -56,6 +69,24 @@ export function Cart() {
     })
   }, [cartLines])
 
+  const pendingLinkedOrder =
+    activeOrderReservation?.pedidoVinculado?.status === 'PENDENTE_PAGAMENTO'
+      ? activeOrderReservation.pedidoVinculado
+      : null
+
+  async function handleProceedToCheckout() {
+    if (!user) {
+      router.push('/entrar?from=/carrinho')
+      return
+    }
+    if (hasUnavailableItem || isMutatingReservation) return
+
+    const outcome = await reserveCart()
+    if (outcome.ok) {
+      router.push('/checkout')
+    }
+  }
+
   return (
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
       <Container>
@@ -76,6 +107,28 @@ export function Cart() {
           </p>
         </div>
 
+        {pendingLinkedOrder && (
+          <div
+            role="status"
+            className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-terracota/40 bg-aubergine-400/10 px-4 py-3 text-sm text-ink"
+          >
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 shrink-0 text-terracota-600" aria-hidden="true" />
+              <span>
+                Você possui o pedido pendente{' '}
+                <strong>{pendingLinkedOrder.codigoPedido}</strong> aguardando confirmação de pagamento.
+              </span>
+            </div>
+            <ButtonLink
+              href={`/pedido/${encodeURIComponent(pendingLinkedOrder.codigoPedido)}`}
+              variant="outline"
+              size="sm"
+            >
+              Retomar pagamento
+            </ButtonLink>
+          </div>
+        )}
+
         {status === 'loading' ? (
           <LoadingBlock label="Carregando carrinho…" />
         ) : status === 'error' ? (
@@ -93,8 +146,40 @@ export function Cart() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            {/* HU-09: Cronômetro regressivo de reserva de 15 minutos (Invariante 1) */}
-            <CartReservationTimer />
+            {/* HU-09: Cronômetro regressivo real sincronizado exclusivamente ao PostgreSQL */}
+            {activeReservation || reservationExpiredNotice ? (
+              <CartReservationTimer
+                expiresAtIso={activeReservation?.expiraEm ?? null}
+                serverOffsetMs={serverOffsetMs}
+                isExpiredExternal={reservationExpiredNotice && !activeReservation}
+                isBusy={isMutatingReservation}
+                onExpire={() => void handleReservationExpired()}
+                onRenew={() => void renewReservation()}
+                onCancel={() => void cancelActiveReservation()}
+              />
+            ) : (
+              <div className="flex flex-wrap items-center justify-between gap-2 border border-border bg-surface-muted/60 px-4 py-2.5 text-xs text-ink-soft">
+                <span>
+                  As peças serão reservadas atomicamente em seu nome por{' '}
+                  <strong className="text-ink">15 minutos</strong> ao clicar em{' '}
+                  <strong className="text-ink">Finalizar compra</strong>.
+                </span>
+                <Badge tone="neutral">Reserva ao avançar (Invariante 1)</Badge>
+              </div>
+            )}
+
+            {reservationError && (
+              <div
+                role="alert"
+                className="flex items-start gap-2.5 border border-danger/30 bg-surface-muted px-4 py-3 text-sm text-danger"
+              >
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>
+                  {reservationError.status === 409 ? 'Estoque atualizado no servidor: ' : ''}
+                  {reservationError.message}
+                </span>
+              </div>
+            )}
 
             <div className="grid gap-10 lg:grid-cols-[2fr_1fr] lg:gap-14">
               {/* Lista de Ateliês Independentes (Cenário 1 BDD) */}
@@ -105,6 +190,8 @@ export function Cart() {
                     atelierName={group.atelierName}
                     hub={group.hub}
                     lines={group.lines}
+                    reservedByProduct={reservedQtyByProduct}
+                    disabledControls={isMutatingReservation}
                     onQuantityChange={setQuantity}
                     onRemoveItem={removeItem}
                   />
@@ -149,15 +236,16 @@ export function Cart() {
                   <span>{currency.format(subtotal)}</span>
                 </div>
 
-                {hasUnavailableItem ? (
-                  <Button variant="primary" size="lg" disabled>
-                    Finalizar compra
-                  </Button>
-                ) : (
-                  <ButtonLink href="/checkout" variant="primary" size="lg">
-                    Finalizar compra
-                  </ButtonLink>
-                )}
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="lg"
+                  disabled={hasUnavailableItem || isMutatingReservation}
+                  aria-busy={isMutatingReservation}
+                  onClick={() => void handleProceedToCheckout()}
+                >
+                  {isMutatingReservation ? 'Reservando peças…' : 'Finalizar compra'}
+                </Button>
 
                 <Link
                   href="/#vitrine"
