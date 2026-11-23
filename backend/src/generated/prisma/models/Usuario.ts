@@ -33,6 +33,7 @@ export type UsuarioMinAggregateOutputType = {
   senhaHash: string | null
   status: string | null
   criadoEm: Date | null
+  sessoesValidasDesde: Date | null
 }
 
 export type UsuarioMaxAggregateOutputType = {
@@ -44,6 +45,7 @@ export type UsuarioMaxAggregateOutputType = {
   senhaHash: string | null
   status: string | null
   criadoEm: Date | null
+  sessoesValidasDesde: Date | null
 }
 
 export type UsuarioCountAggregateOutputType = {
@@ -55,6 +57,7 @@ export type UsuarioCountAggregateOutputType = {
   senhaHash: number
   status: number
   criadoEm: number
+  sessoesValidasDesde: number
   _all: number
 }
 
@@ -68,6 +71,7 @@ export type UsuarioMinAggregateInputType = {
   senhaHash?: true
   status?: true
   criadoEm?: true
+  sessoesValidasDesde?: true
 }
 
 export type UsuarioMaxAggregateInputType = {
@@ -79,6 +83,7 @@ export type UsuarioMaxAggregateInputType = {
   senhaHash?: true
   status?: true
   criadoEm?: true
+  sessoesValidasDesde?: true
 }
 
 export type UsuarioCountAggregateInputType = {
@@ -90,6 +95,7 @@ export type UsuarioCountAggregateInputType = {
   senhaHash?: true
   status?: true
   criadoEm?: true
+  sessoesValidasDesde?: true
   _all?: true
 }
 
@@ -174,6 +180,7 @@ export type UsuarioGroupByOutputType = {
   senhaHash: string
   status: string
   criadoEm: Date
+  sessoesValidasDesde: Date | null
   _count: UsuarioCountAggregateOutputType | null
   _min: UsuarioMinAggregateOutputType | null
   _max: UsuarioMaxAggregateOutputType | null
@@ -206,6 +213,8 @@ export type UsuarioWhereInput = {
   senhaHash?: Prisma.StringFilter<"Usuario"> | string
   status?: Prisma.StringFilter<"Usuario"> | string
   criadoEm?: Prisma.DateTimeFilter<"Usuario"> | Date | string
+  sessoesValidasDesde?: Prisma.DateTimeNullableFilter<"Usuario"> | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaListRelationFilter
   papeis?: Prisma.UsuarioPapelListRelationFilter
   artesao?: Prisma.XOR<Prisma.ArtesaoNullableScalarRelationFilter, Prisma.ArtesaoWhereInput> | null
   curadorias?: Prisma.AtelieCuradorListRelationFilter
@@ -225,6 +234,8 @@ export type UsuarioOrderByWithRelationInput = {
   senhaHash?: Prisma.SortOrder
   status?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
+  sessoesValidasDesde?: Prisma.SortOrderInput | Prisma.SortOrder
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaOrderByRelationAggregateInput
   papeis?: Prisma.UsuarioPapelOrderByRelationAggregateInput
   artesao?: Prisma.ArtesaoOrderByWithRelationInput
   curadorias?: Prisma.AtelieCuradorOrderByRelationAggregateInput
@@ -247,6 +258,8 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   senhaHash?: Prisma.StringFilter<"Usuario"> | string
   status?: Prisma.StringFilter<"Usuario"> | string
   criadoEm?: Prisma.DateTimeFilter<"Usuario"> | Date | string
+  sessoesValidasDesde?: Prisma.DateTimeNullableFilter<"Usuario"> | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaListRelationFilter
   papeis?: Prisma.UsuarioPapelListRelationFilter
   artesao?: Prisma.XOR<Prisma.ArtesaoNullableScalarRelationFilter, Prisma.ArtesaoWhereInput> | null
   curadorias?: Prisma.AtelieCuradorListRelationFilter
@@ -266,6 +279,7 @@ export type UsuarioOrderByWithAggregationInput = {
   senhaHash?: Prisma.SortOrder
   status?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
+  sessoesValidasDesde?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UsuarioCountOrderByAggregateInput
   _max?: Prisma.UsuarioMaxOrderByAggregateInput
   _min?: Prisma.UsuarioMinOrderByAggregateInput
@@ -283,6 +297,7 @@ export type UsuarioScalarWhereWithAggregatesInput = {
   senhaHash?: Prisma.StringWithAggregatesFilter<"Usuario"> | string
   status?: Prisma.StringWithAggregatesFilter<"Usuario"> | string
   criadoEm?: Prisma.DateTimeWithAggregatesFilter<"Usuario"> | Date | string
+  sessoesValidasDesde?: Prisma.DateTimeNullableWithAggregatesFilter<"Usuario"> | Date | string | null
 }
 
 export type UsuarioCreateInput = {
@@ -294,6 +309,8 @@ export type UsuarioCreateInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
@@ -313,6 +330,8 @@ export type UsuarioUncheckedCreateInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
@@ -332,6 +351,8 @@ export type UsuarioUpdateInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
@@ -351,6 +372,8 @@ export type UsuarioUncheckedUpdateInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -370,6 +393,7 @@ export type UsuarioCreateManyInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
 }
 
 export type UsuarioUpdateManyMutationInput = {
@@ -381,6 +405,7 @@ export type UsuarioUpdateManyMutationInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsuarioUncheckedUpdateManyInput = {
@@ -392,6 +417,7 @@ export type UsuarioUncheckedUpdateManyInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsuarioCountOrderByAggregateInput = {
@@ -403,6 +429,7 @@ export type UsuarioCountOrderByAggregateInput = {
   senhaHash?: Prisma.SortOrder
   status?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
+  sessoesValidasDesde?: Prisma.SortOrder
 }
 
 export type UsuarioMaxOrderByAggregateInput = {
@@ -414,6 +441,7 @@ export type UsuarioMaxOrderByAggregateInput = {
   senhaHash?: Prisma.SortOrder
   status?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
+  sessoesValidasDesde?: Prisma.SortOrder
 }
 
 export type UsuarioMinOrderByAggregateInput = {
@@ -425,6 +453,7 @@ export type UsuarioMinOrderByAggregateInput = {
   senhaHash?: Prisma.SortOrder
   status?: Prisma.SortOrder
   criadoEm?: Prisma.SortOrder
+  sessoesValidasDesde?: Prisma.SortOrder
 }
 
 export type UsuarioScalarRelationFilter = {
@@ -443,6 +472,10 @@ export type StringFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type UsuarioCreateNestedOneWithoutArtesaoInput = {
@@ -501,6 +534,20 @@ export type UsuarioUpdateOneRequiredWithoutPapeisNestedInput = {
   upsert?: Prisma.UsuarioUpsertWithoutPapeisInput
   connect?: Prisma.UsuarioWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutPapeisInput, Prisma.UsuarioUpdateWithoutPapeisInput>, Prisma.UsuarioUncheckedUpdateWithoutPapeisInput>
+}
+
+export type UsuarioCreateNestedOneWithoutRecuperacoesSenhaInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutRecuperacoesSenhaInput, Prisma.UsuarioUncheckedCreateWithoutRecuperacoesSenhaInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutRecuperacoesSenhaInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutRecuperacoesSenhaNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutRecuperacoesSenhaInput, Prisma.UsuarioUncheckedCreateWithoutRecuperacoesSenhaInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutRecuperacoesSenhaInput
+  upsert?: Prisma.UsuarioUpsertWithoutRecuperacoesSenhaInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutRecuperacoesSenhaInput, Prisma.UsuarioUpdateWithoutRecuperacoesSenhaInput>, Prisma.UsuarioUncheckedUpdateWithoutRecuperacoesSenhaInput>
 }
 
 export type UsuarioCreateNestedOneWithoutReservasGruposInput = {
@@ -570,6 +617,8 @@ export type UsuarioCreateWithoutArtesaoInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
@@ -588,6 +637,8 @@ export type UsuarioUncheckedCreateWithoutArtesaoInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
@@ -622,6 +673,8 @@ export type UsuarioUpdateWithoutArtesaoInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
@@ -640,6 +693,8 @@ export type UsuarioUncheckedUpdateWithoutArtesaoInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -658,6 +713,8 @@ export type UsuarioCreateWithoutCuradoriasInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
@@ -676,6 +733,8 @@ export type UsuarioUncheckedCreateWithoutCuradoriasInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
@@ -710,6 +769,8 @@ export type UsuarioUpdateWithoutCuradoriasInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
@@ -728,6 +789,8 @@ export type UsuarioUncheckedUpdateWithoutCuradoriasInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -746,6 +809,8 @@ export type UsuarioCreateWithoutEnderecosInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
@@ -764,6 +829,8 @@ export type UsuarioUncheckedCreateWithoutEnderecosInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
@@ -798,6 +865,8 @@ export type UsuarioUpdateWithoutEnderecosInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
@@ -816,6 +885,8 @@ export type UsuarioUncheckedUpdateWithoutEnderecosInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -834,6 +905,8 @@ export type UsuarioCreateWithoutPapeisInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
@@ -852,6 +925,8 @@ export type UsuarioUncheckedCreateWithoutPapeisInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
@@ -886,6 +961,8 @@ export type UsuarioUpdateWithoutPapeisInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
@@ -904,6 +981,104 @@ export type UsuarioUncheckedUpdateWithoutPapeisInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioCreateWithoutRecuperacoesSenhaInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
+  logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioUncheckedCreateWithoutRecuperacoesSenhaInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioCreateOrConnectWithoutRecuperacoesSenhaInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutRecuperacoesSenhaInput, Prisma.UsuarioUncheckedCreateWithoutRecuperacoesSenhaInput>
+}
+
+export type UsuarioUpsertWithoutRecuperacoesSenhaInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutRecuperacoesSenhaInput, Prisma.UsuarioUncheckedUpdateWithoutRecuperacoesSenhaInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutRecuperacoesSenhaInput, Prisma.UsuarioUncheckedCreateWithoutRecuperacoesSenhaInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutRecuperacoesSenhaInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutRecuperacoesSenhaInput, Prisma.UsuarioUncheckedUpdateWithoutRecuperacoesSenhaInput>
+}
+
+export type UsuarioUpdateWithoutRecuperacoesSenhaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutRecuperacoesSenhaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -922,6 +1097,8 @@ export type UsuarioCreateWithoutReservasGruposInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
@@ -940,6 +1117,8 @@ export type UsuarioUncheckedCreateWithoutReservasGruposInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
@@ -974,6 +1153,8 @@ export type UsuarioUpdateWithoutReservasGruposInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
@@ -992,6 +1173,8 @@ export type UsuarioUncheckedUpdateWithoutReservasGruposInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -1010,6 +1193,8 @@ export type UsuarioCreateWithoutReservasInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
@@ -1028,6 +1213,8 @@ export type UsuarioUncheckedCreateWithoutReservasInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
@@ -1062,6 +1249,8 @@ export type UsuarioUpdateWithoutReservasInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
@@ -1080,6 +1269,8 @@ export type UsuarioUncheckedUpdateWithoutReservasInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -1098,6 +1289,8 @@ export type UsuarioCreateWithoutLogsNotificacoesInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
@@ -1116,6 +1309,8 @@ export type UsuarioUncheckedCreateWithoutLogsNotificacoesInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
@@ -1150,6 +1345,8 @@ export type UsuarioUpdateWithoutLogsNotificacoesInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
@@ -1168,6 +1365,8 @@ export type UsuarioUncheckedUpdateWithoutLogsNotificacoesInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -1186,6 +1385,8 @@ export type UsuarioCreateWithoutPedidosInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
@@ -1204,6 +1405,8 @@ export type UsuarioUncheckedCreateWithoutPedidosInput = {
   senhaHash: string
   status?: string
   criadoEm?: Date | string
+  sessoesValidasDesde?: Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedCreateNestedManyWithoutUsuarioInput
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
@@ -1238,6 +1441,8 @@ export type UsuarioUpdateWithoutPedidosInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
@@ -1256,6 +1461,8 @@ export type UsuarioUncheckedUpdateWithoutPedidosInput = {
   senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessoesValidasDesde?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  recuperacoesSenha?: Prisma.RecuperacaoSenhaUncheckedUpdateManyWithoutUsuarioNestedInput
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
@@ -1271,6 +1478,7 @@ export type UsuarioUncheckedUpdateWithoutPedidosInput = {
  */
 
 export type UsuarioCountOutputType = {
+  recuperacoesSenha: number
   papeis: number
   curadorias: number
   enderecos: number
@@ -1281,6 +1489,7 @@ export type UsuarioCountOutputType = {
 }
 
 export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  recuperacoesSenha?: boolean | UsuarioCountOutputTypeCountRecuperacoesSenhaArgs
   papeis?: boolean | UsuarioCountOutputTypeCountPapeisArgs
   curadorias?: boolean | UsuarioCountOutputTypeCountCuradoriasArgs
   enderecos?: boolean | UsuarioCountOutputTypeCountEnderecosArgs
@@ -1298,6 +1507,13 @@ export type UsuarioCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
    * Select specific fields to fetch from the UsuarioCountOutputType
    */
   select?: Prisma.UsuarioCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountRecuperacoesSenhaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RecuperacaoSenhaWhereInput
 }
 
 /**
@@ -1359,6 +1575,8 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   senhaHash?: boolean
   status?: boolean
   criadoEm?: boolean
+  sessoesValidasDesde?: boolean
+  recuperacoesSenha?: boolean | Prisma.Usuario$recuperacoesSenhaArgs<ExtArgs>
   papeis?: boolean | Prisma.Usuario$papeisArgs<ExtArgs>
   artesao?: boolean | Prisma.Usuario$artesaoArgs<ExtArgs>
   curadorias?: boolean | Prisma.Usuario$curadoriasArgs<ExtArgs>
@@ -1379,6 +1597,7 @@ export type UsuarioSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   senhaHash?: boolean
   status?: boolean
   criadoEm?: boolean
+  sessoesValidasDesde?: boolean
 }, ExtArgs["result"]["usuario"]>
 
 export type UsuarioSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1390,6 +1609,7 @@ export type UsuarioSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   senhaHash?: boolean
   status?: boolean
   criadoEm?: boolean
+  sessoesValidasDesde?: boolean
 }, ExtArgs["result"]["usuario"]>
 
 export type UsuarioSelectScalar = {
@@ -1401,10 +1621,12 @@ export type UsuarioSelectScalar = {
   senhaHash?: boolean
   status?: boolean
   criadoEm?: boolean
+  sessoesValidasDesde?: boolean
 }
 
-export type UsuarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "email" | "cpfCnpj" | "telefoneWhatsapp" | "senhaHash" | "status" | "criadoEm", ExtArgs["result"]["usuario"]>
+export type UsuarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nome" | "email" | "cpfCnpj" | "telefoneWhatsapp" | "senhaHash" | "status" | "criadoEm" | "sessoesValidasDesde", ExtArgs["result"]["usuario"]>
 export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  recuperacoesSenha?: boolean | Prisma.Usuario$recuperacoesSenhaArgs<ExtArgs>
   papeis?: boolean | Prisma.Usuario$papeisArgs<ExtArgs>
   artesao?: boolean | Prisma.Usuario$artesaoArgs<ExtArgs>
   curadorias?: boolean | Prisma.Usuario$curadoriasArgs<ExtArgs>
@@ -1421,6 +1643,7 @@ export type UsuarioIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Usuario"
   objects: {
+    recuperacoesSenha: Prisma.$RecuperacaoSenhaPayload<ExtArgs>[]
     papeis: Prisma.$UsuarioPapelPayload<ExtArgs>[]
     artesao: Prisma.$ArtesaoPayload<ExtArgs> | null
     curadorias: Prisma.$AtelieCuradorPayload<ExtArgs>[]
@@ -1439,6 +1662,7 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     senhaHash: string
     status: string
     criadoEm: Date
+    sessoesValidasDesde: Date | null
   }, ExtArgs["result"]["usuario"]>
   composites: {}
 }
@@ -1833,6 +2057,7 @@ readonly fields: UsuarioFieldRefs;
  */
 export interface Prisma__UsuarioClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  recuperacoesSenha<T extends Prisma.Usuario$recuperacoesSenhaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$recuperacoesSenhaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecuperacaoSenhaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   papeis<T extends Prisma.Usuario$papeisArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$papeisArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UsuarioPapelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   artesao<T extends Prisma.Usuario$artesaoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$artesaoArgs<ExtArgs>>): Prisma.Prisma__ArtesaoClient<runtime.Types.Result.GetResult<Prisma.$ArtesaoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   curadorias<T extends Prisma.Usuario$curadoriasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$curadoriasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AtelieCuradorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1878,6 +2103,7 @@ export interface UsuarioFieldRefs {
   readonly senhaHash: Prisma.FieldRef<"Usuario", 'String'>
   readonly status: Prisma.FieldRef<"Usuario", 'String'>
   readonly criadoEm: Prisma.FieldRef<"Usuario", 'DateTime'>
+  readonly sessoesValidasDesde: Prisma.FieldRef<"Usuario", 'DateTime'>
 }
     
 
@@ -2268,6 +2494,30 @@ export type UsuarioDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Limit how many Usuarios to delete.
    */
   limit?: number
+}
+
+/**
+ * Usuario.recuperacoesSenha
+ */
+export type Usuario$recuperacoesSenhaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RecuperacaoSenha
+   */
+  select?: Prisma.RecuperacaoSenhaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the RecuperacaoSenha
+   */
+  omit?: Prisma.RecuperacaoSenhaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RecuperacaoSenhaInclude<ExtArgs> | null
+  where?: Prisma.RecuperacaoSenhaWhereInput
+  orderBy?: Prisma.RecuperacaoSenhaOrderByWithRelationInput | Prisma.RecuperacaoSenhaOrderByWithRelationInput[]
+  cursor?: Prisma.RecuperacaoSenhaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RecuperacaoSenhaScalarFieldEnum | Prisma.RecuperacaoSenhaScalarFieldEnum[]
 }
 
 /**

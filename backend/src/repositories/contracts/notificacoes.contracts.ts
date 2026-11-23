@@ -12,7 +12,8 @@ export type TemplateNotificacaoId =
   | 'PAGAMENTO_APROVADO_COMPRADOR'
   | 'NOVA_ENCOMENDA_ATELIE'
   | 'ALERTA_SLA_POSTAGEM_DIA5'
-  | 'ATUALIZACAO_STATUS_PEDIDO';
+  | 'ATUALIZACAO_STATUS_PEDIDO'
+  | 'RECUPERACAO_SENHA';
 
 export interface LogNotificacaoPersistido {
   readonly id: string;

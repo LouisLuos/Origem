@@ -54,6 +54,15 @@ function normalizeWhatsapp(value: string): string {
   return digits;
 }
 
+export const strongPasswordSchema = z
+  .string()
+  .min(8, 'A senha deve ter ao menos 8 caracteres.')
+  .max(72, 'A senha deve ter no máximo 72 caracteres.')
+  .refine((value) => Buffer.byteLength(value, 'utf8') <= 72, 'A senha excede o limite aceito.')
+  .regex(/[A-Z]/, 'A senha deve conter ao menos uma letra maiúscula.')
+  .regex(/\d/, 'A senha deve conter ao menos um número.')
+  .regex(/[^A-Za-z0-9]/, 'A senha deve conter ao menos um símbolo.');
+
 export const registerBodySchema = z
   .object({
     name: z
@@ -78,14 +87,25 @@ export const registerBodySchema = z
       .trim()
       .transform(normalizeWhatsapp)
       .refine((value) => /^\d{10,11}$/.test(value), 'Informe um telefone WhatsApp válido com DDD.'),
-    password: z
+    password: strongPasswordSchema,
+  })
+  .strict();
+
+export const forgotPasswordBodySchema = z
+  .object({
+    email: z
       .string()
-      .min(8, 'A senha deve ter ao menos 8 caracteres.')
-      .max(72, 'A senha deve ter no máximo 72 caracteres.')
-      .refine((value) => Buffer.byteLength(value, 'utf8') <= 72, 'A senha excede o limite aceito.')
-      .regex(/[A-Z]/, 'A senha deve conter ao menos uma letra maiúscula.')
-      .regex(/\d/, 'A senha deve conter ao menos um número.')
-      .regex(/[^A-Za-z0-9]/, 'A senha deve conter ao menos um símbolo.'),
+      .trim()
+      .email('E-mail inválido.')
+      .max(254, 'O e-mail deve ter no máximo 254 caracteres.')
+      .transform((value) => value.toLowerCase()),
+  })
+  .strict();
+
+export const resetPasswordBodySchema = z
+  .object({
+    token: z.string().regex(/^[A-Za-z0-9_-]{43}$/, 'Link de recuperação inválido.'),
+    password: strongPasswordSchema,
   })
   .strict();
 
