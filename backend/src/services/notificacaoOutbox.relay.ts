@@ -60,3 +60,40 @@ export function createNotificacaoOutboxRelay(deps: {
     },
   };
 }
+
+export function iniciarLoopOutboxRelay(params: {
+  readonly relay: NotificacaoOutboxRelay;
+  readonly intervalMs: number;
+  readonly limitePorCiclo?: number;
+  readonly onErro?: (erroSanitizado: string) => void;
+}): { readonly executarAgora: () => Promise<void>; readonly parar: () => void } {
+  let emExecucao = false;
+  let parado = false;
+
+  const executarAgora = async (): Promise<void> => {
+    if (emExecucao || parado) {
+      return;
+    }
+    emExecucao = true;
+    try {
+      await params.relay.processarPendentes(params.limitePorCiclo ?? 50);
+    } catch (err) {
+      params.onErro?.(sanitizarErroProvedor(err));
+    } finally {
+      emExecucao = false;
+    }
+  };
+
+  const timer = setInterval(() => {
+    void executarAgora();
+  }, Math.max(200, params.intervalMs));
+  timer.unref?.();
+
+  return {
+    executarAgora,
+    parar() {
+      parado = true;
+      clearInterval(timer);
+    },
+  };
+}

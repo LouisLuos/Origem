@@ -409,7 +409,11 @@ export const ModelName = {
   AuditoriaSeguranca: 'AuditoriaSeguranca',
   ReservaGrupo: 'ReservaGrupo',
   Reserva: 'Reserva',
-  LogNotificacao: 'LogNotificacao'
+  LogNotificacao: 'LogNotificacao',
+  Pedido: 'Pedido',
+  Pagamento: 'Pagamento',
+  WebhookPagamento: 'WebhookPagamento',
+  OutboxEventoNotificacao: 'OutboxEventoNotificacao'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -425,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "usuario" | "artesao" | "atelie" | "atelieCurador" | "endereco" | "peca" | "fotoPeca" | "usuarioPapel" | "authLoginAttempt" | "auditoriaSeguranca" | "reservaGrupo" | "reserva" | "logNotificacao"
+    modelProps: "usuario" | "artesao" | "atelie" | "atelieCurador" | "endereco" | "peca" | "fotoPeca" | "usuarioPapel" | "authLoginAttempt" | "auditoriaSeguranca" | "reservaGrupo" | "reserva" | "logNotificacao" | "pedido" | "pagamento" | "webhookPagamento" | "outboxEventoNotificacao"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1391,6 +1395,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Pedido: {
+      payload: Prisma.$PedidoPayload<ExtArgs>
+      fields: Prisma.PedidoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PedidoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PedidoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>
+        }
+        findFirst: {
+          args: Prisma.PedidoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PedidoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>
+        }
+        findMany: {
+          args: Prisma.PedidoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>[]
+        }
+        create: {
+          args: Prisma.PedidoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>
+        }
+        createMany: {
+          args: Prisma.PedidoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PedidoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>[]
+        }
+        delete: {
+          args: Prisma.PedidoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>
+        }
+        update: {
+          args: Prisma.PedidoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>
+        }
+        deleteMany: {
+          args: Prisma.PedidoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PedidoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PedidoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>[]
+        }
+        upsert: {
+          args: Prisma.PedidoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PedidoPayload>
+        }
+        aggregate: {
+          args: Prisma.PedidoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePedido>
+        }
+        groupBy: {
+          args: Prisma.PedidoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PedidoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PedidoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PedidoCountAggregateOutputType> | number
+        }
+      }
+    }
+    Pagamento: {
+      payload: Prisma.$PagamentoPayload<ExtArgs>
+      fields: Prisma.PagamentoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PagamentoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PagamentoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>
+        }
+        findFirst: {
+          args: Prisma.PagamentoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PagamentoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>
+        }
+        findMany: {
+          args: Prisma.PagamentoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>[]
+        }
+        create: {
+          args: Prisma.PagamentoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>
+        }
+        createMany: {
+          args: Prisma.PagamentoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PagamentoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>[]
+        }
+        delete: {
+          args: Prisma.PagamentoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>
+        }
+        update: {
+          args: Prisma.PagamentoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>
+        }
+        deleteMany: {
+          args: Prisma.PagamentoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PagamentoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PagamentoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>[]
+        }
+        upsert: {
+          args: Prisma.PagamentoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PagamentoPayload>
+        }
+        aggregate: {
+          args: Prisma.PagamentoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePagamento>
+        }
+        groupBy: {
+          args: Prisma.PagamentoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PagamentoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PagamentoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PagamentoCountAggregateOutputType> | number
+        }
+      }
+    }
+    WebhookPagamento: {
+      payload: Prisma.$WebhookPagamentoPayload<ExtArgs>
+      fields: Prisma.WebhookPagamentoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WebhookPagamentoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WebhookPagamentoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>
+        }
+        findFirst: {
+          args: Prisma.WebhookPagamentoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WebhookPagamentoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>
+        }
+        findMany: {
+          args: Prisma.WebhookPagamentoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>[]
+        }
+        create: {
+          args: Prisma.WebhookPagamentoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>
+        }
+        createMany: {
+          args: Prisma.WebhookPagamentoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WebhookPagamentoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>[]
+        }
+        delete: {
+          args: Prisma.WebhookPagamentoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>
+        }
+        update: {
+          args: Prisma.WebhookPagamentoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>
+        }
+        deleteMany: {
+          args: Prisma.WebhookPagamentoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WebhookPagamentoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WebhookPagamentoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>[]
+        }
+        upsert: {
+          args: Prisma.WebhookPagamentoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WebhookPagamentoPayload>
+        }
+        aggregate: {
+          args: Prisma.WebhookPagamentoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWebhookPagamento>
+        }
+        groupBy: {
+          args: Prisma.WebhookPagamentoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookPagamentoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WebhookPagamentoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WebhookPagamentoCountAggregateOutputType> | number
+        }
+      }
+    }
+    OutboxEventoNotificacao: {
+      payload: Prisma.$OutboxEventoNotificacaoPayload<ExtArgs>
+      fields: Prisma.OutboxEventoNotificacaoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OutboxEventoNotificacaoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OutboxEventoNotificacaoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>
+        }
+        findFirst: {
+          args: Prisma.OutboxEventoNotificacaoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OutboxEventoNotificacaoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>
+        }
+        findMany: {
+          args: Prisma.OutboxEventoNotificacaoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>[]
+        }
+        create: {
+          args: Prisma.OutboxEventoNotificacaoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>
+        }
+        createMany: {
+          args: Prisma.OutboxEventoNotificacaoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OutboxEventoNotificacaoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>[]
+        }
+        delete: {
+          args: Prisma.OutboxEventoNotificacaoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>
+        }
+        update: {
+          args: Prisma.OutboxEventoNotificacaoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>
+        }
+        deleteMany: {
+          args: Prisma.OutboxEventoNotificacaoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OutboxEventoNotificacaoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OutboxEventoNotificacaoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>[]
+        }
+        upsert: {
+          args: Prisma.OutboxEventoNotificacaoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OutboxEventoNotificacaoPayload>
+        }
+        aggregate: {
+          args: Prisma.OutboxEventoNotificacaoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOutboxEventoNotificacao>
+        }
+        groupBy: {
+          args: Prisma.OutboxEventoNotificacaoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutboxEventoNotificacaoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OutboxEventoNotificacaoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OutboxEventoNotificacaoCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1628,12 +1928,121 @@ export const LogNotificacaoScalarFieldEnum = {
 export type LogNotificacaoScalarFieldEnum = (typeof LogNotificacaoScalarFieldEnum)[keyof typeof LogNotificacaoScalarFieldEnum]
 
 
+export const PedidoScalarFieldEnum = {
+  id: 'id',
+  codigoPedido: 'codigoPedido',
+  usuarioId: 'usuarioId',
+  reservaGrupoId: 'reservaGrupoId',
+  enderecoEntregaId: 'enderecoEntregaId',
+  enderecoEntregaSnapshot: 'enderecoEntregaSnapshot',
+  fretesPorOrigem: 'fretesPorOrigem',
+  itensSnapshot: 'itensSnapshot',
+  valorTotalPecas: 'valorTotalPecas',
+  valorTotalFrete: 'valorTotalFrete',
+  valorTotalPedido: 'valorTotalPedido',
+  status: 'status',
+  metodoPagamento: 'metodoPagamento',
+  idempotencyKey: 'idempotencyKey',
+  payloadHash: 'payloadHash',
+  subpedidosGerados: 'subpedidosGerados',
+  subpedidosGeradosEm: 'subpedidosGeradosEm',
+  pagoEm: 'pagoEm',
+  canceladoEm: 'canceladoEm',
+  reconciliacaoMotivo: 'reconciliacaoMotivo',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type PedidoScalarFieldEnum = (typeof PedidoScalarFieldEnum)[keyof typeof PedidoScalarFieldEnum]
+
+
+export const PagamentoScalarFieldEnum = {
+  id: 'id',
+  pedidoId: 'pedidoId',
+  gateway: 'gateway',
+  ambiente: 'ambiente',
+  metodo: 'metodo',
+  status: 'status',
+  valor: 'valor',
+  idempotencyKey: 'idempotencyKey',
+  externalPaymentId: 'externalPaymentId',
+  gatewayStatusRaw: 'gatewayStatusRaw',
+  gatewayStatusDetail: 'gatewayStatusDetail',
+  expiraEm: 'expiraEm',
+  gatewayExpiraEm: 'gatewayExpiraEm',
+  pixCopiaECola: 'pixCopiaECola',
+  pixQrCodeBase64: 'pixQrCodeBase64',
+  pixTicketUrl: 'pixTicketUrl',
+  cartaoBandeira: 'cartaoBandeira',
+  cartaoUltimosDigitos: 'cartaoUltimosDigitos',
+  parcelas: 'parcelas',
+  erroSanitizado: 'erroSanitizado',
+  criadoEm: 'criadoEm',
+  aprovadoEm: 'aprovadoEm',
+  recusadoEm: 'recusadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type PagamentoScalarFieldEnum = (typeof PagamentoScalarFieldEnum)[keyof typeof PagamentoScalarFieldEnum]
+
+
+export const WebhookPagamentoScalarFieldEnum = {
+  id: 'id',
+  gateway: 'gateway',
+  eventoExternoId: 'eventoExternoId',
+  tipoEvento: 'tipoEvento',
+  externalPaymentId: 'externalPaymentId',
+  pagamentoId: 'pagamentoId',
+  assinaturaValida: 'assinaturaValida',
+  statusProcessamento: 'statusProcessamento',
+  payloadHash: 'payloadHash',
+  resumoAuditoria: 'resumoAuditoria',
+  erroSanitizado: 'erroSanitizado',
+  recebidoEm: 'recebidoEm',
+  processadoEm: 'processadoEm'
+} as const
+
+export type WebhookPagamentoScalarFieldEnum = (typeof WebhookPagamentoScalarFieldEnum)[keyof typeof WebhookPagamentoScalarFieldEnum]
+
+
+export const OutboxEventoNotificacaoScalarFieldEnum = {
+  id: 'id',
+  tipoEvento: 'tipoEvento',
+  aggregateId: 'aggregateId',
+  idempotencyKey: 'idempotencyKey',
+  payload: 'payload',
+  status: 'status',
+  tentativasPublicacao: 'tentativasPublicacao',
+  erroSanitizado: 'erroSanitizado',
+  criadoEm: 'criadoEm',
+  publicadoEm: 'publicadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type OutboxEventoNotificacaoScalarFieldEnum = (typeof OutboxEventoNotificacaoScalarFieldEnum)[keyof typeof OutboxEventoNotificacaoScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1650,6 +2059,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -1788,6 +2206,90 @@ export type EnumStatusNotificacaoFieldRefInput<$PrismaModel> = FieldRefInputType
  * Reference to a field of type 'StatusNotificacao[]'
  */
 export type ListEnumStatusNotificacaoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusNotificacao[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusPedido'
+ */
+export type EnumStatusPedidoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusPedido'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusPedido[]'
+ */
+export type ListEnumStatusPedidoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusPedido[]'>
+    
+
+
+/**
+ * Reference to a field of type 'MetodoPagamento'
+ */
+export type EnumMetodoPagamentoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MetodoPagamento'>
+    
+
+
+/**
+ * Reference to a field of type 'MetodoPagamento[]'
+ */
+export type ListEnumMetodoPagamentoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MetodoPagamento[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusPagamento'
+ */
+export type EnumStatusPagamentoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusPagamento'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusPagamento[]'
+ */
+export type ListEnumStatusPagamentoFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusPagamento[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusProcessamentoWebhook'
+ */
+export type EnumStatusProcessamentoWebhookFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusProcessamentoWebhook'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusProcessamentoWebhook[]'
+ */
+export type ListEnumStatusProcessamentoWebhookFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusProcessamentoWebhook[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusEventoOutbox'
+ */
+export type EnumStatusEventoOutboxFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusEventoOutbox'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusEventoOutbox[]'
+ */
+export type ListEnumStatusEventoOutboxFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusEventoOutbox[]'>
     
 
 
@@ -1968,6 +2470,10 @@ export type GlobalOmitConfig = {
   reservaGrupo?: Prisma.ReservaGrupoOmit
   reserva?: Prisma.ReservaOmit
   logNotificacao?: Prisma.LogNotificacaoOmit
+  pedido?: Prisma.PedidoOmit
+  pagamento?: Prisma.PagamentoOmit
+  webhookPagamento?: Prisma.WebhookPagamentoOmit
+  outboxEventoNotificacao?: Prisma.OutboxEventoNotificacaoOmit
 }
 
 /* Types for Logging */

@@ -12,7 +12,13 @@ import { iniciarAgendadorSlaPostagem } from './jobs/checkPostageSla.job.js';
 import { createNotificationProducer } from './queues/notification.queue.js';
 import { createNotificationWorker } from './queues/notification.worker.js';
 import { prismaNotificacaoLogRepository } from './repositories/prismaNotificacaoLog.repository.js';
+import { prismaNotificacaoOutboxRepository } from './repositories/prismaNotificacaoOutbox.repository.js';
 import { unconfiguredSubpedidoSlaRepository } from './repositories/contracts/slaPostagem.contracts.js';
+import { createNotificacaoEventosService } from './services/notificacaoEventos.service.js';
+import {
+  createNotificacaoOutboxRelay,
+  iniciarLoopOutboxRelay,
+} from './services/notificacaoOutbox.relay.js';
 
 const validacaoEmail = validarConfiguracaoProvedorEmail();
 const validacaoWhatsapp = validarConfiguracaoProvedorWhatsapp();
@@ -34,6 +40,32 @@ const agendadorSla = iniciarAgendadorSlaPostagem({
   subpedidoRepository: unconfiguredSubpedidoSlaRepository,
   producer,
 });
+
+// Relay periódico do Outbox Transacional (HU-10 -> HU-17): recupera eventos persistidos no PostgreSQL
+// mesmo se o Redis tiver oscilado no instante do webhook de pagamento aprovado.
+const eventosService = createNotificacaoEventosService({
+  producer,
+  logRepository: prismaNotificacaoLogRepository,
+});
+const outboxRelay = createNotificacaoOutboxRelay({
+  outboxRepository: prismaNotificacaoOutboxRepository,
+  eventosService,
+});
+const loopOutbox = iniciarLoopOutboxRelay({
+  relay: outboxRelay,
+  intervalMs: env.OUTBOX_RELAY_INTERVAL_MS,
+  onErro: (erroSanitizado) => {
+    console.warn(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'WARN',
+        evento: 'OUTBOX_RELAY_CYCLE_ERROR',
+        erro: erroSanitizado,
+      }),
+    );
+  },
+});
+void loopOutbox.executarAgora();
 
 console.info(
   JSON.stringify({
@@ -73,6 +105,7 @@ async function handleShutdown(signal: string): Promise<void> {
   );
 
   agendadorSla.parar();
+  loopOutbox.parar();
   await Promise.allSettled([workerHandle.close(), producer.fechar(), prisma.$disconnect()]);
   process.exit(0);
 }

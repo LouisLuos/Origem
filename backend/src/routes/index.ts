@@ -8,6 +8,8 @@ import { PECAS_ROUTE_PATH, pecaRoutes } from './peca.routes.js';
 import { atelieCadastroRoutes } from './atelieCadastro.routes.js';
 import { estoqueRoutes } from './estoque.routes.js';
 import { notificacaoRoutes } from './notificacao.routes.js';
+import { pagamentoRoutes } from './pagamento.routes.js';
+import { pedidoRoutes } from './pedido.routes.js';
 
 export const routes = Router();
 
@@ -37,3 +39,9 @@ routes.use('/atelies', atelieRoutes);
 
 // Consulta auditada das próprias notificações transacionais do usuário autenticado (HU-17).
 routes.use('/notificacoes', notificacaoRoutes);
+
+// Checkout unificado, cotação multi-origem e acompanhamento de pedidos (HU-10).
+routes.use('/pedidos', pedidoRoutes);
+
+// Recebimento de webhooks financeiros com deduplicação e validação HMAC/Basic (HU-10).
+routes.use('/pagamentos', pagamentoRoutes);

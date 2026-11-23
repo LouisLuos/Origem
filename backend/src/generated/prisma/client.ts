@@ -110,3 +110,27 @@ export type Reserva = Prisma.ReservaModel
  * Não armazena segredos, tokens nem conteúdo sensível; `destinatario` deve ser gravado mascarado.
  */
 export type LogNotificacao = Prisma.LogNotificacaoModel
+/**
+ * Model Pedido
+ * Pedido consolidado multi-origem (HU-10), vinculado ao grupo de reservas da HU-06.
+ * Preserva snapshots imutáveis de itens, fretes por ateliê e endereço de entrega sem criar
+ * tabelas de subpedidos (que pertencem à HU-12).
+ */
+export type Pedido = Prisma.PedidoModel
+/**
+ * Model Pagamento
+ * Tentativa de captura financeira vinculada a um pedido consolidado (HU-10).
+ * Nunca armazena PAN completo, CVV ou credenciais do gateway.
+ */
+export type Pagamento = Prisma.PagamentoModel
+/**
+ * Model WebhookPagamento
+ * Deduplicação persistente e auditoria mínima de webhooks financeiros (HU-10 / TC09).
+ */
+export type WebhookPagamento = Prisma.WebhookPagamentoModel
+/**
+ * Model OutboxEventoNotificacao
+ * Outbox transacional para publicação confiável de eventos de domínio (ex.: PagamentoAprovado)
+ * na mesma transação ACID da aprovação financeira, consumido pelo relay da HU-17.
+ */
+export type OutboxEventoNotificacao = Prisma.OutboxEventoNotificacaoModel

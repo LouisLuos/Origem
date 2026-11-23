@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type Request } from 'express';
 import cors from 'cors';
 import { env } from './config/env.js';
 import { requestLogger } from './middlewares/requestLogger.js';
@@ -34,7 +34,13 @@ app.use(
 
 // Corpo maior (fotos em base64) é aceito apenas na criação de peças; demais rotas mantêm o limite padrão.
 app.use(`/api/v1${PECAS_ROUTE_PATH}`, pecaJsonBodyParser);
-app.use(express.json());
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      (req as Request).rawBody = Buffer.from(buf);
+    },
+  }),
+);
 app.use(requestLogger);
 
 // Fotos de peças no armazenamento local são somente leitura e não permitem listagem.

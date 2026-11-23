@@ -132,7 +132,7 @@ export function Cart() {
                   {/* Detalhamento dos fretes por ateliê */}
                   <div className="border-t border-border pt-2 flex flex-col gap-1.5 text-xs">
                     <div className="flex items-center justify-between font-medium text-ink">
-                      <span>Frete Total ({atelierGroups.length} {atelierGroups.length === 1 ? 'ateliê' : 'ateliês'})</span>
+                      <span>Frete ({atelierGroups.length} {atelierGroups.length === 1 ? 'ateliê' : 'ateliês'})</span>
                       <span className={totalShipping === 0 ? 'text-oliva-600' : 'text-ink'}>
                         {totalShipping === 0 ? 'Grátis' : currency.format(totalShipping)}
                       </span>
@@ -150,6 +150,10 @@ export function Cart() {
                     )}
                   </div>
                 </div>
+
+                <p className="border-t border-border pt-3 text-xs text-ink-soft">
+                  Cada ateliê expede diretamente do seu polo cultural; o valor exato do frete é cotado pelo backend após informar o CEP de entrega no checkout.
+                </p>
 
                 {missingForFreeShipping > 0 ? (
                   <p className="border-t border-border pt-3 text-xs text-ink-soft">

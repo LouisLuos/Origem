@@ -150,6 +150,45 @@ const envSchema = z
     ),
     WHATSAPP_HTTP_ENDPOINT: optionalUrl('WHATSAPP_HTTP_ENDPOINT deve ser uma URL válida.'),
     WHATSAPP_HTTP_API_KEY: optionalTrimmedString(),
+    // Pagamentos e Webhooks (HU-10)
+    PAYMENT_GATEWAY: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.enum(['disabled', 'pagarme_v5', 'mercado_pago', 'http_sandbox']).optional(),
+    ),
+    PAYMENT_ENVIRONMENT: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.enum(['sandbox', 'production']).default('sandbox'),
+    ),
+    PAYMENT_GATEWAY_TIMEOUT_MS: z.coerce.number().int().min(500).max(60_000).default(10_000),
+    PAGARME_API_BASE_URL: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.string().url('PAGARME_API_BASE_URL deve ser uma URL válida.').default('https://sdx-api.pagar.me/core/v5'),
+    ),
+    PAGARME_SECRET_KEY: optionalTrimmedString(),
+    PAGARME_PUBLIC_KEY: optionalTrimmedString(),
+    PAGARME_WEBHOOK_SECRET: optionalTrimmedString(),
+    PAGARME_WEBHOOK_BASIC_USER: optionalTrimmedString(),
+    PAGARME_WEBHOOK_BASIC_PASS: optionalTrimmedString(),
+    MP_API_BASE_URL: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.string().url('MP_API_BASE_URL deve ser uma URL válida.').default('https://api.mercadopago.com'),
+    ),
+    MP_ACCESS_TOKEN: optionalTrimmedString(),
+    MP_PUBLIC_KEY: optionalTrimmedString(),
+    MP_WEBHOOK_SECRET: optionalTrimmedString(),
+    PAYMENT_HTTP_ENDPOINT: optionalUrl('PAYMENT_HTTP_ENDPOINT deve ser uma URL válida.'),
+    PAYMENT_HTTP_API_KEY: optionalTrimmedString(),
+    PAYMENT_HTTP_WEBHOOK_SECRET: optionalTrimmedString(),
+    // Cotação de frete multi-origem (ADR-001 / HU-10)
+    FRETE_PROVIDER: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.enum(['disabled', 'http_webhook']).optional(),
+    ),
+    FRETE_HTTP_ENDPOINT: optionalUrl('FRETE_HTTP_ENDPOINT deve ser uma URL válida.'),
+    FRETE_HTTP_API_KEY: optionalTrimmedString(),
+    FRETE_TIMEOUT_MS: z.coerce.number().int().min(500).max(30_000).default(5000),
+    // Intervalo de varredura do Relay de Outbox no Worker (HU-10 + HU-17)
+    OUTBOX_RELAY_INTERVAL_MS: z.coerce.number().int().min(200).max(300_000).default(5000),
   })
   .superRefine((data, ctx) => {
     if (data.PIX_ENCRYPTION_KEY !== undefined && !isValidAes256KeyMaterial(data.PIX_ENCRYPTION_KEY)) {
@@ -162,6 +201,14 @@ const envSchema = z
     }
 
     if (data.NODE_ENV === 'production') {
+      if (data.PAYMENT_GATEWAY === 'http_sandbox') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['PAYMENT_GATEWAY'],
+          message: 'PAYMENT_GATEWAY=http_sandbox não é permitido em produção.',
+        });
+      }
+
       if (data.JWT_SECRET === DEV_DEFAULT_JWT_SECRET || data.JWT_SECRET.trim().length < 32) {
         ctx.addIssue({
           code: 'custom',

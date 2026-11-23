@@ -63,7 +63,11 @@ export const ModelName = {
   AuditoriaSeguranca: 'AuditoriaSeguranca',
   ReservaGrupo: 'ReservaGrupo',
   Reserva: 'Reserva',
-  LogNotificacao: 'LogNotificacao'
+  LogNotificacao: 'LogNotificacao',
+  Pedido: 'Pedido',
+  Pagamento: 'Pagamento',
+  WebhookPagamento: 'WebhookPagamento',
+  OutboxEventoNotificacao: 'OutboxEventoNotificacao'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -280,12 +284,121 @@ export const LogNotificacaoScalarFieldEnum = {
 export type LogNotificacaoScalarFieldEnum = (typeof LogNotificacaoScalarFieldEnum)[keyof typeof LogNotificacaoScalarFieldEnum]
 
 
+export const PedidoScalarFieldEnum = {
+  id: 'id',
+  codigoPedido: 'codigoPedido',
+  usuarioId: 'usuarioId',
+  reservaGrupoId: 'reservaGrupoId',
+  enderecoEntregaId: 'enderecoEntregaId',
+  enderecoEntregaSnapshot: 'enderecoEntregaSnapshot',
+  fretesPorOrigem: 'fretesPorOrigem',
+  itensSnapshot: 'itensSnapshot',
+  valorTotalPecas: 'valorTotalPecas',
+  valorTotalFrete: 'valorTotalFrete',
+  valorTotalPedido: 'valorTotalPedido',
+  status: 'status',
+  metodoPagamento: 'metodoPagamento',
+  idempotencyKey: 'idempotencyKey',
+  payloadHash: 'payloadHash',
+  subpedidosGerados: 'subpedidosGerados',
+  subpedidosGeradosEm: 'subpedidosGeradosEm',
+  pagoEm: 'pagoEm',
+  canceladoEm: 'canceladoEm',
+  reconciliacaoMotivo: 'reconciliacaoMotivo',
+  criadoEm: 'criadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type PedidoScalarFieldEnum = (typeof PedidoScalarFieldEnum)[keyof typeof PedidoScalarFieldEnum]
+
+
+export const PagamentoScalarFieldEnum = {
+  id: 'id',
+  pedidoId: 'pedidoId',
+  gateway: 'gateway',
+  ambiente: 'ambiente',
+  metodo: 'metodo',
+  status: 'status',
+  valor: 'valor',
+  idempotencyKey: 'idempotencyKey',
+  externalPaymentId: 'externalPaymentId',
+  gatewayStatusRaw: 'gatewayStatusRaw',
+  gatewayStatusDetail: 'gatewayStatusDetail',
+  expiraEm: 'expiraEm',
+  gatewayExpiraEm: 'gatewayExpiraEm',
+  pixCopiaECola: 'pixCopiaECola',
+  pixQrCodeBase64: 'pixQrCodeBase64',
+  pixTicketUrl: 'pixTicketUrl',
+  cartaoBandeira: 'cartaoBandeira',
+  cartaoUltimosDigitos: 'cartaoUltimosDigitos',
+  parcelas: 'parcelas',
+  erroSanitizado: 'erroSanitizado',
+  criadoEm: 'criadoEm',
+  aprovadoEm: 'aprovadoEm',
+  recusadoEm: 'recusadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type PagamentoScalarFieldEnum = (typeof PagamentoScalarFieldEnum)[keyof typeof PagamentoScalarFieldEnum]
+
+
+export const WebhookPagamentoScalarFieldEnum = {
+  id: 'id',
+  gateway: 'gateway',
+  eventoExternoId: 'eventoExternoId',
+  tipoEvento: 'tipoEvento',
+  externalPaymentId: 'externalPaymentId',
+  pagamentoId: 'pagamentoId',
+  assinaturaValida: 'assinaturaValida',
+  statusProcessamento: 'statusProcessamento',
+  payloadHash: 'payloadHash',
+  resumoAuditoria: 'resumoAuditoria',
+  erroSanitizado: 'erroSanitizado',
+  recebidoEm: 'recebidoEm',
+  processadoEm: 'processadoEm'
+} as const
+
+export type WebhookPagamentoScalarFieldEnum = (typeof WebhookPagamentoScalarFieldEnum)[keyof typeof WebhookPagamentoScalarFieldEnum]
+
+
+export const OutboxEventoNotificacaoScalarFieldEnum = {
+  id: 'id',
+  tipoEvento: 'tipoEvento',
+  aggregateId: 'aggregateId',
+  idempotencyKey: 'idempotencyKey',
+  payload: 'payload',
+  status: 'status',
+  tentativasPublicacao: 'tentativasPublicacao',
+  erroSanitizado: 'erroSanitizado',
+  criadoEm: 'criadoEm',
+  publicadoEm: 'publicadoEm',
+  atualizadoEm: 'atualizadoEm'
+} as const
+
+export type OutboxEventoNotificacaoScalarFieldEnum = (typeof OutboxEventoNotificacaoScalarFieldEnum)[keyof typeof OutboxEventoNotificacaoScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -302,4 +415,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
