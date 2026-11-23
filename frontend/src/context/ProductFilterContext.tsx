@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Product } from '@/design-system/components/ProductCard'
-import { matchesSearch } from '@/utils/text'
+import { matchesSearch, matchesTechniqueOption, normalizeText } from '@/utils/text'
 
 export interface PriceRangeOption {
   id: string
@@ -69,9 +69,16 @@ export function ProductFilterProvider({ children }: { children: ReactNode }) {
       },
       hasActiveFilters: query.trim().length > 0 || techniques.length > 0 || hubs.length > 0 || priceRanges.length > 0,
       matchesFilters: (product) =>
-        matchesSearch(query, [product.title, product.artisan, product.hub, product.technique]) &&
-        (techniques.length === 0 || techniques.includes(product.technique)) &&
-        (hubs.length === 0 || hubs.includes(product.hub)) &&
+        matchesSearch(query, [
+          product.title,
+          product.description,
+          product.artisan,
+          product.hub,
+          product.technique,
+        ]) &&
+        matchesTechniqueOption(product.technique, techniques) &&
+        (hubs.length === 0 ||
+          hubs.some((selectedHub) => normalizeText(selectedHub) === normalizeText(product.hub))) &&
         (priceRanges.length === 0 ||
           priceRangeOptions.some((range) => priceRanges.includes(range.id) && range.test(product.price))),
     }),

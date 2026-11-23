@@ -6,6 +6,7 @@ import { Container, ProductCard } from '@/design-system'
 import { useCatalog } from '@/context/CatalogContext'
 import { ErrorBlock, LoadingBlock } from './AsyncState'
 import { priceRangeOptions, useProductFilter } from '@/context/ProductFilterContext'
+import { scoreSearchRelevance } from '@/utils/text'
 import { useCart } from '@/context/CartContext'
 import { useFavorites } from '@/context/FavoritesContext'
 import { ProductFilters } from './ProductFilters'
@@ -46,6 +47,9 @@ export function FeaturedShowcase() {
     if (sort === 'preco-asc') return a.price - b.price
     if (sort === 'preco-desc') return b.price - a.price
     if (sort === 'nome-asc') return a.title.localeCompare(b.title, 'pt-BR')
+    if (query.trim().length > 0) {
+      return scoreSearchRelevance(query, b) - scoreSearchRelevance(query, a)
+    }
     return 0
   })
 

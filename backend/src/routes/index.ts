@@ -7,6 +7,7 @@ import { authRoutes } from './auth.routes.js';
 import { PECAS_ROUTE_PATH, pecaRoutes } from './peca.routes.js';
 import { atelieCadastroRoutes } from './atelieCadastro.routes.js';
 import { estoqueRoutes } from './estoque.routes.js';
+import { freteRoutes } from './frete.routes.js';
 import { notificacaoRoutes } from './notificacao.routes.js';
 
 export const routes = Router();
@@ -25,6 +26,9 @@ routes.use('/artesaos', artesaoRoutes);
 
 // Endpoints transacionais de estoque e reservas temporárias (HU-06)
 routes.use('/estoque', estoqueRoutes);
+
+// Simulação logística de frete e prazo por peça e CEP (HU-07)
+routes.use('/frete', freteRoutes);
 
 // Cadastro de peças no escopo do ateliê.
 routes.use(PECAS_ROUTE_PATH, pecaRoutes);

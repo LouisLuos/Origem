@@ -60,3 +60,56 @@ export type PoloCulturalHomologado = (typeof POLOS_CULTURAIS_HOMOLOGADOS)[number
 export function formatTechnique(rawTechnique: string): string {
   return TECHNIQUE_MAP[rawTechnique] ?? rawTechnique;
 }
+
+const CERAMICA_ALIASES = new Set([
+  'ceramica',
+  'ceramica figurativa',
+  'barro',
+  'barro/ceramica',
+  'ceramica/barro',
+]);
+
+function normalizeTaxonomyToken(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+/**
+ * Expande sinônimos culturais da tipologia (ex.: "Barro/Cerâmica" <-> "Cerâmica Figurativa")
+ * para garantir consistência entre os filtros da vitrine (HU-07 Cenário 1), o banco PostgreSQL
+ * e o catálogo legado.
+ */
+export function expandTechniqueAliases(rawTechnique: string): string[] {
+  const trimmed = rawTechnique.trim();
+  const normalized = normalizeTaxonomyToken(trimmed);
+
+  if (CERAMICA_ALIASES.has(normalized)) {
+    return ['Cerâmica Figurativa', 'Barro/Cerâmica', 'Cerâmica', 'Barro', 'ceramica'];
+  }
+
+  const mapped = TECHNIQUE_MAP[normalized];
+  if (mapped && mapped.toLowerCase() !== trimmed.toLowerCase()) {
+    return [trimmed, mapped];
+  }
+
+  return [trimmed];
+}
+
+export function matchesTechniqueTaxonomy(pieceTechnique: string, filterTechnique: string): boolean {
+  const pieceNorm = normalizeTaxonomyToken(pieceTechnique);
+  const filterNorm = normalizeTaxonomyToken(filterTechnique);
+
+  if (pieceNorm === filterNorm) {
+    return true;
+  }
+
+  if (CERAMICA_ALIASES.has(pieceNorm) && CERAMICA_ALIASES.has(filterNorm)) {
+    return true;
+  }
+
+  const aliases = expandTechniqueAliases(filterTechnique).map(normalizeTaxonomyToken);
+  return aliases.includes(pieceNorm);
+}

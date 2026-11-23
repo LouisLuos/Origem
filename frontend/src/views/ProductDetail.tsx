@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import type { ReactNode } from 'react'
+import type { FormEvent, ReactNode } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { ChevronRight, Heart, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react'
-import { Badge, Button, ButtonLink, Container, ProductCard, currency } from '@/design-system'
+import { Badge, Button, ButtonLink, Container, Input, ProductCard, currency } from '@/design-system'
+import { formatCepInput, isValidCep, shippingService, type ShippingQuote } from '@/services/shippingService'
+import { errorMessage } from '@/utils/errors'
 import { getAvatarUrl } from '@/utils/avatar'
 import { getProductGalleryImages } from '@/utils/media'
 import { ResourceGate } from '@/components/AsyncState'
@@ -53,6 +55,32 @@ export function ProductDetail() {
 
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [cepInput, setCepInput] = useState('')
+  const [shippingQuote, setShippingQuote] = useState<ShippingQuote | null>(null)
+  const [shippingError, setShippingError] = useState<string | null>(null)
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false)
+
+  const handleCalculateShipping = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!product) return
+    if (!isValidCep(cepInput)) {
+      setShippingQuote(null)
+      setShippingError('Informe um CEP válido com 8 dígitos (ex.: 50030-000).')
+      return
+    }
+
+    setIsCalculatingShipping(true)
+    setShippingError(null)
+    try {
+      const quote = await shippingService.simulate(product.id, cepInput)
+      setShippingQuote(quote)
+    } catch (reason) {
+      setShippingQuote(null)
+      setShippingError(errorMessage(reason, 'Não foi possível simular o frete no momento.'))
+    } finally {
+      setIsCalculatingShipping(false)
+    }
+  }
 
   if (status !== 'ready' && !product) {
     return <ResourceGate status={status} label="Carregando peça…" error={error} onRetry={reload} spacing="detail" />
@@ -251,6 +279,63 @@ export function ProductDetail() {
                 <Heart className="h-5 w-5" fill={isFavoriteProduct(product.id) ? 'currentColor' : 'none'} aria-hidden="true" />
               </button>
             </div>
+
+            <form
+              onSubmit={handleCalculateShipping}
+              aria-label="Simulação de frete e prazo de entrega"
+              className="flex flex-col gap-3 border border-border bg-surface p-4"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <Input
+                    label="Simular frete e prazo (CEP)"
+                    placeholder="00000-000"
+                    inputMode="numeric"
+                    maxLength={9}
+                    value={cepInput}
+                    onChange={(event) => {
+                      setCepInput(formatCepInput(event.target.value))
+                      if (shippingError) setShippingError(null)
+                    }}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  variant="outline"
+                  size="md"
+                  disabled={isCalculatingShipping}
+                  className="sm:w-auto"
+                >
+                  <Truck className="h-4 w-4" aria-hidden="true" />
+                  {isCalculatingShipping ? 'Calculando…' : 'Calcular Frete'}
+                </Button>
+              </div>
+
+              {shippingError && (
+                <p role="alert" className="text-xs font-medium text-danger">
+                  {shippingError}
+                </p>
+              )}
+
+              {shippingQuote && !shippingError && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-ink"
+                >
+                  <span>
+                    Entrega para CEP <strong>{formatCepInput(shippingQuote.cepDestino)}</strong> — até{' '}
+                    <strong>
+                      {shippingQuote.prazoEstimadoDias}{' '}
+                      {shippingQuote.prazoEstimadoDias === 1 ? 'dia útil' : 'dias úteis'}
+                    </strong>
+                  </span>
+                  <span className="text-sm font-semibold text-terracota-600">
+                    {currency.format(shippingQuote.valorBrl)}
+                  </span>
+                </div>
+              )}
+            </form>
 
             <div className="grid grid-cols-1 gap-3 border-y border-border py-5 sm:grid-cols-3">
               {trustPoints.map(({ icon: Icon, label, description }) => (

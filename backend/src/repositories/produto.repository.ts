@@ -2,7 +2,11 @@ import { formatTechnique } from '../constants/taxonomy.js';
 import { buildArtisanId } from '../utils/string.util.js';
 import { loadCatalogPayload } from './catalogLoader.js';
 import type { RawProdutoIA } from './catalogLoader.js';
-import { prismaFontePecasVitrine, type FontePecasVitrine } from './pecaVitrine.repository.js';
+import {
+  prismaFontePecasVitrine,
+  type FiltroVitrinePecas,
+  type FontePecasVitrine,
+} from './pecaVitrine.repository.js';
 
 export interface ProdutoPublico {
   id: string;
@@ -20,10 +24,17 @@ export interface ProdutoPublico {
   ownerEmail?: string | null;
   imageUrl: string;
   imageAlt: string;
-  /** Presente nas peças publicadas pela . */
+  /** Presente nas peças publicadas pela HU-05. */
   description?: string;
-  /** Fotos da peça, com a capa primeiro (peças publicadas pela ). */
+  /** Fotos da peça, com a capa primeiro (peças publicadas pela HU-05). */
   gallery?: string[];
+  /** Score de relevância textual FTS quando a consulta inclui termo de busca `q` (HU-07). */
+  relevanceScore?: number;
+}
+
+export interface ProdutoRepositoryPort {
+  findAll(filtro?: FiltroVitrinePecas): Promise<ProdutoPublico[]>;
+  findById(id: string): Promise<ProdutoPublico | null>;
 }
 
 /**
@@ -31,12 +42,12 @@ export interface ProdutoPublico {
  * catalogo.json, preservado por compatibilidade (IA recomendadora e IDs `p01`...). Os IDs não
  * colidem: peças do banco usam UUID.
  */
-export class ProdutoRepository {
+export class ProdutoRepository implements ProdutoRepositoryPort {
   constructor(private readonly fontePecas: FontePecasVitrine = prismaFontePecasVitrine) {}
 
-  private async listarPecasPublicadas(): Promise<ProdutoPublico[]> {
+  private async listarPecasPublicadas(filtro?: FiltroVitrinePecas): Promise<ProdutoPublico[]> {
     try {
-      return await this.fontePecas.listarPublicadas();
+      return await this.fontePecas.listarPublicadas(filtro);
     } catch (err) {
       // Indisponibilidade do banco não derruba a vitrine legada; o erro fica registrado.
       console.error('❌ Falha ao carregar peças publicadas para a vitrine:', {
@@ -68,8 +79,8 @@ export class ProdutoRepository {
     return (data.produtos ?? []).map((item) => this.mapRawToPublic(item));
   }
 
-  async findAll(): Promise<ProdutoPublico[]> {
-    const publicadas = await this.listarPecasPublicadas();
+  async findAll(filtro?: FiltroVitrinePecas): Promise<ProdutoPublico[]> {
+    const publicadas = await this.listarPecasPublicadas(filtro);
     return [...publicadas, ...this.findAllLegado()];
   }
 
