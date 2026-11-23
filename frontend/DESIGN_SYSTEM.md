@@ -42,6 +42,7 @@ Todas as variações (50 a 700) de cada cor de marca foram derivadas para garant
 | Componente | Papel |
 | --- | --- |
 | `Button` | CTA primário/secundário/outline/ghost, 3 tamanhos |
+| `ButtonLink` | Navegação com a aparência de `Button` (use no lugar de `Link` envolvendo `Button`) |
 | `Badge` | Rótulo curto (ex.: "Oferta") |
 | `Chip` | Filtro selecionável (técnica, categoria), com `aria-pressed` |
 | `Input` | Campo de texto com `<label>` acessível obrigatório |
@@ -66,7 +67,4 @@ Design System, não redefinem estilos soltos.
 
 ## 5. Próximos passos sugeridos
 
-- Página de listagem/vitrine completa com filtros combinados (RF-CAT-02) usando `Chip` + `ProductCard`.
-- Página de ficha técnica da peça (RF-CAT-03).
-- Fluxo de carrinho/checkout (RF-CHK-01 a 04) reaproveitando `Button`, `Input`, `Badge`.
 - Extrair tokens para um pacote compartilhado se o painel do artesão/admin virar app separado.

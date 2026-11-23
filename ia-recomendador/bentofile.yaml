@@ -1,7 +1,6 @@
 service: "service:Recomendador"
 labels:
   projeto: origem
-  hu: HU-24
 include:
   - "*.py"
   - "dados/*.json"

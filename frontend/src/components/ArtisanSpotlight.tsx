@@ -1,18 +1,17 @@
+'use client'
+
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Search } from 'lucide-react'
-import { Container, SectionHeading } from '@/design-system'
-import { Input } from '@/design-system'
+import { Container, Input, SectionHeading } from '@/design-system'
+import { matchesSearch } from '@/utils/text'
 import { useArtisans } from '@/context/ArtisanContext'
 import { ErrorBlock, LoadingBlock } from './AsyncState'
 
 export function ArtisanSpotlight() {
   const { artisans, status, error, reload } = useArtisans()
   const [query, setQuery] = useState('')
-  const normalizedQuery = query.trim().toLocaleLowerCase('pt-BR')
-  const filteredArtisans = artisans.filter((artisan) =>
-    [artisan.name, artisan.hub, artisan.technique].some((field) => field.toLocaleLowerCase('pt-BR').includes(normalizedQuery)),
-  )
+  const filteredArtisans = artisans.filter((artisan) => matchesSearch(query, [artisan.name, artisan.hub, artisan.technique]))
 
   return (
     <section id="artesaos" className="py-16 sm:py-20">
@@ -46,7 +45,7 @@ export function ArtisanSpotlight() {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredArtisans.slice(0, 3).map((artisan) => (
-            <Link key={artisan.id} to={`/artesaos/${artisan.id}`} className="flex cursor-pointer flex-col">
+            <Link key={artisan.id} href={`/artesaos/${artisan.id}`} className="flex cursor-pointer flex-col">
               <div className="overflow-hidden">
                 <img
                   src={artisan.photoUrl}

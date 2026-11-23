@@ -53,7 +53,7 @@ O frontend está publicado em **https://origem-five.vercel.app** e consome a Fak
 
 > ⏳ A Render pode levar cerca de 1 minuto para responder à primeira requisição (cold start).
 
-### Ambiente local (Node.js 18+)
+### Ambiente local (Node.js 20.9+)
 
 **1. Fake API** — branch `fake-api`, pasta `fake_api/` — sobe em `http://localhost:3000/api/v1`:
 
@@ -73,7 +73,7 @@ npm run dev
 **Usando a API publicada em vez da local:** crie o arquivo `frontend/.env.local` com:
 
 ```
-VITE_API_URL=https://origem-bnhv.onrender.com/api/v1
+NEXT_PUBLIC_API_URL=https://origem-bnhv.onrender.com/api/v1
 ```
 
 Mais detalhes em [`frontend/README.md`](./frontend/README.md) e nos contratos da API em [`docs/05-desenvolvimento-web/contratos-api.md`](./docs/05-desenvolvimento-web/contratos-api.md).

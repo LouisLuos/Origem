@@ -1,4 +1,6 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+'use client'
+
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { readStorage, writeStorage } from '@/services/storage'
 
@@ -19,7 +21,11 @@ const FavoritesContext = createContext<FavoritesContextValue | null>(null)
 
 /** Ids dos produtos favoritados, persistidos no localStorage (funciona também sem login). */
 export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const [favorites, setFavorites] = useState<string[]>(loadFavorites)
+  const [favorites, setFavorites] = useState<string[]>([])
+
+  useEffect(() => {
+    setFavorites(loadFavorites())
+  }, [])
 
   const toggleFavorite = useCallback((productId: string) => {
     setFavorites((prev) => {

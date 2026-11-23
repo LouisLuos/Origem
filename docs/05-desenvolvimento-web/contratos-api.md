@@ -1,7 +1,7 @@
 # Contratos da API (Fake API → backend da Avaliação 2)
 
 A Fake API simula o backend real. O frontend a consome apenas por `frontend/src/services/`, então
-trocar pelo backend da Avaliação 2 exige só ajustar `VITE_API_URL` e, se necessário, os services.
+trocar pelo backend da Avaliação 2 exige só ajustar `NEXT_PUBLIC_API_URL` e, se necessário, os services.
 
 - **Base URL (produção):** `https://origem-bnhv.onrender.com/api/v1`
 - **Base URL (local):** `http://localhost:3000/api/v1`
@@ -104,7 +104,7 @@ Estes recursos ainda não têm endpoint e usam `localStorage` nos services. Deve
 
 | Recurso | Service | Rota prevista |
 |---|---|---|
-| Usuários e autenticação | `authService` | `POST /auth/login`, `POST /auth/cadastro`, `GET /usuarios` |
+| Usuários e autenticação | `authService` | `POST /auth/register`, `POST /auth/login`, `GET /auth/me`, `POST /auth/logout`, `PATCH /auth/profile`, `GET /auth/users` (admin) |
 | Pedidos | `orderService` | `GET/POST /pedidos`, `GET /pedidos/:id` |
 | Carrinho | `cartService` | `GET/PUT /carrinho` |
 | Avaliações | `reviewService` | `GET /avaliacoes` |

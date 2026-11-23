@@ -1,4 +1,4 @@
-"""Testes da lógica da HU-24 (rodam sem subir o servidor)."""
+"""Testes da lógica da  (rodam sem subir o servidor)."""
 
 import json
 from pathlib import Path

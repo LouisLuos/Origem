@@ -1,4 +1,4 @@
-"""Etapa online: serviço BentoML do módulo de recomendação do Origem (HU-24)."""
+"""Etapa online: serviço BentoML do módulo de recomendação do Origem."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ class Recomendador:
 
     @bentoml.api
     def recomendar(self, produto_id: str, limite: int = recomendador.LIMITE_PADRAO) -> dict:
-        """RF HU-24 — peças afins à peça aberta na página de detalhes.
+        """RF  — peças afins à peça aberta na página de detalhes.
 
         Entrada:
           - produto_id: id da peça exibida (ex.: "p01")

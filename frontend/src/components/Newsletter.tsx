@@ -1,14 +1,22 @@
+'use client'
+
+import { useState } from 'react'
+import Image from 'next/image'
 import { Button, Container, Input } from '@/design-system'
 import ctaBackground from '@/assets/cta-background.jpg'
 
 export function Newsletter() {
+  const [submitted, setSubmitted] = useState(false)
+
   return (
     <section className="relative overflow-hidden bg-oliva-600 py-24 text-creme-50">
-      <img
+      <Image
         src={ctaBackground}
         alt=""
         aria-hidden="true"
-        className="absolute inset-0 h-full w-full object-cover"
+        fill
+        sizes="100vw"
+        className="object-cover"
       />
       <div className="absolute inset-0 bg-aubergine/60" aria-hidden="true" />
 
@@ -18,7 +26,10 @@ export function Newsletter() {
           Lançamentos e curadorias direto no seu e-mail.
         </p>
         <form
-          onSubmit={(event) => event.preventDefault()}
+          onSubmit={(event) => {
+            event.preventDefault()
+            setSubmitted(true)
+          }}
           className="flex w-full max-w-md flex-col gap-3 sm:flex-row"
         >
           <div className="flex-1">
@@ -36,6 +47,11 @@ export function Newsletter() {
             Inscrever-se
           </Button>
         </form>
+        {submitted && (
+          <p role="status" className="text-sm text-creme-50">
+            Obrigado! Simulação: nenhum e-mail foi cadastrado de verdade.
+          </p>
+        )}
       </Container>
     </section>
   )

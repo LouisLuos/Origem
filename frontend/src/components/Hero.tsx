@@ -1,13 +1,17 @@
-import { Button } from '@/design-system'
+import Image from 'next/image'
+import { ButtonLink } from '@/design-system'
 import heroBackground from '@/assets/hero-background.jpg'
 
 export function Hero() {
   return (
     <section id="top" className="fixed inset-0 z-0 flex items-center overflow-hidden">
-      <img
+      <Image
         src={heroBackground}
         alt="Cabeças de cerâmica figurativa em argila crua, ainda sem queima, enfileiradas em um ateliê de Pernambuco"
-        className="absolute inset-0 h-full w-full object-cover"
+        fill
+        preload
+        sizes="100vw"
+        className="object-cover"
         style={{ objectPosition: '50% 70%' }}
       />
       <div className="absolute inset-0 bg-aubergine/25" aria-hidden="true" />
@@ -17,14 +21,9 @@ export function Hero() {
           <h1 className="max-w-2xl text-4xl font-semibold leading-[1.05] text-creme-50 sm:text-5xl lg:text-6xl">
             Da mão do artesão, direto pra sua casa.
           </h1>
-          <Button
-            variant="light"
-            size="lg"
-            className="hover:bg-terracota hover:text-white cursor-pointer"
-            onClick={() => document.querySelector('#vitrine')?.scrollIntoView({ behavior: 'smooth' })}
-          >
+          <ButtonLink href="#vitrine" variant="light" size="lg" className="hover:bg-terracota hover:text-white">
             Explorar a vitrine
-          </Button>
+          </ButtonLink>
         </div>
       </div>
     </section>

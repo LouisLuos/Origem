@@ -49,7 +49,7 @@
   --color-danger: #a3352b;
 
   /* --- Tipografia --- */
-  --font-body: "DM Sans", "Segoe UI", sans-serif;
+  --font-body: var(--font-dm-sans), "Segoe UI", sans-serif;
 
   /* --- Sombras suaves, terrosas (não cinza puro) --- */
   --shadow-soft: 0 8px 24px -12px rgb(63 27 24 / 0.25);
@@ -91,6 +91,10 @@
   .animate-badge-pop,
   .animate-bag-bump {
     animation: none;
+  }
+
+  html {
+    scroll-behavior: auto !important;
   }
 }
 
