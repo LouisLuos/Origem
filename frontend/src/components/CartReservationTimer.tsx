@@ -1,11 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AlertCircle, Clock, RotateCcw } from 'lucide-react'
 import { Badge, Button, cn } from '@/design-system'
+import { readStorage, writeStorage } from '@/services/storage'
+
+const STORAGE_KEY = 'origem:cart_reservation_expires_at'
+const DEFAULT_TTL_SECONDS = 900 // 15 minutos normativos (Invariante 1)
 
 export interface CartReservationTimerProps {
-  /** Duração inicial da reserva em segundos (padrão normativo: 15 minutos = 900s). */
+  /** Duração da reserva em segundos (padrão normativo: 15 minutos = 900s). */
   initialSeconds?: number
   /** Disparado quando o tempo de reserva é zerado. */
   onExpire?: () => void
@@ -15,20 +19,38 @@ export interface CartReservationTimerProps {
 }
 
 export function CartReservationTimer({
-  initialSeconds = 900,
+  initialSeconds = DEFAULT_TTL_SECONDS,
   onExpire,
   onReset,
   className,
 }: CartReservationTimerProps) {
   const [secondsLeft, setSecondsLeft] = useState(initialSeconds)
   const [isExpired, setIsExpired] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
 
+  // Lê ou inicializa o timestamp absoluto de expiração no storage para não resetar no F5
   useEffect(() => {
-    setSecondsLeft(initialSeconds)
-    setIsExpired(false)
+    const now = Date.now()
+    const storedExpiresAt = readStorage<number | null>(STORAGE_KEY, null)
+
+    let targetTime: number
+
+    if (!storedExpiresAt || typeof storedExpiresAt !== 'number') {
+      targetTime = now + initialSeconds * 1000
+      writeStorage(STORAGE_KEY, targetTime)
+    } else {
+      targetTime = storedExpiresAt
+    }
+
+    const remaining = Math.max(0, Math.floor((targetTime - now) / 1000))
+    setSecondsLeft(remaining)
+    setIsExpired(remaining <= 0)
+    setHydrated(true)
   }, [initialSeconds])
 
   useEffect(() => {
+    if (!hydrated) return
+
     if (secondsLeft <= 0) {
       if (!isExpired) {
         setIsExpired(true)
@@ -38,31 +60,36 @@ export function CartReservationTimer({
     }
 
     const timer = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer)
-          setIsExpired(true)
-          onExpire?.()
-          return 0
-        }
-        return prev - 1
-      })
+      const now = Date.now()
+      const stored = readStorage<number | null>(STORAGE_KEY, null)
+      if (!stored) return
+
+      const remaining = Math.max(0, Math.floor((stored - now) / 1000))
+      setSecondsLeft(remaining)
+
+      if (remaining <= 0) {
+        setIsExpired(true)
+        onExpire?.()
+        clearInterval(timer)
+      }
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [secondsLeft, isExpired, onExpire])
+  }, [hydrated, secondsLeft, isExpired, onExpire])
+
+  const handleReset = useCallback(() => {
+    const nextExpiresAt = Date.now() + initialSeconds * 1000
+    writeStorage(STORAGE_KEY, nextExpiresAt)
+    setSecondsLeft(initialSeconds)
+    setIsExpired(false)
+    onReset?.()
+  }, [initialSeconds, onReset])
 
   const minutes = Math.floor(secondsLeft / 60)
   const seconds = secondsLeft % 60
   const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 
   const isLowTime = secondsLeft > 0 && secondsLeft <= 120
-
-  function handleReset() {
-    setSecondsLeft(initialSeconds)
-    setIsExpired(false)
-    onReset?.()
-  }
 
   if (isExpired) {
     return (

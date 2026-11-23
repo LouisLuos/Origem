@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { ChevronRight, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import { Button, ButtonLink, Container, currency } from '@/design-system'
@@ -10,6 +10,7 @@ import { CartReservationTimer } from '@/components/CartReservationTimer'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCart } from '@/context/CartContext'
 import { FREE_SHIPPING_THRESHOLD, calculateShipping } from '@/context/OrderContext'
+import { removeStorage } from '@/services/storage'
 
 export function Cart() {
   const { lines: cartLines, removeItem, setQuantity } = useCart()
@@ -20,6 +21,12 @@ export function Cart() {
     (line) =>
       line.product.stock === 0 || line.quantity > (line.product.stock ?? line.quantity),
   )
+
+  useEffect(() => {
+    if (cartLines.length === 0) {
+      removeStorage('origem:cart_reservation_expires_at')
+    }
+  }, [cartLines.length])
 
   // HU-09 (Cenário 1 BDD): Agrupamento visual de carrinho multi-origem por ateliê/polo
   const atelierGroups = useMemo(() => {
