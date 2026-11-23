@@ -31,6 +31,7 @@ import type {
 } from '@/context/OrderContext'
 import { Badge, Button, ButtonLink, Container, Input, cn, currency } from '@/design-system'
 import { addressService } from '@/services/addressService'
+import { addressBookService, formatAddressLine, formatCep, type SavedAddress } from '@/services/addressBookService'
 import { orderService } from '@/services/orderService'
 import {
   classifyPendingCheckoutOrders,
@@ -101,6 +102,41 @@ const requiredFields: (keyof CustomerFormState)[] = [
 ]
 
 type Errors = Partial<Record<keyof CustomerFormState, string>>
+
+const NEW_ADDRESS = 'novo'
+
+type AddressField = 'zip' | 'street' | 'number' | 'complement' | 'neighborhood' | 'city' | 'state'
+
+const emptyAddressFields: Pick<CustomerFormState, AddressField> = {
+  zip: '',
+  street: '',
+  number: '',
+  complement: '',
+  neighborhood: '',
+  city: '',
+  state: '',
+}
+
+const clearedAddressErrors: Errors = {
+  zip: undefined,
+  street: undefined,
+  number: undefined,
+  neighborhood: undefined,
+  city: undefined,
+  state: undefined,
+}
+
+function savedAddressFields(address: SavedAddress): Pick<CustomerFormState, AddressField> {
+  return {
+    zip: formatCep(address.cep),
+    street: address.logradouro,
+    number: address.numero,
+    complement: address.complemento ?? '',
+    neighborhood: address.bairro,
+    city: address.cidade,
+    state: address.uf,
+  }
+}
 
 const onlyDigits = (value: string) => value.replace(/\D/g, '')
 
@@ -221,9 +257,49 @@ export function Checkout() {
     return () => window.clearTimeout(syncId)
   }, [user])
 
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string>(NEW_ADDRESS)
+  const savedZipRef = useRef<string | null>(null)
+
+  const applySavedAddress = (address: SavedAddress) => {
+    savedZipRef.current = address.cep
+    setSelectedAddressId(address.id)
+    setCustomer((prev) => ({ ...prev, ...savedAddressFields(address) }))
+    setErrors((prev) => ({ ...prev, ...clearedAddressErrors }))
+  }
+
+  const chooseNewAddress = () => {
+    savedZipRef.current = null
+    setSelectedAddressId(NEW_ADDRESS)
+    setCustomer((prev) => ({ ...prev, ...emptyAddressFields }))
+  }
+
+  const userId = user?.id
+  useEffect(() => {
+    if (!userId) return
+    let active = true
+    addressBookService
+      .list()
+      .then((addresses) => {
+        if (!active) return
+        setSavedAddresses(addresses)
+        const first = addresses[0]
+        if (!first) return
+        savedZipRef.current = first.cep
+        setSelectedAddressId(first.id)
+        setCustomer((prev) => ({ ...prev, ...savedAddressFields(first) }))
+      })
+      .catch(() => {
+        // Sem livro de endereços, o checkout segue com o formulário manual.
+      })
+    return () => {
+      active = false
+    }
+  }, [userId])
+
   const zipDigits = onlyDigits(customer.zip)
   useEffect(() => {
-    if (zipDigits.length !== 8) {
+    if (zipDigits.length !== 8 || zipDigits === savedZipRef.current) {
       const resetId = window.setTimeout(() => setZipStatus('idle'), 0)
       return () => window.clearTimeout(resetId)
     }
@@ -915,7 +991,49 @@ export function Checkout() {
                 <legend className="pb-2 text-sm font-semibold uppercase tracking-widest text-ink">
                   Endereço de entrega (cotação multi-origem)
                 </legend>
-                <div className="grid gap-4 sm:grid-cols-6">
+                {savedAddresses.length > 0 && (
+                  <div role="radiogroup" aria-label="Endereços salvos" className="grid gap-3 sm:grid-cols-2">
+                    {savedAddresses.map((address) => (
+                      <label
+                        key={address.id}
+                        className={cn(
+                          'flex cursor-pointer items-start gap-3 border bg-surface px-4 py-3 text-sm transition-colors',
+                          selectedAddressId === address.id ? 'border-terracota' : 'border-border hover:border-ink-soft/50',
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="saved-address"
+                          checked={selectedAddressId === address.id}
+                          onChange={() => applySavedAddress(address)}
+                          className="mt-0.5 h-4 w-4 shrink-0 accent-terracota"
+                        />
+                        <span className="flex flex-col gap-0.5">
+                          <span className="font-medium text-ink">{formatAddressLine(address)}</span>
+                          <span className="text-ink-soft">
+                            {address.cidade}/{address.uf} · CEP {formatCep(address.cep)}
+                          </span>
+                        </span>
+                      </label>
+                    ))}
+                    <label
+                      className={cn(
+                        'flex cursor-pointer items-center gap-3 border bg-surface px-4 py-3 text-sm transition-colors',
+                        selectedAddressId === NEW_ADDRESS ? 'border-terracota' : 'border-border hover:border-ink-soft/50',
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="saved-address"
+                        checked={selectedAddressId === NEW_ADDRESS}
+                        onChange={chooseNewAddress}
+                        className="h-4 w-4 shrink-0 accent-terracota"
+                      />
+                      <span className="font-medium text-ink">Usar outro endereço</span>
+                    </label>
+                  </div>
+                )}
+                <div className={cn('grid gap-4 sm:grid-cols-6', selectedAddressId !== NEW_ADDRESS && 'hidden')}>
                   <div className="sm:col-span-2">
                     {field('zip', 'CEP', {
                       inputMode: 'numeric',

@@ -5,6 +5,7 @@ import type { FormEvent } from 'react'
 import { LogOut, Package } from 'lucide-react'
 import Link from 'next/link'
 import { Navigate } from '@/components/Navigate'
+import { AddressBook } from '@/components/AddressBook'
 import { ArtisanOnboardingForm } from '@/components/ArtisanOnboardingForm'
 import { Button, ButtonLink, Container, Input, currency } from '@/design-system'
 import { useAuth } from '@/context/AuthContext'
@@ -153,6 +154,10 @@ export function Account() {
               )}
             </form>
           </aside>
+        </div>
+
+        <div className="pt-10">
+          <AddressBook />
         </div>
 
         <div className="pt-10">
