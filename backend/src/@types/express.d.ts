@@ -7,6 +7,7 @@ declare global {
       correlationId?: string;
       auth?: AuthenticatedIdentity;
       atelierAccess?: ContextoAcessoAtelie;
+      rawBody?: Buffer;
     }
   }
 }

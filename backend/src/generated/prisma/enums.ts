@@ -57,3 +57,56 @@ export const StatusNotificacao = {
 } as const
 
 export type StatusNotificacao = (typeof StatusNotificacao)[keyof typeof StatusNotificacao]
+
+
+export const StatusPedido = {
+  PENDENTE_PAGAMENTO: 'PENDENTE_PAGAMENTO',
+  APROVADO: 'APROVADO',
+  RECUSADO: 'RECUSADO',
+  EXPIRADO: 'EXPIRADO',
+  CANCELADO: 'CANCELADO',
+  RECONCILIACAO_ESTORNO: 'RECONCILIACAO_ESTORNO'
+} as const
+
+export type StatusPedido = (typeof StatusPedido)[keyof typeof StatusPedido]
+
+
+export const MetodoPagamento = {
+  PIX: 'PIX',
+  CARTAO_CREDITO: 'CARTAO_CREDITO'
+} as const
+
+export type MetodoPagamento = (typeof MetodoPagamento)[keyof typeof MetodoPagamento]
+
+
+export const StatusPagamento = {
+  CRIADO: 'CRIADO',
+  PENDENTE: 'PENDENTE',
+  APROVADO: 'APROVADO',
+  RECUSADO: 'RECUSADO',
+  EXPIRADO: 'EXPIRADO',
+  CANCELADO: 'CANCELADO',
+  ESTORNADO: 'ESTORNADO',
+  ERRO_COMUNICACAO: 'ERRO_COMUNICACAO'
+} as const
+
+export type StatusPagamento = (typeof StatusPagamento)[keyof typeof StatusPagamento]
+
+
+export const StatusProcessamentoWebhook = {
+  RECEBIDO: 'RECEBIDO',
+  PROCESSADO: 'PROCESSADO',
+  IGNORADO_DUPLICADO: 'IGNORADO_DUPLICADO',
+  ERRO: 'ERRO'
+} as const
+
+export type StatusProcessamentoWebhook = (typeof StatusProcessamentoWebhook)[keyof typeof StatusProcessamentoWebhook]
+
+
+export const StatusEventoOutbox = {
+  PENDENTE: 'PENDENTE',
+  PUBLICADO: 'PUBLICADO',
+  FALHA: 'FALHA'
+} as const
+
+export type StatusEventoOutbox = (typeof StatusEventoOutbox)[keyof typeof StatusEventoOutbox]

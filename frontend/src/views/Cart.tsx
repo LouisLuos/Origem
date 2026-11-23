@@ -6,19 +6,16 @@ import { Button, ButtonLink, Container, currency } from '@/design-system'
 import { ErrorBlock, LoadingBlock } from '@/components/AsyncState'
 import { useCatalog } from '@/context/CatalogContext'
 import { availableQuantity, useCart } from '@/context/CartContext'
-import { FREE_SHIPPING_THRESHOLD, calculateShipping } from '@/context/OrderContext'
 
 export function Cart() {
   const { lines: cartLines, removeItem, setQuantity } = useCart()
   const { status, error, reload } = useCatalog()
 
   const subtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
-  const shipping = calculateShipping(subtotal)
   const hasUnavailableItem = cartLines.some(
     (line) =>
       line.product.stock === 0 || line.quantity > (line.product.stock ?? line.quantity),
   )
-  const missingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
 
   return (
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
@@ -139,25 +136,19 @@ export function Cart() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Frete</span>
-                  <span className={shipping === 0 ? 'font-medium text-oliva-600' : 'font-medium text-ink'}>
-                    {shipping === 0 ? 'Grátis' : currency.format(shipping)}
+                  <span className="text-xs font-medium text-ink-soft">
+                    Calculado no checkout por origem
                   </span>
                 </div>
               </div>
 
-              {missingForFreeShipping > 0 ? (
-                <p className="border-t border-border pt-3 text-xs text-ink-soft">
-                  Faltam {currency.format(missingForFreeShipping)} para frete grátis.
-                </p>
-              ) : (
-                <p className="border-t border-border pt-3 text-xs text-oliva-600">
-                  Seu pedido tem direito a frete grátis.
-                </p>
-              )}
+              <p className="border-t border-border pt-3 text-xs text-ink-soft">
+                Cada ateliê expede diretamente do seu polo cultural; o valor exato do frete é cotado pelo backend após informar o CEP de entrega.
+              </p>
 
               <div className="flex items-center justify-between border-t border-border pt-3 text-base font-semibold text-ink">
-                <span>Total</span>
-                <span>{currency.format(subtotal + shipping)}</span>
+                <span>Subtotal estimado</span>
+                <span>{currency.format(subtotal)}</span>
               </div>
 
               {hasUnavailableItem ? (

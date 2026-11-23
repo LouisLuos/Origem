@@ -213,6 +213,7 @@ export type UsuarioWhereInput = {
   reservasGrupos?: Prisma.ReservaGrupoListRelationFilter
   reservas?: Prisma.ReservaListRelationFilter
   logsNotificacoes?: Prisma.LogNotificacaoListRelationFilter
+  pedidos?: Prisma.PedidoListRelationFilter
 }
 
 export type UsuarioOrderByWithRelationInput = {
@@ -231,6 +232,7 @@ export type UsuarioOrderByWithRelationInput = {
   reservasGrupos?: Prisma.ReservaGrupoOrderByRelationAggregateInput
   reservas?: Prisma.ReservaOrderByRelationAggregateInput
   logsNotificacoes?: Prisma.LogNotificacaoOrderByRelationAggregateInput
+  pedidos?: Prisma.PedidoOrderByRelationAggregateInput
 }
 
 export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
@@ -252,6 +254,7 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   reservasGrupos?: Prisma.ReservaGrupoListRelationFilter
   reservas?: Prisma.ReservaListRelationFilter
   logsNotificacoes?: Prisma.LogNotificacaoListRelationFilter
+  pedidos?: Prisma.PedidoListRelationFilter
 }, "id" | "email" | "cpfCnpj">
 
 export type UsuarioOrderByWithAggregationInput = {
@@ -298,6 +301,7 @@ export type UsuarioCreateInput = {
   reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateInput = {
@@ -316,6 +320,7 @@ export type UsuarioUncheckedCreateInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUpdateInput = {
@@ -334,6 +339,7 @@ export type UsuarioUpdateInput = {
   reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateInput = {
@@ -352,6 +358,7 @@ export type UsuarioUncheckedUpdateInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateManyInput = {
@@ -540,6 +547,20 @@ export type UsuarioUpdateOneWithoutLogsNotificacoesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutLogsNotificacoesInput, Prisma.UsuarioUpdateWithoutLogsNotificacoesInput>, Prisma.UsuarioUncheckedUpdateWithoutLogsNotificacoesInput>
 }
 
+export type UsuarioCreateNestedOneWithoutPedidosInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutPedidosInput, Prisma.UsuarioUncheckedCreateWithoutPedidosInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutPedidosInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutPedidosNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutPedidosInput, Prisma.UsuarioUncheckedCreateWithoutPedidosInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutPedidosInput
+  upsert?: Prisma.UsuarioUpsertWithoutPedidosInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutPedidosInput, Prisma.UsuarioUpdateWithoutPedidosInput>, Prisma.UsuarioUncheckedUpdateWithoutPedidosInput>
+}
+
 export type UsuarioCreateWithoutArtesaoInput = {
   id?: string
   nome: string
@@ -555,6 +576,7 @@ export type UsuarioCreateWithoutArtesaoInput = {
   reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutArtesaoInput = {
@@ -572,6 +594,7 @@ export type UsuarioUncheckedCreateWithoutArtesaoInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutArtesaoInput = {
@@ -605,6 +628,7 @@ export type UsuarioUpdateWithoutArtesaoInput = {
   reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutArtesaoInput = {
@@ -622,6 +646,7 @@ export type UsuarioUncheckedUpdateWithoutArtesaoInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutCuradoriasInput = {
@@ -639,6 +664,7 @@ export type UsuarioCreateWithoutCuradoriasInput = {
   reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutCuradoriasInput = {
@@ -656,6 +682,7 @@ export type UsuarioUncheckedCreateWithoutCuradoriasInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutCuradoriasInput = {
@@ -689,6 +716,7 @@ export type UsuarioUpdateWithoutCuradoriasInput = {
   reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutCuradoriasInput = {
@@ -706,6 +734,7 @@ export type UsuarioUncheckedUpdateWithoutCuradoriasInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutEnderecosInput = {
@@ -723,6 +752,7 @@ export type UsuarioCreateWithoutEnderecosInput = {
   reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutEnderecosInput = {
@@ -740,6 +770,7 @@ export type UsuarioUncheckedCreateWithoutEnderecosInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutEnderecosInput = {
@@ -773,6 +804,7 @@ export type UsuarioUpdateWithoutEnderecosInput = {
   reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutEnderecosInput = {
@@ -790,6 +822,7 @@ export type UsuarioUncheckedUpdateWithoutEnderecosInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutPapeisInput = {
@@ -807,6 +840,7 @@ export type UsuarioCreateWithoutPapeisInput = {
   reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutPapeisInput = {
@@ -824,6 +858,7 @@ export type UsuarioUncheckedCreateWithoutPapeisInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutPapeisInput = {
@@ -857,6 +892,7 @@ export type UsuarioUpdateWithoutPapeisInput = {
   reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutPapeisInput = {
@@ -874,6 +910,7 @@ export type UsuarioUncheckedUpdateWithoutPapeisInput = {
   reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutReservasGruposInput = {
@@ -891,6 +928,7 @@ export type UsuarioCreateWithoutReservasGruposInput = {
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutReservasGruposInput = {
@@ -908,6 +946,7 @@ export type UsuarioUncheckedCreateWithoutReservasGruposInput = {
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutReservasGruposInput = {
@@ -941,6 +980,7 @@ export type UsuarioUpdateWithoutReservasGruposInput = {
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutReservasGruposInput = {
@@ -958,6 +998,7 @@ export type UsuarioUncheckedUpdateWithoutReservasGruposInput = {
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutReservasInput = {
@@ -975,6 +1016,7 @@ export type UsuarioCreateWithoutReservasInput = {
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
   reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutReservasInput = {
@@ -992,6 +1034,7 @@ export type UsuarioUncheckedCreateWithoutReservasInput = {
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
   reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutReservasInput = {
@@ -1025,6 +1068,7 @@ export type UsuarioUpdateWithoutReservasInput = {
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
   reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutReservasInput = {
@@ -1042,6 +1086,7 @@ export type UsuarioUncheckedUpdateWithoutReservasInput = {
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
   logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutLogsNotificacoesInput = {
@@ -1059,6 +1104,7 @@ export type UsuarioCreateWithoutLogsNotificacoesInput = {
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
   reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutLogsNotificacoesInput = {
@@ -1076,6 +1122,7 @@ export type UsuarioUncheckedCreateWithoutLogsNotificacoesInput = {
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
   reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
   reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutLogsNotificacoesInput = {
@@ -1109,6 +1156,7 @@ export type UsuarioUpdateWithoutLogsNotificacoesInput = {
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
   reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutLogsNotificacoesInput = {
@@ -1126,6 +1174,95 @@ export type UsuarioUncheckedUpdateWithoutLogsNotificacoesInput = {
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
   reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioCreateWithoutPedidosInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
+  logsNotificacoes?: Prisma.LogNotificacaoCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioUncheckedCreateWithoutPedidosInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioCreateOrConnectWithoutPedidosInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutPedidosInput, Prisma.UsuarioUncheckedCreateWithoutPedidosInput>
+}
+
+export type UsuarioUpsertWithoutPedidosInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutPedidosInput, Prisma.UsuarioUncheckedUpdateWithoutPedidosInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutPedidosInput, Prisma.UsuarioUncheckedCreateWithoutPedidosInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutPedidosInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutPedidosInput, Prisma.UsuarioUncheckedUpdateWithoutPedidosInput>
+}
+
+export type UsuarioUpdateWithoutPedidosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutPedidosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
+  logsNotificacoes?: Prisma.LogNotificacaoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 
@@ -1140,6 +1277,7 @@ export type UsuarioCountOutputType = {
   reservasGrupos: number
   reservas: number
   logsNotificacoes: number
+  pedidos: number
 }
 
 export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1149,6 +1287,7 @@ export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   reservasGrupos?: boolean | UsuarioCountOutputTypeCountReservasGruposArgs
   reservas?: boolean | UsuarioCountOutputTypeCountReservasArgs
   logsNotificacoes?: boolean | UsuarioCountOutputTypeCountLogsNotificacoesArgs
+  pedidos?: boolean | UsuarioCountOutputTypeCountPedidosArgs
 }
 
 /**
@@ -1203,6 +1342,13 @@ export type UsuarioCountOutputTypeCountLogsNotificacoesArgs<ExtArgs extends runt
   where?: Prisma.LogNotificacaoWhereInput
 }
 
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountPedidosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PedidoWhereInput
+}
+
 
 export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1220,6 +1366,7 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   reservasGrupos?: boolean | Prisma.Usuario$reservasGruposArgs<ExtArgs>
   reservas?: boolean | Prisma.Usuario$reservasArgs<ExtArgs>
   logsNotificacoes?: boolean | Prisma.Usuario$logsNotificacoesArgs<ExtArgs>
+  pedidos?: boolean | Prisma.Usuario$pedidosArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usuario"]>
 
@@ -1265,6 +1412,7 @@ export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   reservasGrupos?: boolean | Prisma.Usuario$reservasGruposArgs<ExtArgs>
   reservas?: boolean | Prisma.Usuario$reservasArgs<ExtArgs>
   logsNotificacoes?: boolean | Prisma.Usuario$logsNotificacoesArgs<ExtArgs>
+  pedidos?: boolean | Prisma.Usuario$pedidosArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UsuarioIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1280,6 +1428,7 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     reservasGrupos: Prisma.$ReservaGrupoPayload<ExtArgs>[]
     reservas: Prisma.$ReservaPayload<ExtArgs>[]
     logsNotificacoes: Prisma.$LogNotificacaoPayload<ExtArgs>[]
+    pedidos: Prisma.$PedidoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1691,6 +1840,7 @@ export interface Prisma__UsuarioClient<T, Null = never, ExtArgs extends runtime.
   reservasGrupos<T extends Prisma.Usuario$reservasGruposArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$reservasGruposArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservaGrupoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reservas<T extends Prisma.Usuario$reservasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$reservasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   logsNotificacoes<T extends Prisma.Usuario$logsNotificacoesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$logsNotificacoesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LogNotificacaoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pedidos<T extends Prisma.Usuario$pedidosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$pedidosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PedidoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2281,6 +2431,30 @@ export type Usuario$logsNotificacoesArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.LogNotificacaoScalarFieldEnum | Prisma.LogNotificacaoScalarFieldEnum[]
+}
+
+/**
+ * Usuario.pedidos
+ */
+export type Usuario$pedidosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Pedido
+   */
+  select?: Prisma.PedidoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Pedido
+   */
+  omit?: Prisma.PedidoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PedidoInclude<ExtArgs> | null
+  where?: Prisma.PedidoWhereInput
+  orderBy?: Prisma.PedidoOrderByWithRelationInput | Prisma.PedidoOrderByWithRelationInput[]
+  cursor?: Prisma.PedidoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PedidoScalarFieldEnum | Prisma.PedidoScalarFieldEnum[]
 }
 
 /**

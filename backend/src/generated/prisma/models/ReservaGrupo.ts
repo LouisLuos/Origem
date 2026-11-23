@@ -185,6 +185,7 @@ export type ReservaGrupoWhereInput = {
   criadoEm?: Prisma.DateTimeFilter<"ReservaGrupo"> | Date | string
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   itens?: Prisma.ReservaListRelationFilter
+  pedidos?: Prisma.PedidoListRelationFilter
 }
 
 export type ReservaGrupoOrderByWithRelationInput = {
@@ -195,6 +196,7 @@ export type ReservaGrupoOrderByWithRelationInput = {
   criadoEm?: Prisma.SortOrder
   usuario?: Prisma.UsuarioOrderByWithRelationInput
   itens?: Prisma.ReservaOrderByRelationAggregateInput
+  pedidos?: Prisma.PedidoOrderByRelationAggregateInput
 }
 
 export type ReservaGrupoWhereUniqueInput = Prisma.AtLeast<{
@@ -209,6 +211,7 @@ export type ReservaGrupoWhereUniqueInput = Prisma.AtLeast<{
   criadoEm?: Prisma.DateTimeFilter<"ReservaGrupo"> | Date | string
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   itens?: Prisma.ReservaListRelationFilter
+  pedidos?: Prisma.PedidoListRelationFilter
 }, "id" | "usuarioId_idempotencyKey">
 
 export type ReservaGrupoOrderByWithAggregationInput = {
@@ -240,6 +243,7 @@ export type ReservaGrupoCreateInput = {
   criadoEm?: Date | string
   usuario: Prisma.UsuarioCreateNestedOneWithoutReservasGruposInput
   itens?: Prisma.ReservaCreateNestedManyWithoutGrupoInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutReservaGrupoInput
 }
 
 export type ReservaGrupoUncheckedCreateInput = {
@@ -249,6 +253,7 @@ export type ReservaGrupoUncheckedCreateInput = {
   payloadHash: string
   criadoEm?: Date | string
   itens?: Prisma.ReservaUncheckedCreateNestedManyWithoutGrupoInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutReservaGrupoInput
 }
 
 export type ReservaGrupoUpdateInput = {
@@ -258,6 +263,7 @@ export type ReservaGrupoUpdateInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutReservasGruposNestedInput
   itens?: Prisma.ReservaUpdateManyWithoutGrupoNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutReservaGrupoNestedInput
 }
 
 export type ReservaGrupoUncheckedUpdateInput = {
@@ -267,6 +273,7 @@ export type ReservaGrupoUncheckedUpdateInput = {
   payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   itens?: Prisma.ReservaUncheckedUpdateManyWithoutGrupoNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutReservaGrupoNestedInput
 }
 
 export type ReservaGrupoCreateManyInput = {
@@ -392,12 +399,27 @@ export type ReservaGrupoUpdateOneRequiredWithoutItensNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ReservaGrupoUpdateToOneWithWhereWithoutItensInput, Prisma.ReservaGrupoUpdateWithoutItensInput>, Prisma.ReservaGrupoUncheckedUpdateWithoutItensInput>
 }
 
+export type ReservaGrupoCreateNestedOneWithoutPedidosInput = {
+  create?: Prisma.XOR<Prisma.ReservaGrupoCreateWithoutPedidosInput, Prisma.ReservaGrupoUncheckedCreateWithoutPedidosInput>
+  connectOrCreate?: Prisma.ReservaGrupoCreateOrConnectWithoutPedidosInput
+  connect?: Prisma.ReservaGrupoWhereUniqueInput
+}
+
+export type ReservaGrupoUpdateOneRequiredWithoutPedidosNestedInput = {
+  create?: Prisma.XOR<Prisma.ReservaGrupoCreateWithoutPedidosInput, Prisma.ReservaGrupoUncheckedCreateWithoutPedidosInput>
+  connectOrCreate?: Prisma.ReservaGrupoCreateOrConnectWithoutPedidosInput
+  upsert?: Prisma.ReservaGrupoUpsertWithoutPedidosInput
+  connect?: Prisma.ReservaGrupoWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReservaGrupoUpdateToOneWithWhereWithoutPedidosInput, Prisma.ReservaGrupoUpdateWithoutPedidosInput>, Prisma.ReservaGrupoUncheckedUpdateWithoutPedidosInput>
+}
+
 export type ReservaGrupoCreateWithoutUsuarioInput = {
   id?: string
   idempotencyKey: string
   payloadHash: string
   criadoEm?: Date | string
   itens?: Prisma.ReservaCreateNestedManyWithoutGrupoInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutReservaGrupoInput
 }
 
 export type ReservaGrupoUncheckedCreateWithoutUsuarioInput = {
@@ -406,6 +428,7 @@ export type ReservaGrupoUncheckedCreateWithoutUsuarioInput = {
   payloadHash: string
   criadoEm?: Date | string
   itens?: Prisma.ReservaUncheckedCreateNestedManyWithoutGrupoInput
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutReservaGrupoInput
 }
 
 export type ReservaGrupoCreateOrConnectWithoutUsuarioInput = {
@@ -451,6 +474,7 @@ export type ReservaGrupoCreateWithoutItensInput = {
   payloadHash: string
   criadoEm?: Date | string
   usuario: Prisma.UsuarioCreateNestedOneWithoutReservasGruposInput
+  pedidos?: Prisma.PedidoCreateNestedManyWithoutReservaGrupoInput
 }
 
 export type ReservaGrupoUncheckedCreateWithoutItensInput = {
@@ -459,6 +483,7 @@ export type ReservaGrupoUncheckedCreateWithoutItensInput = {
   idempotencyKey: string
   payloadHash: string
   criadoEm?: Date | string
+  pedidos?: Prisma.PedidoUncheckedCreateNestedManyWithoutReservaGrupoInput
 }
 
 export type ReservaGrupoCreateOrConnectWithoutItensInput = {
@@ -483,6 +508,7 @@ export type ReservaGrupoUpdateWithoutItensInput = {
   payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutReservasGruposNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutReservaGrupoNestedInput
 }
 
 export type ReservaGrupoUncheckedUpdateWithoutItensInput = {
@@ -491,6 +517,59 @@ export type ReservaGrupoUncheckedUpdateWithoutItensInput = {
   idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
   payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutReservaGrupoNestedInput
+}
+
+export type ReservaGrupoCreateWithoutPedidosInput = {
+  id?: string
+  idempotencyKey: string
+  payloadHash: string
+  criadoEm?: Date | string
+  usuario: Prisma.UsuarioCreateNestedOneWithoutReservasGruposInput
+  itens?: Prisma.ReservaCreateNestedManyWithoutGrupoInput
+}
+
+export type ReservaGrupoUncheckedCreateWithoutPedidosInput = {
+  id?: string
+  usuarioId: string
+  idempotencyKey: string
+  payloadHash: string
+  criadoEm?: Date | string
+  itens?: Prisma.ReservaUncheckedCreateNestedManyWithoutGrupoInput
+}
+
+export type ReservaGrupoCreateOrConnectWithoutPedidosInput = {
+  where: Prisma.ReservaGrupoWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReservaGrupoCreateWithoutPedidosInput, Prisma.ReservaGrupoUncheckedCreateWithoutPedidosInput>
+}
+
+export type ReservaGrupoUpsertWithoutPedidosInput = {
+  update: Prisma.XOR<Prisma.ReservaGrupoUpdateWithoutPedidosInput, Prisma.ReservaGrupoUncheckedUpdateWithoutPedidosInput>
+  create: Prisma.XOR<Prisma.ReservaGrupoCreateWithoutPedidosInput, Prisma.ReservaGrupoUncheckedCreateWithoutPedidosInput>
+  where?: Prisma.ReservaGrupoWhereInput
+}
+
+export type ReservaGrupoUpdateToOneWithWhereWithoutPedidosInput = {
+  where?: Prisma.ReservaGrupoWhereInput
+  data: Prisma.XOR<Prisma.ReservaGrupoUpdateWithoutPedidosInput, Prisma.ReservaGrupoUncheckedUpdateWithoutPedidosInput>
+}
+
+export type ReservaGrupoUpdateWithoutPedidosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usuario?: Prisma.UsuarioUpdateOneRequiredWithoutReservasGruposNestedInput
+  itens?: Prisma.ReservaUpdateManyWithoutGrupoNestedInput
+}
+
+export type ReservaGrupoUncheckedUpdateWithoutPedidosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  usuarioId?: Prisma.StringFieldUpdateOperationsInput | string
+  idempotencyKey?: Prisma.StringFieldUpdateOperationsInput | string
+  payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  itens?: Prisma.ReservaUncheckedUpdateManyWithoutGrupoNestedInput
 }
 
 export type ReservaGrupoCreateManyUsuarioInput = {
@@ -506,6 +585,7 @@ export type ReservaGrupoUpdateWithoutUsuarioInput = {
   payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   itens?: Prisma.ReservaUpdateManyWithoutGrupoNestedInput
+  pedidos?: Prisma.PedidoUpdateManyWithoutReservaGrupoNestedInput
 }
 
 export type ReservaGrupoUncheckedUpdateWithoutUsuarioInput = {
@@ -514,6 +594,7 @@ export type ReservaGrupoUncheckedUpdateWithoutUsuarioInput = {
   payloadHash?: Prisma.StringFieldUpdateOperationsInput | string
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   itens?: Prisma.ReservaUncheckedUpdateManyWithoutGrupoNestedInput
+  pedidos?: Prisma.PedidoUncheckedUpdateManyWithoutReservaGrupoNestedInput
 }
 
 export type ReservaGrupoUncheckedUpdateManyWithoutUsuarioInput = {
@@ -530,10 +611,12 @@ export type ReservaGrupoUncheckedUpdateManyWithoutUsuarioInput = {
 
 export type ReservaGrupoCountOutputType = {
   itens: number
+  pedidos: number
 }
 
 export type ReservaGrupoCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   itens?: boolean | ReservaGrupoCountOutputTypeCountItensArgs
+  pedidos?: boolean | ReservaGrupoCountOutputTypeCountPedidosArgs
 }
 
 /**
@@ -553,6 +636,13 @@ export type ReservaGrupoCountOutputTypeCountItensArgs<ExtArgs extends runtime.Ty
   where?: Prisma.ReservaWhereInput
 }
 
+/**
+ * ReservaGrupoCountOutputType without action
+ */
+export type ReservaGrupoCountOutputTypeCountPedidosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PedidoWhereInput
+}
+
 
 export type ReservaGrupoSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -562,6 +652,7 @@ export type ReservaGrupoSelect<ExtArgs extends runtime.Types.Extensions.Internal
   criadoEm?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   itens?: boolean | Prisma.ReservaGrupo$itensArgs<ExtArgs>
+  pedidos?: boolean | Prisma.ReservaGrupo$pedidosArgs<ExtArgs>
   _count?: boolean | Prisma.ReservaGrupoCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reservaGrupo"]>
 
@@ -595,6 +686,7 @@ export type ReservaGrupoOmit<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type ReservaGrupoInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   itens?: boolean | Prisma.ReservaGrupo$itensArgs<ExtArgs>
+  pedidos?: boolean | Prisma.ReservaGrupo$pedidosArgs<ExtArgs>
   _count?: boolean | Prisma.ReservaGrupoCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReservaGrupoIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -609,6 +701,7 @@ export type $ReservaGrupoPayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     usuario: Prisma.$UsuarioPayload<ExtArgs>
     itens: Prisma.$ReservaPayload<ExtArgs>[]
+    pedidos: Prisma.$PedidoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1012,6 +1105,7 @@ export interface Prisma__ReservaGrupoClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   usuario<T extends Prisma.UsuarioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UsuarioDefaultArgs<ExtArgs>>): Prisma.Prisma__UsuarioClient<runtime.Types.Result.GetResult<Prisma.$UsuarioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   itens<T extends Prisma.ReservaGrupo$itensArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReservaGrupo$itensArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pedidos<T extends Prisma.ReservaGrupo$pedidosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReservaGrupo$pedidosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PedidoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1468,6 +1562,30 @@ export type ReservaGrupo$itensArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.ReservaScalarFieldEnum | Prisma.ReservaScalarFieldEnum[]
+}
+
+/**
+ * ReservaGrupo.pedidos
+ */
+export type ReservaGrupo$pedidosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Pedido
+   */
+  select?: Prisma.PedidoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Pedido
+   */
+  omit?: Prisma.PedidoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PedidoInclude<ExtArgs> | null
+  where?: Prisma.PedidoWhereInput
+  orderBy?: Prisma.PedidoOrderByWithRelationInput | Prisma.PedidoOrderByWithRelationInput[]
+  cursor?: Prisma.PedidoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PedidoScalarFieldEnum | Prisma.PedidoScalarFieldEnum[]
 }
 
 /**

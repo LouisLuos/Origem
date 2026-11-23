@@ -17,6 +17,53 @@ import { AppError } from '../utils/AppError.js';
 import { isUuid } from '../utils/uuid.util.js';
 
 type PrismaTransactionClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+export type { PrismaTransactionClient };
+
+export interface ItemReservaCheckoutCarregado {
+  readonly reservaId: string;
+  readonly pecaId: string;
+  readonly titulo: string;
+  readonly quantidade: number;
+  readonly precoUnitarioString: string;
+  readonly pesoGramas: number;
+  readonly comprimentoCm: number;
+  readonly larguraCm: number;
+  readonly alturaCm: number;
+  readonly isFragil: boolean;
+  readonly fotoPrincipalUrl: string | null;
+  readonly atelieId: string;
+  readonly atelieNome: string;
+  readonly poloCultural: string;
+  readonly atelieCepOrigem: string | null;
+  readonly titularUsuarioId: string;
+  readonly titularNome: string;
+  readonly titularEmail: string;
+  readonly titularWhatsapp: string;
+}
+
+export interface GrupoReservaCheckoutCarregado {
+  readonly grupoId: string;
+  readonly usuarioId: string;
+  readonly expiraEm: Date;
+  readonly comprador: {
+    readonly usuarioId: string;
+    readonly nome: string;
+    readonly email: string;
+    readonly cpfCnpj: string;
+    readonly telefoneWhatsapp: string;
+  };
+  readonly itens: readonly ItemReservaCheckoutCarregado[];
+}
+
+export type ConfirmacaoGrupoTransacaoDesfecho =
+  | { readonly tipo: 'NAO_ENCONTRADA' }
+  | { readonly tipo: 'PROIBIDA' }
+  | { readonly tipo: 'EXPIRADA_OU_CANCELADA' }
+  | { readonly tipo: 'CONFIRMADA'; readonly resultado: ConfirmacaoReservaResultado };
+
+export type CarregamentoGrupoCheckoutDesfecho =
+  | { readonly tipo: 'EXPIRADA_OU_CANCELADA' }
+  | { readonly tipo: 'PRONTA'; readonly grupo: GrupoReservaCheckoutCarregado };
 
 interface PecaLockedRow {
   readonly id: string;
@@ -176,6 +223,359 @@ async function expirarPecasTravadas(
     unidadesDevolvidas,
     pecasAtualizadas: idsCreditados.length,
   };
+}
+
+export async function cancelarGrupoReservaNaTransacao(
+  tx: PrismaTransactionClient,
+  grupoId: string,
+  usuarioId: string,
+  agora: Date = new Date(),
+): Promise<CancelamentoReservaResultado> {
+  if (!isUuid(grupoId) || !isUuid(usuarioId)) {
+    throw new AppError(
+      'Identificador de reserva inválido.',
+      422,
+      RESERVA_ERROR_CODES.RESERVA_DADOS_INVALIDOS,
+    );
+  }
+
+  const grupo = await tx.reservaGrupo.findUnique({
+    where: { id: grupoId },
+    include: { itens: { orderBy: { pecaId: 'asc' } } },
+  });
+
+  if (!grupo) {
+    throw new AppError('Grupo de reservas não encontrado.', 404);
+  }
+
+  if (grupo.usuarioId !== usuarioId) {
+    throw new AppError('Você não tem permissão para cancelar esta reserva.', 403);
+  }
+
+  const pecaIdsOrdenados = ordenarPecaIds(grupo.itens.map((item) => item.pecaId));
+  await lockPecasOrdenadas(tx, pecaIdsOrdenados);
+
+  const atualizados = await tx.$queryRaw<ExpiredRow[]>`
+    UPDATE "reservas"
+    SET
+      "status" = 'CANCELADA'::"StatusReserva",
+      "finalizado_em" = ${agora}::timestamp(3),
+      "estoque_devolvido_em" = ${agora}::timestamp(3),
+      "atualizado_em" = ${agora}::timestamp(3)
+    WHERE "grupo_id" = ${grupoId}::uuid
+      AND "usuario_id" = ${usuarioId}::uuid
+      AND "status" = 'ATIVA'::"StatusReserva"
+    RETURNING "peca_id", "quantidade"
+  `;
+
+  let unidadesDevolvidas = 0;
+  if (atualizados.length > 0) {
+    const creditoPorPeca = new Map<string, number>();
+    for (const row of atualizados) {
+      unidadesDevolvidas += row.quantidade;
+      creditoPorPeca.set(row.peca_id, (creditoPorPeca.get(row.peca_id) ?? 0) + row.quantidade);
+    }
+
+    for (const pecaId of ordenarPecaIds(Array.from(creditoPorPeca.keys()))) {
+      const incremento = creditoPorPeca.get(pecaId) ?? 0;
+      await tx.$queryRaw`
+        UPDATE "pecas"
+        SET
+          "quantidade_estoque" = "quantidade_estoque" + ${incremento},
+          "status" = CASE
+            WHEN "status" = 'RESERVADA'::"StatusPeca" AND ("quantidade_estoque" + ${incremento}) > 0
+              THEN 'DISPONIVEL'::"StatusPeca"
+            ELSE "status"
+          END,
+          "atualizado_em" = ${agora}::timestamp(3)
+        WHERE "id" = ${pecaId}::uuid
+      `;
+    }
+  }
+
+  const itensFinais = await tx.reserva.findMany({
+    where: { grupoId, usuarioId },
+    orderBy: { pecaId: 'asc' },
+  });
+
+  if (atualizados.length === 0 && itensFinais.some((item) => item.status === 'CONFIRMADA')) {
+    throw new AppError(
+      'A reserva já foi confirmada e não pode ser cancelada por esta rota.',
+      409,
+      RESERVA_ERROR_CODES.RESERVA_TRANSICAO_INVALIDA,
+    );
+  }
+
+  return {
+    grupoId,
+    usuarioId,
+    jaFinalizada: atualizados.length === 0,
+    itensCancelados: atualizados.length,
+    unidadesDevolvidas,
+    itens: itensFinais.map(mapReservaRow),
+  };
+}
+
+export async function confirmarGrupoReservaNaTransacao(
+  tx: PrismaTransactionClient,
+  grupoId: string,
+  usuarioId: string,
+  agora: Date = new Date(),
+): Promise<ConfirmacaoGrupoTransacaoDesfecho> {
+  if (!isUuid(grupoId) || !isUuid(usuarioId)) {
+    throw new AppError(
+      'Identificador de reserva inválido.',
+      422,
+      RESERVA_ERROR_CODES.RESERVA_DADOS_INVALIDOS,
+    );
+  }
+
+  const grupo = await tx.reservaGrupo.findUnique({
+    where: { id: grupoId },
+    include: { itens: { orderBy: { pecaId: 'asc' } } },
+  });
+
+  if (!grupo) {
+    return { tipo: 'NAO_ENCONTRADA' };
+  }
+
+  if (grupo.usuarioId !== usuarioId) {
+    return { tipo: 'PROIBIDA' };
+  }
+
+  const pecaIdsOrdenados = ordenarPecaIds(grupo.itens.map((item) => item.pecaId));
+  const pecasTravadas = await lockPecasOrdenadas(tx, pecaIdsOrdenados);
+
+  // Se alguma reserva do grupo já venceu no relógio, efetiva a expiração e devolve o saldo antes de recusar.
+  await expirarPecasTravadas(tx, pecaIdsOrdenados, agora, pecasTravadas, grupoId);
+
+  const itensAtuais = await tx.reserva.findMany({
+    where: { grupoId, usuarioId },
+    orderBy: { pecaId: 'asc' },
+  });
+
+  if (itensAtuais.some((item) => item.status === 'CANCELADA' || item.status === 'EXPIRADA')) {
+    return { tipo: 'EXPIRADA_OU_CANCELADA' };
+  }
+
+  if (itensAtuais.length > 0 && itensAtuais.every((item) => item.status === 'CONFIRMADA')) {
+    return {
+      tipo: 'CONFIRMADA',
+      resultado: {
+        grupoId,
+        usuarioId,
+        jaConfirmada: true,
+        itensConfirmados: 0,
+        itens: itensAtuais.map(mapReservaRow),
+      },
+    };
+  }
+
+  const confirmadas = await tx.$queryRaw<Array<{ id: string; peca_id: string }>>`
+    UPDATE "reservas"
+    SET
+      "status" = 'CONFIRMADA'::"StatusReserva",
+      "finalizado_em" = ${agora}::timestamp(3),
+      "atualizado_em" = ${agora}::timestamp(3)
+    WHERE "grupo_id" = ${grupoId}::uuid
+      AND "usuario_id" = ${usuarioId}::uuid
+      AND "status" = 'ATIVA'::"StatusReserva"
+      AND "expira_em" > ${agora}::timestamp(3)
+    RETURNING "id", "peca_id"
+  `;
+
+  // A confirmação nunca devolve estoque. Quando não resta saldo nem reserva ativa na peça, marca como VENDIDA.
+  for (const pecaId of pecaIdsOrdenados) {
+    const peca = pecasTravadas.get(pecaId);
+    if (!peca || peca.quantidade_estoque > 0) continue;
+
+    const ativasRestantes = await tx.reserva.count({
+      where: { pecaId, status: 'ATIVA' },
+    });
+    if (ativasRestantes === 0 && peca.status === 'RESERVADA') {
+      await tx.peca.update({
+        where: { id: pecaId },
+        data: { status: 'VENDIDA', atualizadoEm: agora },
+      });
+    }
+  }
+
+  const itensFinais = await tx.reserva.findMany({
+    where: { grupoId, usuarioId },
+    orderBy: { pecaId: 'asc' },
+  });
+
+  return {
+    tipo: 'CONFIRMADA',
+    resultado: {
+      grupoId,
+      usuarioId,
+      jaConfirmada: false,
+      itensConfirmados: confirmadas.length,
+      itens: itensFinais.map(mapReservaRow),
+    },
+  };
+}
+
+/**
+ * Carrega e valida na mesma transação ACID o grupo de reservas ativo da HU-06
+ * com preços unitários reais, cubagem física, ateliês de origem e comprador diretamente do PostgreSQL.
+ */
+export async function carregarGrupoReservaParaCheckoutNaTransacao(
+  tx: PrismaTransactionClient,
+  grupoId: string,
+  usuarioId: string,
+  agora: Date = new Date(),
+): Promise<CarregamentoGrupoCheckoutDesfecho> {
+  if (!isUuid(grupoId) || !isUuid(usuarioId)) {
+    throw new AppError(
+      'Identificador de reserva inválido.',
+      422,
+      RESERVA_ERROR_CODES.RESERVA_DADOS_INVALIDOS,
+    );
+  }
+
+  const grupo = await tx.reservaGrupo.findUnique({
+    where: { id: grupoId },
+    include: {
+      usuario: {
+        select: {
+          id: true,
+          nome: true,
+          email: true,
+          cpfCnpj: true,
+          telefoneWhatsapp: true,
+        },
+      },
+      itens: {
+        orderBy: { pecaId: 'asc' },
+      },
+    },
+  });
+
+  if (!grupo) {
+    throw new AppError('Grupo de reservas não encontrado.', 404);
+  }
+
+  if (grupo.usuarioId !== usuarioId) {
+    throw new AppError('Você não tem permissão para operar esta reserva.', 403);
+  }
+
+  if (grupo.itens.length === 0) {
+    throw new AppError(
+      'A reserva informada não possui itens ativos.',
+      409,
+      RESERVA_ERROR_CODES.RESERVA_TRANSICAO_INVALIDA,
+    );
+  }
+
+  const pecaIdsOrdenados = ordenarPecaIds(grupo.itens.map((item) => item.pecaId));
+  const pecasTravadas = await lockPecasOrdenadas(tx, pecaIdsOrdenados);
+  await expirarPecasTravadas(tx, pecaIdsOrdenados, agora, pecasTravadas, grupoId);
+
+  const itensCompletos = await tx.reserva.findMany({
+    where: { grupoId, usuarioId },
+    orderBy: { pecaId: 'asc' },
+    include: {
+      peca: {
+        include: {
+          fotos: {
+            orderBy: [{ isPrincipal: 'desc' }, { ordem: 'asc' }],
+            take: 1,
+          },
+          atelie: {
+            include: {
+              endereco: true,
+              artesao: {
+                include: {
+                  usuario: {
+                    select: {
+                      id: true,
+                      nome: true,
+                      email: true,
+                      telefoneWhatsapp: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (itensCompletos.length === 0) {
+    throw new AppError('Nenhum item encontrado para a reserva informada.', 404);
+  }
+
+  let menorExpiraEm = itensCompletos[0]!.expiraEm;
+  for (const item of itensCompletos) {
+    if (item.status !== 'ATIVA' || item.expiraEm.getTime() <= agora.getTime()) {
+      return { tipo: 'EXPIRADA_OU_CANCELADA' };
+    }
+    if (item.expiraEm.getTime() < menorExpiraEm.getTime()) {
+      menorExpiraEm = item.expiraEm;
+    }
+  }
+
+  return {
+    tipo: 'PRONTA',
+    grupo: {
+      grupoId: grupo.id,
+      usuarioId: grupo.usuarioId,
+      expiraEm: menorExpiraEm,
+      comprador: {
+        usuarioId: grupo.usuario.id,
+        nome: grupo.usuario.nome,
+        email: grupo.usuario.email,
+        cpfCnpj: grupo.usuario.cpfCnpj,
+        telefoneWhatsapp: grupo.usuario.telefoneWhatsapp,
+      },
+      itens: itensCompletos.map((item) => ({
+        reservaId: item.id,
+        pecaId: item.peca.id,
+        titulo: item.peca.titulo,
+        quantidade: item.quantidade,
+        precoUnitarioString: item.peca.preco.toString(),
+        pesoGramas: item.peca.pesoGramas,
+        comprimentoCm: item.peca.comprimentoCm,
+        larguraCm: item.peca.larguraCm,
+        alturaCm: item.peca.alturaCm,
+        isFragil: item.peca.isFragil,
+        fotoPrincipalUrl: item.peca.fotos[0]?.url ?? null,
+        atelieId: item.peca.atelie.id,
+        atelieNome: item.peca.atelie.nomeComercial,
+        poloCultural: item.peca.atelie.poloCultural,
+        atelieCepOrigem: item.peca.atelie.endereco?.cep ?? null,
+        titularUsuarioId: item.peca.atelie.artesao.usuario.id,
+        titularNome: item.peca.atelie.artesao.usuario.nome,
+        titularEmail: item.peca.atelie.artesao.usuario.email,
+        titularWhatsapp: item.peca.atelie.artesao.usuario.telefoneWhatsapp,
+      })),
+    },
+  };
+}
+
+export async function carregarGrupoReservaParaCheckout(
+  grupoId: string,
+  usuarioId: string,
+  agora?: Date,
+): Promise<GrupoReservaCheckoutCarregado> {
+  const desfecho = await prisma.$transaction(
+    (tx) => carregarGrupoReservaParaCheckoutNaTransacao(tx, grupoId, usuarioId, agora),
+    TX_OPTIONS,
+  );
+
+  if (desfecho.tipo === 'EXPIRADA_OU_CANCELADA') {
+    throw new AppError(
+      'A reserva de estoque expirou ou já foi finalizada. Refaça a reserva antes de pagar.',
+      409,
+      RESERVA_ERROR_CODES.RESERVA_TRANSICAO_INVALIDA,
+    );
+  }
+
+  return desfecho.grupo;
 }
 
 export const prismaReservaEstoqueRepository: ReservaEstoqueRepository = {
@@ -376,89 +776,10 @@ export const prismaReservaEstoqueRepository: ReservaEstoqueRepository = {
     usuarioId: string,
     agoraParam?: Date,
   ): Promise<CancelamentoReservaResultado> {
-    if (!isUuid(grupoId) || !isUuid(usuarioId)) {
-      throw new AppError('Identificador de reserva inválido.', 422, RESERVA_ERROR_CODES.RESERVA_DADOS_INVALIDOS);
-    }
-
-    const agora = agoraParam ?? new Date();
-
-    return prisma.$transaction(async (tx) => {
-      const grupo = await tx.reservaGrupo.findUnique({
-        where: { id: grupoId },
-        include: { itens: { orderBy: { pecaId: 'asc' } } },
-      });
-
-      if (!grupo) {
-        throw new AppError('Grupo de reservas não encontrado.', 404);
-      }
-
-      if (grupo.usuarioId !== usuarioId) {
-        throw new AppError('Você não tem permissão para cancelar esta reserva.', 403);
-      }
-
-      const pecaIdsOrdenados = ordenarPecaIds(grupo.itens.map((item) => item.pecaId));
-      await lockPecasOrdenadas(tx, pecaIdsOrdenados);
-
-      const atualizados = await tx.$queryRaw<ExpiredRow[]>`
-        UPDATE "reservas"
-        SET
-          "status" = 'CANCELADA'::"StatusReserva",
-          "finalizado_em" = ${agora}::timestamp(3),
-          "estoque_devolvido_em" = ${agora}::timestamp(3),
-          "atualizado_em" = ${agora}::timestamp(3)
-        WHERE "grupo_id" = ${grupoId}::uuid
-          AND "usuario_id" = ${usuarioId}::uuid
-          AND "status" = 'ATIVA'::"StatusReserva"
-        RETURNING "peca_id", "quantidade"
-      `;
-
-      let unidadesDevolvidas = 0;
-      if (atualizados.length > 0) {
-        const creditoPorPeca = new Map<string, number>();
-        for (const row of atualizados) {
-          unidadesDevolvidas += row.quantidade;
-          creditoPorPeca.set(row.peca_id, (creditoPorPeca.get(row.peca_id) ?? 0) + row.quantidade);
-        }
-
-        for (const pecaId of ordenarPecaIds(Array.from(creditoPorPeca.keys()))) {
-          const incremento = creditoPorPeca.get(pecaId) ?? 0;
-          await tx.$queryRaw`
-            UPDATE "pecas"
-            SET
-              "quantidade_estoque" = "quantidade_estoque" + ${incremento},
-              "status" = CASE
-                WHEN "status" = 'RESERVADA'::"StatusPeca" AND ("quantidade_estoque" + ${incremento}) > 0
-                  THEN 'DISPONIVEL'::"StatusPeca"
-                ELSE "status"
-              END,
-              "atualizado_em" = ${agora}::timestamp(3)
-            WHERE "id" = ${pecaId}::uuid
-          `;
-        }
-      }
-
-      const itensFinais = await tx.reserva.findMany({
-        where: { grupoId, usuarioId },
-        orderBy: { pecaId: 'asc' },
-      });
-
-      if (atualizados.length === 0 && itensFinais.some((item) => item.status === 'CONFIRMADA')) {
-        throw new AppError(
-          'A reserva já foi confirmada e não pode ser cancelada por esta rota.',
-          409,
-          RESERVA_ERROR_CODES.RESERVA_TRANSICAO_INVALIDA,
-        );
-      }
-
-      return {
-        grupoId,
-        usuarioId,
-        jaFinalizada: atualizados.length === 0,
-        itensCancelados: atualizados.length,
-        unidadesDevolvidas,
-        itens: itensFinais.map(mapReservaRow),
-      };
-    }, TX_OPTIONS);
+    return prisma.$transaction(
+      (tx) => cancelarGrupoReservaNaTransacao(tx, grupoId, usuarioId, agoraParam),
+      TX_OPTIONS,
+    );
   },
 
   async cancelarReservaItem(
@@ -544,99 +865,10 @@ export const prismaReservaEstoqueRepository: ReservaEstoqueRepository = {
     usuarioId: string,
     agoraParam?: Date,
   ): Promise<ConfirmacaoReservaResultado> {
-    if (!isUuid(grupoId) || !isUuid(usuarioId)) {
-      throw new AppError('Identificador de reserva inválido.', 422, RESERVA_ERROR_CODES.RESERVA_DADOS_INVALIDOS);
-    }
-
-    const agora = agoraParam ?? new Date();
-
-    const desfecho = await prisma.$transaction(async (tx) => {
-      const grupo = await tx.reservaGrupo.findUnique({
-        where: { id: grupoId },
-        include: { itens: { orderBy: { pecaId: 'asc' } } },
-      });
-
-      if (!grupo) {
-        return { tipo: 'NAO_ENCONTRADA' as const };
-      }
-
-      if (grupo.usuarioId !== usuarioId) {
-        return { tipo: 'PROIBIDA' as const };
-      }
-
-      const pecaIdsOrdenados = ordenarPecaIds(grupo.itens.map((item) => item.pecaId));
-      const pecasTravadas = await lockPecasOrdenadas(tx, pecaIdsOrdenados);
-
-      // Se alguma reserva do grupo já venceu no relógio, efetiva a expiração e devolve o saldo antes de recusar.
-      await expirarPecasTravadas(tx, pecaIdsOrdenados, agora, pecasTravadas, grupoId);
-
-      const itensAtuais = await tx.reserva.findMany({
-        where: { grupoId, usuarioId },
-        orderBy: { pecaId: 'asc' },
-      });
-
-      if (itensAtuais.some((item) => item.status === 'CANCELADA' || item.status === 'EXPIRADA')) {
-        return { tipo: 'EXPIRADA_OU_CANCELADA' as const };
-      }
-
-      if (itensAtuais.length > 0 && itensAtuais.every((item) => item.status === 'CONFIRMADA')) {
-        return {
-          tipo: 'CONFIRMADA' as const,
-          resultado: {
-            grupoId,
-            usuarioId,
-            jaConfirmada: true,
-            itensConfirmados: 0,
-            itens: itensAtuais.map(mapReservaRow),
-          },
-        };
-      }
-
-      const confirmadas = await tx.$queryRaw<Array<{ id: string; peca_id: string }>>`
-        UPDATE "reservas"
-        SET
-          "status" = 'CONFIRMADA'::"StatusReserva",
-          "finalizado_em" = ${agora}::timestamp(3),
-          "atualizado_em" = ${agora}::timestamp(3)
-        WHERE "grupo_id" = ${grupoId}::uuid
-          AND "usuario_id" = ${usuarioId}::uuid
-          AND "status" = 'ATIVA'::"StatusReserva"
-          AND "expira_em" > ${agora}::timestamp(3)
-        RETURNING "id", "peca_id"
-      `;
-
-      // A confirmação nunca devolve estoque. Quando não resta saldo nem reserva ativa na peça, marca como VENDIDA.
-      for (const pecaId of pecaIdsOrdenados) {
-        const peca = pecasTravadas.get(pecaId);
-        if (!peca || peca.quantidade_estoque > 0) continue;
-
-        const ativasRestantes = await tx.reserva.count({
-          where: { pecaId, status: 'ATIVA' },
-        });
-        if (ativasRestantes === 0 && peca.status === 'RESERVADA') {
-          await tx.peca.update({
-            where: { id: pecaId },
-            data: { status: 'VENDIDA', atualizadoEm: agora },
-          });
-        }
-      }
-
-      const itensFinais = await tx.reserva.findMany({
-        where: { grupoId, usuarioId },
-        orderBy: { pecaId: 'asc' },
-      });
-
-      return {
-        tipo: 'CONFIRMADA' as const,
-        resultado: {
-          grupoId,
-          usuarioId,
-          jaConfirmada: false,
-          itensConfirmados: confirmadas.length,
-          itens: itensFinais.map(mapReservaRow),
-        },
-      };
-    }, TX_OPTIONS);
+    const desfecho = await prisma.$transaction(
+      (tx) => confirmarGrupoReservaNaTransacao(tx, grupoId, usuarioId, agoraParam),
+      TX_OPTIONS,
+    );
 
     if (desfecho.tipo === 'NAO_ENCONTRADA') {
       throw new AppError('Grupo de reservas não encontrado.', 404);

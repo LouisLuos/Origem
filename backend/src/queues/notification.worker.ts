@@ -15,7 +15,7 @@ import type { NotificationJobData } from './notification.queue.js';
 
 export interface NotificationWorkerHandle {
   readonly worker: Worker<NotificationJobData, NotificationJobProcessResult>;
-  close(): Promise<void>;
+  close(force?: boolean, timeoutMs?: number): Promise<void>;
 }
 
 export function createNotificationWorker(opcoes: {
@@ -86,8 +86,29 @@ export function createNotificationWorker(opcoes: {
 
   return {
     worker,
-    async close(): Promise<void> {
-      await worker.close();
+    async close(force = false, timeoutMs = 5000): Promise<void> {
+      const fecharComTimeout = (ms: number, forced: boolean) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        return Promise.race([
+          worker.close(forced).finally(() => {
+            if (timer) clearTimeout(timer);
+          }),
+          new Promise<'TIMEOUT'>((resolve) => {
+            timer = setTimeout(() => resolve('TIMEOUT'), ms);
+            timer.unref?.();
+          }),
+        ]);
+      };
+
+      const status = await fecharComTimeout(timeoutMs, force);
+      if (status === 'TIMEOUT') {
+        await fecharComTimeout(1500, true).catch(() => {});
+        try {
+          await worker.disconnect();
+        } catch {
+          // Ignora desconexão forçada quando o socket Redis já encerrou
+        }
+      }
     },
   };
 }
