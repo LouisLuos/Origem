@@ -28,9 +28,10 @@ model Usuario {
   papeis          UsuarioPapel[]
   artesao         Artesao?
   curadorias      AtelieCurador[]
-  enderecos       Endereco[]
-  reservasGrupos  ReservaGrupo[]
-  reservas        Reserva[]
+  enderecos        Endereco[]
+  reservasGrupos   ReservaGrupo[]
+  reservas         Reserva[]
+  logsNotificacoes LogNotificacao[]
 
   @@map("usuarios")
 }
@@ -70,8 +71,9 @@ model Atelie {
   atualizadoEm  DateTime        @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
   artesao       Artesao         @relation(fields: [artesaoId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   endereco      Endereco?
-  curadores     AtelieCurador[]
-  pecas         Peca[]
+  curadores        AtelieCurador[]
+  pecas            Peca[]
+  logsNotificacoes LogNotificacao[]
 
   @@map("atelies")
 }
@@ -242,4 +244,61 @@ model Reserva {
   @@index([status, expiraEm])
   @@index([usuarioId, status])
   @@map("reservas")
+}
+
+enum CanalNotificacao {
+  EMAIL
+  WHATSAPP
+
+  @@map("CanalNotificacao")
+}
+
+enum StatusNotificacao {
+  ENFILEIRADA
+  PROCESSANDO
+  ENVIADA
+  FALHA_TRANSITORIA
+  FALHA_PERMANENTE
+  IGNORADA
+
+  @@map("StatusNotificacao")
+}
+
+/// Auditoria e rastreamento idempotente de notificações transacionais multicanal (HU-17).
+/// Não armazena segredos, tokens nem conteúdo sensível; `destinatario` deve ser gravado mascarado.
+model LogNotificacao {
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventoOrigem       String            @map("evento_origem") @db.VarChar(80)
+  pedidoId           String?           @map("pedido_id") @db.Uuid
+  subpedidoId        String?           @map("subpedido_id") @db.Uuid
+  usuarioId          String?           @map("usuario_id") @db.Uuid
+  atelieId           String?           @map("atelie_id") @db.Uuid
+  destinatario       String            @db.VarChar(160)
+  canal              CanalNotificacao
+  template           String            @db.VarChar(80)
+  status             StatusNotificacao @default(ENFILEIRADA)
+  tentativas         Int               @default(0)
+  maxTentativas      Int               @default(5) @map("max_tentativas")
+  provedor           String?           @db.VarChar(40)
+  provedorMensagemId String?           @map("provedor_mensagem_id") @db.VarChar(160)
+  erroCodigo         String?           @map("erro_codigo") @db.VarChar(64)
+  erroSanitizado     String?           @map("erro_sanitizado") @db.VarChar(500)
+  idempotencyKey     String            @unique @map("idempotency_key") @db.VarChar(160)
+  jobId              String?           @map("job_id") @db.VarChar(160)
+  correlationId      String?           @map("correlation_id") @db.VarChar(128)
+  criadoEm           DateTime          @default(now()) @map("criado_em") @db.Timestamp(3)
+  ultimaTentativaEm  DateTime?         @map("ultima_tentativa_em") @db.Timestamp(3)
+  proximaTentativaEm DateTime?         @map("proxima_tentativa_em") @db.Timestamp(3)
+  enviadoEm          DateTime?         @map("enviado_em") @db.Timestamp(3)
+  atualizadoEm       DateTime          @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  usuario            Usuario?          @relation(fields: [usuarioId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  atelie             Atelie?           @relation(fields: [atelieId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([pedidoId])
+  @@index([subpedidoId])
+  @@index([usuarioId, criadoEm])
+  @@index([atelieId, criadoEm])
+  @@index([status, criadoEm])
+  @@index([eventoOrigem, canal])
+  @@map("logs_notificacoes")
 }
