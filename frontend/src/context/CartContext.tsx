@@ -10,13 +10,21 @@ import { cartService } from '@/services/cartService'
 import type { CartItem } from '@/services/cartService'
 import { stockService, type StockReservationGroup } from '@/services/stockService'
 import {
+  applyAddCartItem,
+  applyRemoveCartItem,
+  applySetCartItemQuantity,
   buildItemsSignature,
+  computeExpirationRecheckDelayMs,
   computeServerOffsetMs,
   doesCartMatchReservation,
   effectiveAvailableQuantity,
   isCartCheckoutReservation,
   selectCurrentCartReservation,
 } from '@/utils/cartReservation.util'
+import {
+  executeExpirationSyncWithRecheck,
+  executeSafeCancelFreeReservation,
+} from '@/utils/cartReservationCoordinator'
 import { errorMessage } from '@/utils/errors'
 
 export type { CartItem }
@@ -62,8 +70,10 @@ export interface CartContextValue {
   clearCart: () => void
   /** Reserva transacional livre ativa do comprador para este carrinho/checkout (HU-09/HU-06). */
   activeReservation: StockReservationGroup | null
-  /** Reserva vinculada a um pedido ainda ativo (ex.: Pix PENDENTE_PAGAMENTO da HU-10). */
+  /** Reserva vinculada a um pedido PENDENTE_PAGAMENTO ainda dentro do prazo recuperável (HU-10). */
   activeOrderReservation: StockReservationGroup | null
+  /** Reserva vinculada a um pedido PENDENTE_PAGAMENTO cujo prazo já venceu no relógio local, aguardando reconciliação/expiração no servidor (HU-10). */
+  expiredPendingOrderReservation: StockReservationGroup | null
   reservationStatus: 'idle' | 'loading' | 'ready' | 'error'
   isMutatingReservation: boolean
   reservationExpiredNotice: boolean
@@ -77,6 +87,14 @@ export interface CartContextValue {
   cancelActiveReservation: () => Promise<boolean>
   handleReservationExpired: () => Promise<void>
   completeOrderFromReservation: () => void
+}
+
+interface InternalReservationSyncResult {
+  readonly ok: boolean
+  readonly activeCartReservation: StockReservationGroup | null
+  readonly activeOrderReservation: StockReservationGroup | null
+  readonly expiredPendingOrderReservation: StockReservationGroup | null
+  readonly serverOffsetMs: number
 }
 
 const CartContext = createContext<CartContextValue | null>(null)
@@ -95,6 +113,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [activeReservation, setActiveReservation] = useState<StockReservationGroup | null>(null)
   const [activeOrderReservation, setActiveOrderReservation] =
     useState<StockReservationGroup | null>(null)
+  const [expiredPendingOrderReservation, setExpiredPendingOrderReservation] =
+    useState<StockReservationGroup | null>(null)
   const [reservationStatus, setReservationStatus] = useState<
     'idle' | 'loading' | 'ready' | 'error'
   >('idle')
@@ -106,11 +126,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const itemsRef = useRef<CartItem[]>(items)
   const activeReservationRef = useRef<StockReservationGroup | null>(activeReservation)
   const serverOffsetMsRef = useRef<number>(serverOffsetMs)
+  const reservationErrorRef = useRef<ReservationFeedbackError | null>(reservationError)
   const lastSyncedUserIdRef = useRef<string | null>(null)
-  const refreshInFlightRef = useRef<Promise<void> | null>(null)
+  const needsResyncRef = useRef<boolean>(false)
+  const pendingCatalogReloadOnRefreshRef = useRef<boolean>(false)
+  const refreshInFlightRef = useRef<Promise<InternalReservationSyncResult> | null>(null)
   const pendingCancelRef = useRef<Promise<boolean> | null>(null)
   const reserveInFlightRef = useRef<Promise<ReserveCartOutcome> | null>(null)
   const reserveIdempotencyRef = useRef<{ signature: string; key: string } | null>(null)
+  const expirationRecheckTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const expirationRecheckAttemptsRef = useRef<{ key: string; count: number } | null>(null)
+  const mutationInFlightRef = useRef<boolean>(false)
+  const handleReservationExpiredRef = useRef<() => Promise<void>>(async () => {})
 
   useEffect(() => {
     itemsRef.current = items
@@ -123,6 +150,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     serverOffsetMsRef.current = serverOffsetMs
   }, [serverOffsetMs])
+
+  useEffect(() => {
+    reservationErrorRef.current = reservationError
+  }, [reservationError])
+
+  const applyReservationError = useCallback((nextError: ReservationFeedbackError | null) => {
+    reservationErrorRef.current = nextError
+    setReservationError(nextError)
+  }, [])
+
+  const clearExpirationRecheckTimer = useCallback(() => {
+    if (expirationRecheckTimerRef.current !== null) {
+      clearTimeout(expirationRecheckTimerRef.current)
+      expirationRecheckTimerRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => clearExpirationRecheckTimer()
+  }, [clearExpirationRecheckTimer])
 
   useEffect(() => {
     const loaded = cartService.load()
@@ -163,29 +210,47 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [activeReservation])
 
   const resetLocalReservationState = useCallback(() => {
+    clearExpirationRecheckTimer()
+    expirationRecheckAttemptsRef.current = null
+    needsResyncRef.current = false
+    pendingCatalogReloadOnRefreshRef.current = false
     reserveIdempotencyRef.current = null
     activeReservationRef.current = null
     setActiveReservation(null)
     setActiveOrderReservation(null)
+    setExpiredPendingOrderReservation(null)
     setReservationExpiredNotice(false)
-    setReservationError(null)
+    applyReservationError(null)
     serverOffsetMsRef.current = 0
     setServerOffsetMs(0)
     setReservationStatus('idle')
-  }, [])
+  }, [applyReservationError, clearExpirationRecheckTimer])
 
-  const refreshReservations = useCallback(
-    async (opts?: { triggerCatalogReload?: boolean }): Promise<void> => {
+  const syncReservationsFromServer = useCallback(
+    async (opts?: { triggerCatalogReload?: boolean }): Promise<InternalReservationSyncResult> => {
       if (!user) {
         resetLocalReservationState()
-        return
+        return {
+          ok: true,
+          activeCartReservation: null,
+          activeOrderReservation: null,
+          expiredPendingOrderReservation: null,
+          serverOffsetMs: 0,
+        }
       }
 
       if (refreshInFlightRef.current) {
+        if (opts?.triggerCatalogReload) {
+          pendingCatalogReloadOnRefreshRef.current = true
+        }
         return refreshInFlightRef.current
       }
 
-      const task = (async () => {
+      if (opts?.triggerCatalogReload) {
+        pendingCatalogReloadOnRefreshRef.current = true
+      }
+
+      const task = (async (): Promise<InternalReservationSyncResult> => {
         const hadActiveFree = Boolean(activeReservationRef.current)
         setReservationStatus((prev) => (prev === 'ready' ? prev : 'loading'))
         try {
@@ -195,12 +260,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
           setServerOffsetMs(offset)
 
           const serverNowMs = Date.now() + offset
-          const { activeCartReservation, activeOrderReservation: foundOrder } =
-            selectCurrentCartReservation(response.dados, serverNowMs)
+          const {
+            activeCartReservation,
+            activeOrderReservation: foundOrder,
+            expiredPendingOrderReservation: foundExpiredOrder,
+          } = selectCurrentCartReservation(response.dados, serverNowMs)
 
+          needsResyncRef.current = false
           activeReservationRef.current = activeCartReservation
           setActiveReservation(activeCartReservation)
           setActiveOrderReservation(foundOrder)
+          setExpiredPendingOrderReservation(foundExpiredOrder)
           setReservationStatus('ready')
 
           if (activeCartReservation) {
@@ -220,15 +290,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
             setReservationExpiredNotice(true)
           }
 
-          if (opts?.triggerCatalogReload) {
+          if (pendingCatalogReloadOnRefreshRef.current) {
+            pendingCatalogReloadOnRefreshRef.current = false
             reloadCatalog()
           }
+
+          return {
+            ok: true,
+            activeCartReservation,
+            activeOrderReservation: foundOrder,
+            expiredPendingOrderReservation: foundExpiredOrder,
+            serverOffsetMs: offset,
+          }
         } catch (reason) {
+          pendingCatalogReloadOnRefreshRef.current = false
           if (isApiError(reason) && reason.status === 401) {
             resetLocalReservationState()
-            return
+          } else {
+            setReservationStatus('error')
           }
-          setReservationStatus('error')
+          return {
+            ok: false,
+            activeCartReservation: activeReservationRef.current,
+            activeOrderReservation: null,
+            expiredPendingOrderReservation: null,
+            serverOffsetMs: serverOffsetMsRef.current,
+          }
         }
       })().finally(() => {
         refreshInFlightRef.current = null
@@ -238,6 +325,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return task
     },
     [user, reloadCatalog, resetLocalReservationState],
+  )
+
+  const refreshReservations = useCallback(
+    async (opts?: { triggerCatalogReload?: boolean }): Promise<void> => {
+      await syncReservationsFromServer(opts)
+    },
+    [syncReservationsFromServer],
   )
 
   // Hidratação única das reservas reais no login / F5 (nunca cria reserva automaticamente).
@@ -264,44 +358,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return true
     }
 
-    if (current.possuiPedidoAtivo || current.pedidoVinculado?.ativo) {
-      setReservationError({
-        status: 409,
-        code: 'RESERVA_VINCULADA_A_PEDIDO_ATIVO',
-        message: 'Esta reserva está vinculada a um pedido ativo e não pode ser cancelada diretamente.',
-      })
-      return false
-    }
-
-    reserveIdempotencyRef.current = null
-    activeReservationRef.current = null
-    setActiveReservation(null)
-    setReservationExpiredNotice(false)
-
     const task = (async (): Promise<boolean> => {
       setIsMutatingReservation(true)
-      setReservationError(null)
+      applyReservationError(null)
       try {
-        await stockService.cancelReservation(current.grupoId)
-        reloadCatalog()
-        return true
-      } catch (reason) {
-        const status = isApiError(reason) ? reason.status : undefined
-        const code = isApiError(reason) ? reason.code : undefined
-        if (code === 'RESERVA_VINCULADA_A_PEDIDO_ATIVO') {
-          setReservationError({
-            status,
-            code,
-            message: errorMessage(
-              reason,
-              'A reserva já possui um pedido ativo e não pode ser alterada.',
-            ),
-          })
-          await refreshReservations()
-          return false
-        }
-        reloadCatalog()
-        return true
+        return await executeSafeCancelFreeReservation({
+          current,
+          cancelReservation: (grupoId) => stockService.cancelReservation(grupoId),
+          resyncFromServer: syncReservationsFromServer,
+          onCleared: () => {
+            clearExpirationRecheckTimer()
+            expirationRecheckAttemptsRef.current = null
+            reserveIdempotencyRef.current = null
+            activeReservationRef.current = null
+            setActiveReservation(null)
+            setReservationExpiredNotice(false)
+            reloadCatalog()
+          },
+          onError: (err) => {
+            applyReservationError(err)
+          },
+          onMarkNeedsResync: (value) => {
+            needsResyncRef.current = value
+          },
+        })
       } finally {
         pendingCancelRef.current = null
         setIsMutatingReservation(false)
@@ -310,26 +390,79 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     pendingCancelRef.current = task
     return task
-  }, [reloadCatalog, refreshReservations])
+  }, [
+    applyReservationError,
+    clearExpirationRecheckTimer,
+    reloadCatalog,
+    syncReservationsFromServer,
+  ])
 
-  const mutateCartAndReleaseFreeReservation = useCallback(
-    (updater: (prev: CartItem[]) => CartItem[]) => {
-      reserveIdempotencyRef.current = null
-      setReservationError(null)
-      setItems((prev) => {
-        const next = updater(prev)
+  const commitCartChangeWithReservationRelease = useCallback(
+    (next: CartItem[]) => {
+      const hasFreeReservation = Boolean(activeReservationRef.current)
+
+      if (!hasFreeReservation && !needsResyncRef.current) {
+        reserveIdempotencyRef.current = null
+        applyReservationError(null)
         itemsRef.current = next
-        return next
-      })
-      if (
-        activeReservationRef.current &&
-        !activeReservationRef.current.possuiPedidoAtivo &&
-        !activeReservationRef.current.pedidoVinculado?.ativo
-      ) {
-        void cancelCurrentFreeReservation()
+        setItems(next)
+        return
       }
+
+      if (
+        activeReservationRef.current?.possuiPedidoAtivo ||
+        activeReservationRef.current?.pedidoVinculado?.ativo
+      ) {
+        applyReservationError({
+          status: 409,
+          code: 'RESERVA_VINCULADA_A_PEDIDO_ATIVO',
+          message:
+            'Esta reserva está vinculada a um pedido ativo e não pode ser cancelada diretamente.',
+        })
+        return
+      }
+
+      if (
+        mutationInFlightRef.current ||
+        pendingCancelRef.current ||
+        reserveInFlightRef.current
+      ) {
+        return
+      }
+
+      mutationInFlightRef.current = true
+      void (async () => {
+        try {
+          if (needsResyncRef.current) {
+            const sync = await syncReservationsFromServer({ triggerCatalogReload: true })
+            if (!sync.ok || needsResyncRef.current) {
+              applyReservationError({
+                status: 503,
+                code: 'RESERVA_RESSINCRONIZACAO_PENDENTE',
+                message:
+                  'Não foi possível sincronizar sua reserva com o servidor antes de alterar o carrinho.',
+              })
+              return
+            }
+          }
+
+          if (activeReservationRef.current) {
+            const canceled = await cancelCurrentFreeReservation()
+            if (!canceled) {
+              return
+            }
+          }
+
+          reserveIdempotencyRef.current = null
+          applyReservationError(null)
+          itemsRef.current = next
+          setItems(next)
+        } finally {
+          mutationInFlightRef.current = false
+        }
+      })()
     },
-    [cancelCurrentFreeReservation],
+    [applyReservationError, cancelCurrentFreeReservation, syncReservationsFromServer],
   )
 
   const addItem = useCallback(
@@ -337,28 +470,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const product = products.find((candidate) => candidate.id === productId)
       const reservedByUser = reservedQtyByProduct.get(productId.trim().toLowerCase()) ?? 0
       const limit = product ? availableQuantity(product, reservedByUser) : MAX_ITEM_QUANTITY
-      if (limit === 0) return
+      const { items: next, changed } = applyAddCartItem(
+        itemsRef.current,
+        productId,
+        quantity,
+        limit,
+      )
+      if (!changed) return
 
-      mutateCartAndReleaseFreeReservation((prev) => {
-        const existing = prev.find((item) => item.id === productId)
-        if (existing) {
-          return prev.map((item) =>
-            item.id === productId
-              ? { ...item, quantity: Math.min(limit, item.quantity + quantity) }
-              : item,
-          )
-        }
-        return [...prev, { id: productId, quantity: Math.min(limit, quantity) }]
-      })
+      commitCartChangeWithReservationRelease(next)
     },
-    [products, reservedQtyByProduct, mutateCartAndReleaseFreeReservation],
+    [products, reservedQtyByProduct, commitCartChangeWithReservationRelease],
   )
 
   const removeItem = useCallback(
     (productId: string) => {
-      mutateCartAndReleaseFreeReservation((prev) => prev.filter((item) => item.id !== productId))
+      const { items: next, changed } = applyRemoveCartItem(itemsRef.current, productId)
+      if (!changed) return
+
+      commitCartChangeWithReservationRelease(next)
     },
-    [mutateCartAndReleaseFreeReservation],
+    [commitCartChangeWithReservationRelease],
   )
 
   const setQuantity = useCallback(
@@ -367,20 +499,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const reservedByUser = reservedQtyByProduct.get(productId.trim().toLowerCase()) ?? 0
       const limit = product ? availableQuantity(product, reservedByUser) : MAX_ITEM_QUANTITY
 
-      mutateCartAndReleaseFreeReservation((prev) => {
-        if (quantity <= 0) {
-          return prev.filter((item) => item.id !== productId)
-        }
-        if (limit <= 0) {
-          return prev
-        }
-        const nextQuantity = Math.min(limit, Math.floor(quantity))
-        return prev.map((item) =>
-          item.id === productId ? { ...item, quantity: nextQuantity } : item,
-        )
-      })
+      const { items: next, changed } = applySetCartItemQuantity(
+        itemsRef.current,
+        productId,
+        quantity,
+        limit,
+      )
+      if (!changed) return
+
+      commitCartChangeWithReservationRelease(next)
     },
-    [products, reservedQtyByProduct, mutateCartAndReleaseFreeReservation],
+    [products, reservedQtyByProduct, commitCartChangeWithReservationRelease],
   )
 
   const clearCart = useCallback(() => {
@@ -390,8 +519,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const clearReservationError = useCallback(() => {
-    setReservationError(null)
-  }, [])
+    applyReservationError(null)
+  }, [applyReservationError])
 
   const reserveCart = useCallback(
     async (opts?: { forceNew?: boolean }): Promise<ReserveCartOutcome> => {
@@ -408,23 +537,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
 
       const task = (async (): Promise<ReserveCartOutcome> => {
+        if (needsResyncRef.current) {
+          const sync = await syncReservationsFromServer({ triggerCatalogReload: true })
+          if (!sync.ok || needsResyncRef.current) {
+            const syncErr = {
+              status: 503,
+              code: 'RESERVA_RESSINCRONIZACAO_PENDENTE',
+              message:
+                'Não foi possível confirmar o estado da sua reserva no servidor. Tente novamente em instantes.',
+            }
+            applyReservationError(syncErr)
+            return { ok: false, ...syncErr }
+          }
+        }
+
         if (pendingCancelRef.current) {
           const canceled = await pendingCancelRef.current
           if (!canceled) {
-            return {
-              ok: false,
+            const pendingErr = reservationErrorRef.current ?? {
               status: 409,
               code: 'RESERVA_VINCULADA_A_PEDIDO_ATIVO',
               message:
-                'Não foi possível liberar a reserva anterior porque há um pedido ativo vinculado.',
+                'Não foi possível confirmar a liberação da reserva anterior no servidor.',
             }
+            return { ok: false, ...pendingErr }
           }
         }
 
         const currentItems = itemsRef.current
         if (currentItems.length === 0) {
           const msg = 'Seu carrinho está vazio.'
-          setReservationError({ status: 422, message: msg })
+          applyReservationError({ status: 422, message: msg })
           return { ok: false, status: 422, message: msg }
         }
 
@@ -439,7 +582,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           doesCartMatchReservation(currentItems, currentFree)
         ) {
           setReservationExpiredNotice(false)
-          setReservationError(null)
+          applyReservationError(null)
           return { ok: true, reservation: currentFree }
         }
 
@@ -447,13 +590,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         if (currentFree && isCartCheckoutReservation(currentFree, serverNowMs)) {
           const canceledOld = await cancelCurrentFreeReservation()
           if (!canceledOld) {
-            return {
-              ok: false,
-              status: 409,
-              code: 'RESERVA_VINCULADA_A_PEDIDO_ATIVO',
+            const cancelErr = reservationErrorRef.current ?? {
+              status: 503,
+              code: 'RESERVA_CANCELAMENTO_FALHOU',
               message:
-                'Existe um pedido ativo para sua reserva anterior. Retome ou finalize o pedido em aberto.',
+                'Não foi possível liberar a reserva anterior no servidor. Tente novamente após sincronizar.',
             }
+            return { ok: false, ...cancelErr }
           }
         }
 
@@ -464,7 +607,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const idempotencyKey = reserveIdempotencyRef.current.key
 
         setIsMutatingReservation(true)
-        setReservationError(null)
+        applyReservationError(null)
         try {
           const created = await stockService.reserveStock(
             currentItems.map((line) => ({ productId: line.id, quantity: line.quantity })),
@@ -480,8 +623,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
           if (created.possuiPedidoAtivo || created.pedidoVinculado?.ativo) {
             reserveIdempotencyRef.current = null
             const msg = `A reserva já está vinculada ao pedido ${created.pedidoVinculado?.codigoPedido ?? ''}.`
-            setReservationError({ status: 409, code: 'RESERVA_VINCULADA_A_PEDIDO_ATIVO', message: msg })
-            await refreshReservations()
+            applyReservationError({
+              status: 409,
+              code: 'RESERVA_VINCULADA_A_PEDIDO_ATIVO',
+              message: msg,
+            })
+            await syncReservationsFromServer()
             return {
               ok: false,
               status: 409,
@@ -490,6 +637,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }
           }
 
+          clearExpirationRecheckTimer()
+          expirationRecheckAttemptsRef.current = null
+          needsResyncRef.current = false
           activeReservationRef.current = created
           setActiveReservation(created)
           setReservationExpiredNotice(false)
@@ -502,10 +652,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const status = isApiError(reason) ? reason.status : undefined
           const code = isApiError(reason) ? reason.code : undefined
           const message = errorMessage(reason, 'Não foi possível reservar os itens selecionados.')
-          setReservationError({ status, code, message })
+          applyReservationError({ status, code, message })
           if (status === 409) {
             reloadCatalog()
-            void refreshReservations()
+            void syncReservationsFromServer()
           }
           return { ok: false, status, code, message }
         } finally {
@@ -518,13 +668,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
       reserveInFlightRef.current = task
       return task
     },
-    [user, cancelCurrentFreeReservation, refreshReservations, reloadCatalog],
+    [
+      user,
+      applyReservationError,
+      cancelCurrentFreeReservation,
+      clearExpirationRecheckTimer,
+      syncReservationsFromServer,
+      reloadCatalog,
+    ],
   )
 
   const renewReservation = useCallback(async (): Promise<ReserveCartOutcome> => {
+    clearExpirationRecheckTimer()
+    expirationRecheckAttemptsRef.current = null
     reserveIdempotencyRef.current = null
     return reserveCart({ forceNew: true })
-  }, [reserveCart])
+  }, [clearExpirationRecheckTimer, reserveCart])
 
   const cancelActiveReservation = useCallback(async (): Promise<boolean> => {
     if (!activeReservationRef.current) return false
@@ -532,20 +691,61 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cancelCurrentFreeReservation])
 
   const handleReservationExpired = useCallback(async (): Promise<void> => {
+    clearExpirationRecheckTimer()
     reserveIdempotencyRef.current = null
-    setReservationExpiredNotice(true)
-    await refreshReservations({ triggerCatalogReload: true })
-  }, [refreshReservations])
+
+    const current = activeReservationRef.current
+    const target = current ? { grupoId: current.grupoId, expiraEm: current.expiraEm } : null
+    const attemptKey = target ? `${target.grupoId}:${target.expiraEm}` : 'none'
+    const nextCount =
+      expirationRecheckAttemptsRef.current?.key === attemptKey
+        ? expirationRecheckAttemptsRef.current.count + 1
+        : 1
+    expirationRecheckAttemptsRef.current = { key: attemptKey, count: nextCount }
+
+    await executeExpirationSyncWithRecheck({
+      targetReservation: target,
+      maxAttempts: 3,
+      currentAttemptCount: nextCount,
+      syncFromServer: syncReservationsFromServer,
+      computeDelayMs: (expiresAtIso, offsetMs) =>
+        computeExpirationRecheckDelayMs(expiresAtIso, offsetMs),
+      scheduleRecheck: (delayMs) => {
+        setReservationExpiredNotice(false)
+        clearExpirationRecheckTimer()
+        expirationRecheckTimerRef.current = setTimeout(() => {
+          expirationRecheckTimerRef.current = null
+          void handleReservationExpiredRef.current()
+        }, delayMs)
+      },
+      onConfirmedCleared: () => {
+        expirationRecheckAttemptsRef.current = null
+        if (target) {
+          setReservationExpiredNotice(true)
+        }
+      },
+      onExhausted: () => {
+        expirationRecheckAttemptsRef.current = null
+      },
+    })
+  }, [clearExpirationRecheckTimer, syncReservationsFromServer])
+
+  useEffect(() => {
+    handleReservationExpiredRef.current = handleReservationExpired
+  }, [handleReservationExpired])
 
   const completeOrderFromReservation = useCallback(() => {
+    clearExpirationRecheckTimer()
+    expirationRecheckAttemptsRef.current = null
+    needsResyncRef.current = false
     reserveIdempotencyRef.current = null
     activeReservationRef.current = null
     setActiveReservation(null)
     setReservationExpiredNotice(false)
-    setReservationError(null)
+    applyReservationError(null)
     clearCart()
-    void refreshReservations({ triggerCatalogReload: true })
-  }, [clearCart, refreshReservations])
+    void syncReservationsFromServer({ triggerCatalogReload: true })
+  }, [applyReservationError, clearCart, clearExpirationRecheckTimer, syncReservationsFromServer])
 
   const value = useMemo<CartContextValue>(
     () => ({
@@ -562,6 +762,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart,
       activeReservation,
       activeOrderReservation,
+      expiredPendingOrderReservation,
       reservationStatus,
       isMutatingReservation,
       reservationExpiredNotice,
@@ -586,6 +787,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart,
       activeReservation,
       activeOrderReservation,
+      expiredPendingOrderReservation,
       reservationStatus,
       isMutatingReservation,
       reservationExpiredNotice,

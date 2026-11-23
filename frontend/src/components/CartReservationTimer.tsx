@@ -53,7 +53,13 @@ export function CartReservationTimer({
   const isExpired = isExpiredExternal || (Boolean(expiresAtIso) && remainingSeconds <= 0)
 
   useEffect(() => {
-    if (!expiresAtIso || remainingSeconds > 0 || isExpiredExternal) return
+    if (!expiresAtIso || isExpiredExternal) return
+    if (remainingSeconds > 0) {
+      if (expiredNotifiedForRef.current === expiresAtIso) {
+        expiredNotifiedForRef.current = null
+      }
+      return
+    }
     if (expiredNotifiedForRef.current === expiresAtIso) return
     expiredNotifiedForRef.current = expiresAtIso
     onExpire?.()

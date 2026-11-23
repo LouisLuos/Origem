@@ -11,10 +11,11 @@ import { getProductGalleryImages } from '@/utils/media'
 import { ResourceGate } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
-import { availableQuantity, useCart } from '@/context/CartContext'
+import { useCart } from '@/context/CartContext'
 import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 import { findArtisanOf } from '@/utils/artisanMatch'
+import { resolveProductDetailStockState } from '@/utils/cartReservation.util'
 
 function DetailSection({ title, children, defaultOpen }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   return (
@@ -42,7 +43,7 @@ const trustPoints = [
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { addItem } = useCart()
+  const { addItem, items, reservedQtyByProduct } = useCart()
   const { isFavorite: isFavoriteProduct, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
 
@@ -80,15 +81,24 @@ export function ProductDetail() {
     : 0
   const gallery =
     product.gallery && product.gallery.length > 0 ? product.gallery : getProductGalleryImages(product.imageUrl)
-  const stockCount =
-    typeof product.stock === 'number' && Number.isFinite(product.stock)
-      ? Math.max(0, Math.floor(product.stock))
-      : undefined
-  const isSoldOut = stockCount === 0
-  const isLowStock = stockCount !== undefined && stockCount > 0 && stockCount <= 3
-  const available = availableQuantity(product)
-  const maxQuantity = Math.max(1, available)
-  const safeQuantity = Math.min(quantity, maxQuantity)
+  const normalizedProductId = product.id.trim().toLowerCase()
+  const reservedByCurrentUser = reservedQtyByProduct.get(normalizedProductId) ?? 0
+  const quantityInCart =
+    items.find((item) => item.id.trim().toLowerCase() === normalizedProductId)?.quantity ?? 0
+
+  const stockState = resolveProductDetailStockState({
+    publicStock: product.stock,
+    reservedByCurrentUser,
+    quantityInCart,
+  })
+  const stockCount = stockState.publicStock
+  const isSoldOut = stockState.isSoldOut
+  const isLowStock = stockState.isLowStock
+  const isFullyReservedByCurrentUser = stockState.isFullyReservedByCurrentUser
+  const maxQuantity = Math.max(1, stockState.remainingAddable)
+  const safeQuantity = isFullyReservedByCurrentUser
+    ? reservedByCurrentUser
+    : Math.min(quantity, maxQuantity)
   const artisan = findArtisanOf(product, artisans)
   const relatedProducts = products
     .filter((item) => item.technique === product.technique && item.id !== product.id)
@@ -195,6 +205,14 @@ export function ProductDetail() {
               <div role="status" className="border border-danger/30 bg-surface-muted px-4 py-2.5 text-sm font-semibold text-danger">
                 Esgotado — sem unidades disponíveis para reserva no momento.
               </div>
+            ) : reservedByCurrentUser > 0 ? (
+              <div role="status" className="border border-oliva-500/40 bg-surface-muted px-4 py-2.5 text-sm font-medium text-oliva-600">
+                Reservado em seu nome ({reservedByCurrentUser}{' '}
+                {reservedByCurrentUser === 1 ? 'unidade' : 'unidades'})
+                {stockCount !== undefined && stockCount > 0
+                  ? ` · +${stockCount} ${stockCount === 1 ? 'disponível' : 'disponíveis'} no estoque`
+                  : ''}
+              </div>
             ) : isLowStock && stockCount !== undefined ? (
               <div role="status" className="border border-warning/40 bg-surface-muted px-4 py-2.5 text-sm font-medium text-warning">
                 Restam poucas unidades: apenas {stockCount} {stockCount === 1 ? 'unidade disponível' : 'unidades disponíveis'}.
@@ -210,7 +228,7 @@ export function ProductDetail() {
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.max(1, safeQuantity - 1))}
-                  disabled={isSoldOut || safeQuantity <= 1}
+                  disabled={isSoldOut || isFullyReservedByCurrentUser || safeQuantity <= 1}
                   aria-label="Diminuir quantidade"
                   className="flex h-full w-12 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -222,7 +240,7 @@ export function ProductDetail() {
                 <button
                   type="button"
                   onClick={() => setQuantity(Math.min(maxQuantity, safeQuantity + 1))}
-                  disabled={isSoldOut || safeQuantity >= maxQuantity}
+                  disabled={isSoldOut || isFullyReservedByCurrentUser || safeQuantity >= maxQuantity}
                   aria-label="Aumentar quantidade"
                   className="flex h-full w-12 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -230,16 +248,23 @@ export function ProductDetail() {
                 </button>
               </div>
 
-              <Button
-                variant="primary"
-                size="lg"
-                className="h-14 flex-1"
-                onClick={() => addItem(product.id, safeQuantity)}
-                disabled={isSoldOut}
-              >
-                <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-                {isSoldOut ? 'Esgotado' : 'Adicionar ao carrinho'}
-              </Button>
+              {isFullyReservedByCurrentUser ? (
+                <ButtonLink href="/carrinho" variant="primary" size="lg" className="h-14 flex-1">
+                  <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+                  Ver reserva no carrinho
+                </ButtonLink>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="h-14 flex-1"
+                  onClick={() => addItem(product.id, safeQuantity)}
+                  disabled={isSoldOut}
+                >
+                  <ShoppingBag className="h-5 w-5" aria-hidden="true" />
+                  {isSoldOut ? 'Esgotado' : 'Adicionar ao carrinho'}
+                </Button>
+              )}
 
               <button
                 type="button"

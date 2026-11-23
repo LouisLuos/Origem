@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ChevronRight, Clock, ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -11,7 +11,11 @@ import { CartReservationTimer } from '@/components/CartReservationTimer'
 import { useAuth } from '@/context/AuthContext'
 import { useCart } from '@/context/CartContext'
 import { useCatalog } from '@/context/CatalogContext'
-import { effectiveAvailableQuantity } from '@/utils/cartReservation.util'
+import { useOrders } from '@/context/OrderContext'
+import {
+  classifyPendingCheckoutOrders,
+  effectiveAvailableQuantity,
+} from '@/utils/cartReservation.util'
 
 export function Cart() {
   const router = useRouter()
@@ -22,6 +26,7 @@ export function Cart() {
     setQuantity,
     activeReservation,
     activeOrderReservation,
+    expiredPendingOrderReservation,
     isMutatingReservation,
     reservationExpiredNotice,
     serverOffsetMs,
@@ -33,6 +38,23 @@ export function Cart() {
     handleReservationExpired,
   } = useCart()
   const { status, error, reload } = useCatalog()
+  const { orders } = useOrders()
+
+  const hasPendingOrderCandidate =
+    Boolean(activeOrderReservation || expiredPendingOrderReservation) ||
+    orders.some((order) => order.status === 'PENDENTE_PAGAMENTO')
+
+  const [nowMs, setNowMs] = useState(() => Date.now())
+
+  useEffect(() => {
+    if (!hasPendingOrderCandidate) return
+    const syncId = window.setTimeout(() => setNowMs(Date.now()), 0)
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1000)
+    return () => {
+      window.clearTimeout(syncId)
+      window.clearInterval(timer)
+    }
+  }, [hasPendingOrderCandidate])
 
   const subtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
   const hasUnavailableItem = cartLines.some((line) => {
@@ -69,10 +91,16 @@ export function Cart() {
     })
   }, [cartLines])
 
-  const pendingLinkedOrder =
-    activeOrderReservation?.pedidoVinculado?.status === 'PENDENTE_PAGAMENTO'
-      ? activeOrderReservation.pedidoVinculado
-      : null
+  const {
+    recoverableOrderCode: recoverablePendingOrderCode,
+    awaitingReconciliationOrderCode,
+  } = classifyPendingCheckoutOrders({
+    orders,
+    activeOrderReservation,
+    expiredPendingOrderReservation,
+    serverOffsetMs,
+    localNowMs: nowMs,
+  })
 
   async function handleProceedToCheckout() {
     if (!user) {
@@ -107,7 +135,7 @@ export function Cart() {
           </p>
         </div>
 
-        {pendingLinkedOrder && (
+        {recoverablePendingOrderCode ? (
           <div
             role="status"
             className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-terracota/40 bg-aubergine-400/10 px-4 py-3 text-sm text-ink"
@@ -116,18 +144,38 @@ export function Cart() {
               <Clock className="h-4 w-4 shrink-0 text-terracota-600" aria-hidden="true" />
               <span>
                 Você possui o pedido pendente{' '}
-                <strong>{pendingLinkedOrder.codigoPedido}</strong> aguardando confirmação de pagamento.
+                <strong>{recoverablePendingOrderCode}</strong> aguardando confirmação de pagamento.
               </span>
             </div>
             <ButtonLink
-              href={`/pedido/${encodeURIComponent(pendingLinkedOrder.codigoPedido)}`}
+              href={`/pedido/${encodeURIComponent(recoverablePendingOrderCode)}`}
               variant="outline"
               size="sm"
             >
               Retomar pagamento
             </ButtonLink>
           </div>
-        )}
+        ) : awaitingReconciliationOrderCode ? (
+          <div
+            role="status"
+            className="mb-6 flex flex-wrap items-center justify-between gap-3 border border-border bg-surface-muted px-4 py-3 text-sm text-ink-soft"
+          >
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 shrink-0 text-terracota-600" aria-hidden="true" />
+              <span>
+                O pedido <strong className="text-ink">{awaitingReconciliationOrderCode}</strong>{' '}
+                atingiu o prazo de pagamento e aguarda atualização ou reconciliação pelo servidor.
+              </span>
+            </div>
+            <ButtonLink
+              href={`/pedido/${encodeURIComponent(awaitingReconciliationOrderCode)}`}
+              variant="outline"
+              size="sm"
+            >
+              Acompanhar status
+            </ButtonLink>
+          </div>
+        ) : null}
 
         {status === 'loading' ? (
           <LoadingBlock label="Carregando carrinho…" />

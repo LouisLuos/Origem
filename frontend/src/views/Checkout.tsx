@@ -32,7 +32,10 @@ import type {
 import { Badge, Button, ButtonLink, Container, Input, cn, currency } from '@/design-system'
 import { addressService } from '@/services/addressService'
 import { orderService } from '@/services/orderService'
-import { computeRemainingSeconds } from '@/utils/cartReservation.util'
+import {
+  classifyPendingCheckoutOrders,
+  computeRemainingSeconds,
+} from '@/utils/cartReservation.util'
 import { errorMessage } from '@/utils/errors'
 
 const paymentOptions: { id: PaymentMethod; label: string; hint: string; icon: typeof QrCode }[] = [
@@ -161,6 +164,7 @@ export function Checkout() {
     lines: cartLines,
     activeReservation,
     activeOrderReservation,
+    expiredPendingOrderReservation,
     reservationStatus,
     isMutatingReservation,
     reservationExpiredNotice,
@@ -284,14 +288,18 @@ export function Checkout() {
   const activeOrderId = activeOrder?.id ?? null
   const activeOrderStatus = activeOrder?.status ?? null
 
-  // Ao chegar em 00:00 sem pedido aberto, aciona expiração lazy real no servidor (uma única vez por grupo)
+  // Ao chegar em 00:00 sem pedido aberto, aciona expiração lazy real no servidor (e limpa o ref se o offset adiou)
   useEffect(() => {
     if (!activeReservationId || !activeReservationExpiresIso || activeOrderId || cancelledMessage) {
       return
     }
-    if (!expiredOnClock) return
-
     const notifyKey = `${activeReservationId}:${activeReservationExpiresIso}`
+    if (!expiredOnClock) {
+      if (expiredNotifiedKeyRef.current === notifyKey) {
+        expiredNotifiedKeyRef.current = null
+      }
+      return
+    }
     if (expiredNotifiedKeyRef.current === notifyKey) return
     expiredNotifiedKeyRef.current = notifyKey
 
@@ -415,23 +423,20 @@ export function Checkout() {
     return <ResourceGate status="error" error={catalogError} onRetry={reloadCatalog} />
   }
 
-  // Preserva recuperação de pedidos Pix/cartão pendentes da HU-10 após F5 ou recarregamento
-  const pendingRecoverableOrder = orders.find(
-    (order) =>
-      order.status === 'PENDENTE_PAGAMENTO' &&
-      order.pagamentoAtual?.expiraEm &&
-      computeRemainingSeconds(order.pagamentoAtual.expiraEm, serverOffsetMs, nowMs) > 0,
-  )
+  // Preserva recuperação somente de pedidos Pix/cartão pendentes ainda dentro do prazo;
+  // pedidos pendentes vencidos aguardam expiração/reconciliação oficial da HU-10 sem bloquear nova compra.
+  const {
+    recoverableOrderCode,
+    awaitingReconciliationOrderCode,
+  } = classifyPendingCheckoutOrders({
+    orders,
+    activeOrderReservation,
+    expiredPendingOrderReservation,
+    serverOffsetMs,
+    localNowMs: nowMs,
+  })
 
-  const pendingCodeFromReservation =
-    activeOrderReservation?.pedidoVinculado?.status === 'PENDENTE_PAGAMENTO'
-      ? activeOrderReservation.pedidoVinculado.codigoPedido
-      : null
-
-  const recoverableCode =
-    pendingRecoverableOrder?.codigoPedido ?? pendingCodeFromReservation
-
-  if (!activeOrder && recoverableCode) {
+  if (!activeOrder && recoverableOrderCode) {
     return (
       <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
         <Container>
@@ -440,11 +445,11 @@ export function Checkout() {
             <Badge tone="oliva">Pagamento em aberto</Badge>
             <h1 className="text-2xl font-semibold text-ink">Você possui um pedido pendente</h1>
             <p className="text-sm text-ink-soft">
-              O pedido <strong className="text-ink">{recoverableCode}</strong> ainda possui reserva ativa aguardando confirmação de pagamento.
+              O pedido <strong className="text-ink">{recoverableOrderCode}</strong> ainda possui reserva ativa aguardando confirmação de pagamento.
             </p>
             <div className="flex flex-wrap justify-center gap-3 pt-2">
               <ButtonLink
-                href={`/pedido/${encodeURIComponent(recoverableCode)}`}
+                href={`/pedido/${encodeURIComponent(recoverableOrderCode)}`}
                 variant="primary"
                 size="md"
               >
@@ -537,6 +542,36 @@ export function Checkout() {
     }
 
     if (cartLines.length === 0) {
+      if (awaitingReconciliationOrderCode) {
+        return (
+          <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
+            <Container>
+              <div className="mx-auto flex max-w-xl flex-col items-center gap-4 border border-border bg-surface p-8 text-center">
+                <AlertTriangle className="h-10 w-10 text-terracota-600" aria-hidden="true" />
+                <Badge tone="neutral">Prazo de pagamento atingido</Badge>
+                <h1 className="text-2xl font-semibold text-ink">
+                  Pedido aguardando atualização no servidor
+                </h1>
+                <p className="text-sm text-ink-soft">
+                  O pedido <strong className="text-ink">{awaitingReconciliationOrderCode}</strong> atingiu o prazo de pagamento e aguarda confirmação final de expiração ou reconciliação financeira pela plataforma.
+                </p>
+                <div className="flex flex-wrap justify-center gap-3 pt-2">
+                  <ButtonLink
+                    href={`/pedido/${encodeURIComponent(awaitingReconciliationOrderCode)}`}
+                    variant="primary"
+                    size="md"
+                  >
+                    Acompanhar pedido
+                  </ButtonLink>
+                  <ButtonLink href="/#vitrine" variant="outline" size="md">
+                    Voltar à vitrine
+                  </ButtonLink>
+                </div>
+              </div>
+            </Container>
+          </main>
+        )
+      }
       return <Navigate to="/carrinho" />
     }
 
@@ -723,6 +758,25 @@ export function Checkout() {
         </nav>
 
         <div className="mx-auto flex max-w-4xl flex-col gap-6 border border-border bg-surface p-6 sm:p-8">
+          {!activeOrder && awaitingReconciliationOrderCode && (
+            <div
+              role="status"
+              className="flex flex-wrap items-center justify-between gap-2 border border-border bg-surface-muted px-4 py-2.5 text-xs text-ink-soft"
+            >
+              <span>
+                O pedido anterior{' '}
+                <strong className="text-ink">{awaitingReconciliationOrderCode}</strong> atingiu o
+                prazo de pagamento e aguarda atualização ou reconciliação pelo servidor.
+              </span>
+              <Link
+                href={`/pedido/${encodeURIComponent(awaitingReconciliationOrderCode)}`}
+                className="font-medium text-terracota-600 underline-offset-4 hover:underline"
+              >
+                Acompanhar pedido
+              </Link>
+            </div>
+          )}
+
           <div className="flex flex-col items-center gap-3 text-center">
             {activeOrder?.status === 'RECUSADO' ? (
               <AlertTriangle className="h-11 w-11 text-danger" aria-hidden="true" />
@@ -1049,7 +1103,36 @@ export function Checkout() {
               </Button>
             )}
 
-            <ButtonLink href="/#vitrine" variant="primary" size="md">
+            {!activeOrder && expiredOnClock && cartLines.length > 0 && (
+              <Button
+                type="button"
+                variant="primary"
+                size="md"
+                disabled={isMutatingReservation}
+                aria-busy={isMutatingReservation}
+                onClick={async () => {
+                  setCancelledMessage(null)
+                  setShippingQuote(null)
+                  lastQuotedKeyRef.current = null
+                  await renewReservation()
+                }}
+              >
+                <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                {isMutatingReservation ? 'Renovando reserva…' : 'Renovar reserva'}
+              </Button>
+            )}
+
+            {!activeOrder && expiredOnClock && (
+              <ButtonLink href="/carrinho" variant="outline" size="md">
+                Ir para o carrinho
+              </ButtonLink>
+            )}
+
+            <ButtonLink
+              href="/#vitrine"
+              variant={!activeOrder && expiredOnClock && cartLines.length > 0 ? 'outline' : 'primary'}
+              size="md"
+            >
               Voltar à vitrine
             </ButtonLink>
           </div>
