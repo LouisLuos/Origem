@@ -1,5 +1,8 @@
 import { Queue, type JobsOptions } from 'bullmq';
-import { createBullMqConnectionOptions, type RedisConfigInput } from '../cache/redis.client.js';
+import {
+  createBullMqQueueConnectionOptions,
+  type RedisConfigInput,
+} from '../cache/redis.client.js';
 import {
   buildNotificationDefaultJobOptions,
   getNotificationQueuePolicy,
@@ -71,11 +74,25 @@ export function createBullMqNotificationQueue(opcoes?: {
   readonly policy?: Partial<NotificationQueuePolicy>;
 }): Queue<NotificationJobData> {
   const policy = getNotificationQueuePolicy(opcoes?.policy);
-  return new Queue<NotificationJobData>(policy.queueName, {
-    connection: createBullMqConnectionOptions(opcoes?.redisConfig),
+  const queue = new Queue<NotificationJobData>(policy.queueName, {
+    connection: createBullMqQueueConnectionOptions(opcoes?.redisConfig),
     prefix: policy.prefix,
     defaultJobOptions: buildNotificationDefaultJobOptions(policy),
   });
+
+  queue.on('error', (err) => {
+    console.error(
+      JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'ERROR',
+        evento: 'NOTIFICATION_QUEUE_ERROR',
+        queue: policy.queueName,
+        erro: sanitizarErroProvedor(err),
+      }),
+    );
+  });
+
+  return queue;
 }
 
 function sanitizarJobIdBullMq(chave: string): string {

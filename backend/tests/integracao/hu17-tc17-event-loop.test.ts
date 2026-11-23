@@ -6,7 +6,10 @@ import { randomUUID } from 'node:crypto';
 import { after, describe, it } from 'node:test';
 import { Queue } from 'bullmq';
 import { prisma } from '../../src/config/database.js';
-import { createBullMqConnectionOptions, pingRedis } from '../../src/cache/redis.client.js';
+import {
+  createBullMqQueueConnectionOptions,
+  pingRedis,
+} from '../../src/cache/redis.client.js';
 import { createNotificationProducer, type NotificationJobData } from '../../src/queues/notification.queue.js';
 import { prismaNotificacaoLogRepository } from '../../src/repositories/prismaNotificacaoLog.repository.js';
 
@@ -87,18 +90,27 @@ describe(
 
     after(async () => {
       await Promise.allSettled([encerrarProcesso(apiProc), encerrarProcesso(workerProc)]);
-      if (queue) {
-        await queue.obliterate({ force: true }).catch(() => {});
-        await queue.close();
+      try {
+        if (queue) {
+          await queue.obliterate({ force: true }).catch(() => {});
+          await queue.close();
+        }
+      } catch {
+        // segue limpeza
       }
-      if (provider503Server) {
-        await new Promise<void>((resolve) => provider503Server?.close(() => resolve()));
+      try {
+        if (provider503Server) {
+          await new Promise<void>((resolve) => provider503Server?.close(() => resolve()));
+        }
+      } catch {
+        // segue limpeza
       }
       if (logsCriadosIds.length > 0) {
         await prisma.$executeRaw`
           DELETE FROM "logs_notificacoes" WHERE "id" = ANY(${logsCriadosIds}::uuid[])
         `;
       }
+      await prisma.$disconnect().catch(() => {});
     });
 
     it('mantém API Express responsiva em processo separado enquanto worker executa retentativas HTTP 503 com Redis real', async () => {
@@ -165,9 +177,16 @@ describe(
       }
       assert.equal(workerPronto, true, 'Processo worker separado não inicializou a tempo.');
 
+      // Aquecimento prévio antes da janela de medição
+      await Promise.all([
+        fetch(`${apiBaseUrl}/health`),
+        fetch(`${apiBaseUrl}/produtos`),
+        prisma.$queryRaw`SELECT 1`,
+      ]);
+
       // 3) Publicar rajada de 15 notificações que sofrerão 3 tentativas x HTTP 503 = 45 falhas no worker
       queue = new Queue<NotificationJobData>(queueName, {
-        connection: createBullMqConnectionOptions(),
+        connection: createBullMqQueueConnectionOptions(),
         prefix,
       });
       const producer = createNotificationProducer({
@@ -182,7 +201,7 @@ describe(
         },
       });
 
-      // Enfileiramento síncrono unitário (medido separadamente antes da rajada)
+      // Enfileiramento síncrono unitário (medido com pool aquecido)
       const tUnitario = performance.now();
       const jobUnitario = await producer.enfileirar({
         eventoOrigem: 'Tc17LoadTest',
@@ -233,6 +252,7 @@ describe(
       const latenciasHealthMs: number[] = [];
       let errosHealth = 0;
       const totalRequisicoesHealth = 120; // 12 ondas x 10 requisições simultâneas
+      const inicioJanelaHealth = performance.now();
 
       for (let onda = 0; onda < 12; onda += 1) {
         await Promise.all(
@@ -250,6 +270,10 @@ describe(
         );
         await new Promise((r) => setTimeout(r, 280));
       }
+      const duracaoJanelaHealthMs = Number((performance.now() - inicioJanelaHealth).toFixed(2));
+      const throughputHealthReqPorSeg = Number(
+        ((totalRequisicoesHealth / duracaoJanelaHealthMs) * 1000).toFixed(2),
+      );
 
       // Medição complementar em endpoint conectado ao PostgreSQL (/api/v1/produtos)
       const latenciasProdutosMs: number[] = [];
@@ -296,6 +320,8 @@ describe(
         falhas503ExecutadasNoWorker: totalHits503NoProvedor,
         healthEndpoint: {
           requisicoes: totalRequisicoesHealth,
+          duracaoJanelaMs: duracaoJanelaHealthMs,
+          throughputReqPorSeg: throughputHealthReqPorSeg,
           erros: errosHealth,
           p50Ms: calcularPercentil(healthOrdenadas, 50),
           p95Ms: calcularPercentil(healthOrdenadas, 95),

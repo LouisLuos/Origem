@@ -4,18 +4,20 @@ import { after, before, describe, it } from 'node:test';
 import {
   HttpEmailProvider,
   UnconfiguredEmailProvider,
+  validarConfiguracaoProvedorEmail,
 } from '../../src/integrations/email.provider.js';
 import { NotificacaoProviderError } from '../../src/integrations/notificacaoProvider.contracts.js';
 import {
   HttpWhatsAppProvider,
   MetaWhatsAppCloudProvider,
   UnconfiguredWhatsAppProvider,
+  validarConfiguracaoProvedorWhatsapp,
 } from '../../src/integrations/whatsapp.provider.js';
 
 describe('HU-17 — Adaptadores externos (e-mail, WhatsApp oficial e classificação de falhas)', () => {
   let server: http.Server;
   let baseUrl = '';
-  let modoResposta: '200' | '503' | '429' | '400' | 'meta_130429' | 'slow' = '200';
+  let modoResposta: '200' | '500' | '503' | '429' | '400' | 'meta_130429' | 'slow' = '200';
   let ultimoPath = '';
   let ultimoHeaderIdempotency = '';
 
@@ -32,6 +34,12 @@ describe('HU-17 — Adaptadores externos (e-mail, WhatsApp oficial e classifica�
             res.end(JSON.stringify({ id: 'tardio' }));
           }
         }, 400);
+        return;
+      }
+
+      if (modoResposta === '500') {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
         return;
       }
 
@@ -98,6 +106,7 @@ describe('HU-17 — Adaptadores externos (e-mail, WhatsApp oficial e classifica�
     assert.equal(ultimoHeaderIdempotency, 'chave-email-1');
 
     for (const caso of [
+      { modo: '500' as const, transient: true, codigo: 'HTTP_500' },
       { modo: '503' as const, transient: true, codigo: 'HTTP_503' },
       { modo: '429' as const, transient: true, codigo: 'HTTP_429' },
       { modo: '400' as const, transient: false, codigo: 'HTTP_400' },
@@ -229,5 +238,30 @@ describe('HU-17 — Adaptadores externos (e-mail, WhatsApp oficial e classifica�
         idempotencyKey: 'off-2',
       }),
     );
+
+    const smtpIncompleto = validarConfiguracaoProvedorEmail({
+      EMAIL_PROVIDER: 'smtp',
+      SMTP_USER: 'usuario-teste',
+    });
+    assert.equal(smtpIncompleto.valido, false);
+    assert.equal(smtpIncompleto.configurado, false);
+    assert.equal(smtpIncompleto.erros.length >= 2, true);
+    assert.equal(smtpIncompleto.erros.join(' ').includes('usuario-teste'), false);
+
+    const metaIncompleto = validarConfiguracaoProvedorWhatsapp({
+      WHATSAPP_PROVIDER: 'meta_cloud',
+      WHATSAPP_ACCESS_TOKEN: 'segredo-nao-vazar',
+    });
+    assert.equal(metaIncompleto.valido, false);
+    assert.equal(metaIncompleto.configurado, false);
+    assert.equal(metaIncompleto.erros.join(' ').includes('segredo-nao-vazar'), false);
+
+    const metaValido = validarConfiguracaoProvedorWhatsapp({
+      WHATSAPP_PROVIDER: 'meta_cloud',
+      WHATSAPP_PHONE_NUMBER_ID: '123456',
+      WHATSAPP_ACCESS_TOKEN: 'segredo',
+    });
+    assert.equal(metaValido.valido, true);
+    assert.equal(metaValido.configurado, true);
   });
 });

@@ -4,7 +4,10 @@ import { randomUUID } from 'node:crypto';
 import { after, before, describe, it } from 'node:test';
 import { Queue } from 'bullmq';
 import { prisma } from '../../src/config/database.js';
-import { createBullMqConnectionOptions, pingRedis } from '../../src/cache/redis.client.js';
+import {
+  createBullMqQueueConnectionOptions,
+  pingRedis,
+} from '../../src/cache/redis.client.js';
 import { HttpEmailProvider } from '../../src/integrations/email.provider.js';
 import { HttpWhatsAppProvider } from '../../src/integrations/whatsapp.provider.js';
 import { executarFiscalizacaoSlaPostagem } from '../../src/jobs/checkPostageSla.job.js';
@@ -161,7 +164,7 @@ describe(
         data: {
           usuarioId: uArt1.id,
           biografiaCultural: 'Biografia teste HU-17 ateliê 1.',
-          tipoChavePix: 'ALEATORIA',
+          tipoChavePix: 'EVP',
           chavePixCriptografada: 'enc-teste-hu17-1',
         },
       });
@@ -169,7 +172,7 @@ describe(
         data: {
           usuarioId: uArt2.id,
           biografiaCultural: 'Biografia teste HU-17 ateliê 2.',
-          tipoChavePix: 'ALEATORIA',
+          tipoChavePix: 'EVP',
           chavePixCriptografada: 'enc-teste-hu17-2',
         },
       });
@@ -195,7 +198,7 @@ describe(
 
       // 3) Inicializar Fila + Worker BullMQ reais com backoff exponencial 1s e 3 tentativas
       queue = new Queue<NotificationJobData>(queueName, {
-        connection: createBullMqConnectionOptions(),
+        connection: createBullMqQueueConnectionOptions(),
         prefix,
       });
 
@@ -235,13 +238,25 @@ describe(
     });
 
     after(async () => {
-      if (workerHandle) await workerHandle.close();
-      if (queue) {
-        await queue.obliterate({ force: true }).catch(() => {});
-        await queue.close();
+      try {
+        if (workerHandle) await workerHandle.close();
+      } catch {
+        // segue limpeza do banco
       }
-      if (providerServer) {
-        await new Promise<void>((resolve) => providerServer.close(() => resolve()));
+      try {
+        if (queue) {
+          await queue.obliterate({ force: true }).catch(() => {});
+          await queue.close();
+        }
+      } catch {
+        // segue limpeza do banco
+      }
+      try {
+        if (providerServer) {
+          await new Promise<void>((resolve) => providerServer.close(() => resolve()));
+        }
+      } catch {
+        // segue limpeza do banco
       }
       if (logsParaLimparIds.length > 0) {
         await prisma.$executeRaw`
@@ -263,6 +278,7 @@ describe(
           where: { id: { in: usuariosCriadosIds } },
         });
       }
+      await prisma.$disconnect().catch(() => {});
     });
 
     it('BDD 1: processa PagamentoAprovado de forma assíncrona, envia recibo + avisos aos ateliês, audita e evita duplicidade', async () => {

@@ -189,6 +189,63 @@ export class HttpWhatsAppProvider implements WhatsAppProvider {
   }
 }
 
+export interface WhatsAppConfigValidationResult {
+  readonly valido: boolean;
+  readonly provider: string;
+  readonly configurado: boolean;
+  readonly erros: string[];
+}
+
+export function validarConfiguracaoProvedorWhatsapp(
+  config: Partial<{
+    WHATSAPP_PROVIDER: 'disabled' | 'meta_cloud' | 'http_webhook';
+    WHATSAPP_API_BASE_URL: string;
+    WHATSAPP_PHONE_NUMBER_ID: string;
+    WHATSAPP_ACCESS_TOKEN: string;
+    WHATSAPP_HTTP_ENDPOINT: string;
+  }> = env,
+): WhatsAppConfigValidationResult {
+  const modo = config.WHATSAPP_PROVIDER ?? 'disabled';
+  const erros: string[] = [];
+
+  if (modo === 'disabled') {
+    return { valido: true, provider: 'disabled', configurado: false, erros };
+  }
+
+  if (modo === 'meta_cloud') {
+    if (!config.WHATSAPP_PHONE_NUMBER_ID?.trim()) {
+      erros.push('WHATSAPP_PHONE_NUMBER_ID é obrigatório quando WHATSAPP_PROVIDER=meta_cloud.');
+    }
+    if (!config.WHATSAPP_ACCESS_TOKEN?.trim()) {
+      erros.push('WHATSAPP_ACCESS_TOKEN é obrigatório quando WHATSAPP_PROVIDER=meta_cloud.');
+    }
+    const baseUrl = (config.WHATSAPP_API_BASE_URL ?? env.WHATSAPP_API_BASE_URL).trim();
+    if (!/^https?:\/\/.+/.test(baseUrl)) {
+      erros.push('WHATSAPP_API_BASE_URL deve ser uma URL HTTP/HTTPS válida.');
+    }
+    return {
+      valido: erros.length === 0,
+      provider: 'meta_cloud',
+      configurado: erros.length === 0,
+      erros,
+    };
+  }
+
+  if (modo === 'http_webhook') {
+    if (!config.WHATSAPP_HTTP_ENDPOINT?.trim()) {
+      erros.push('WHATSAPP_HTTP_ENDPOINT é obrigatório quando WHATSAPP_PROVIDER=http_webhook.');
+    }
+    return {
+      valido: erros.length === 0,
+      provider: 'http_webhook',
+      configurado: erros.length === 0,
+      erros,
+    };
+  }
+
+  return { valido: true, provider: 'disabled', configurado: false, erros };
+}
+
 export function createWhatsAppProviderFromEnv(
   config: Partial<{
     WHATSAPP_PROVIDER: 'disabled' | 'meta_cloud' | 'http_webhook';
@@ -201,11 +258,16 @@ export function createWhatsAppProviderFromEnv(
     NOTIFICATION_PROVIDER_TIMEOUT_MS: number;
   }> = env,
 ): WhatsAppProvider {
-  const modo = config.WHATSAPP_PROVIDER ?? 'disabled';
+  const validacao = validarConfiguracaoProvedorWhatsapp(config);
   const defaultLanguage = config.WHATSAPP_DEFAULT_LANGUAGE ?? env.WHATSAPP_DEFAULT_LANGUAGE;
   const timeoutMs = config.NOTIFICATION_PROVIDER_TIMEOUT_MS ?? env.NOTIFICATION_PROVIDER_TIMEOUT_MS;
 
-  if (modo === 'meta_cloud' && config.WHATSAPP_PHONE_NUMBER_ID && config.WHATSAPP_ACCESS_TOKEN) {
+  if (
+    validacao.configurado &&
+    validacao.provider === 'meta_cloud' &&
+    config.WHATSAPP_PHONE_NUMBER_ID &&
+    config.WHATSAPP_ACCESS_TOKEN
+  ) {
     return new MetaWhatsAppCloudProvider({
       baseUrl: config.WHATSAPP_API_BASE_URL ?? env.WHATSAPP_API_BASE_URL,
       phoneNumberId: config.WHATSAPP_PHONE_NUMBER_ID,
@@ -215,7 +277,7 @@ export function createWhatsAppProviderFromEnv(
     });
   }
 
-  if (modo === 'http_webhook' && config.WHATSAPP_HTTP_ENDPOINT) {
+  if (validacao.configurado && validacao.provider === 'http_webhook' && config.WHATSAPP_HTTP_ENDPOINT) {
     return new HttpWhatsAppProvider({
       endpoint: config.WHATSAPP_HTTP_ENDPOINT,
       apiKey: config.WHATSAPP_HTTP_API_KEY,

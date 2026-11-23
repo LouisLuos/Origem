@@ -10,11 +10,16 @@ export interface RedisConfigInput {
   readonly db?: number;
 }
 
-/**
- * Converte configuração de ambiente em `ConnectionOptions` compatível com BullMQ v6.
- * Não define `keyPrefix` na conexão porque BullMQ utiliza sua opção própria `prefix`.
- */
-export function createBullMqConnectionOptions(config?: RedisConfigInput): ConnectionOptions {
+interface ParsedRedisBaseOptions {
+  readonly host: string;
+  readonly port: number;
+  readonly username?: string;
+  readonly password?: string;
+  readonly db: number;
+  readonly tls?: Record<string, unknown>;
+}
+
+function buildBaseRedisOptions(config?: RedisConfigInput): ParsedRedisBaseOptions {
   const url = config?.redisUrl ?? env.REDIS_URL;
 
   if (url) {
@@ -29,8 +34,6 @@ export function createBullMqConnectionOptions(config?: RedisConfigInput): Connec
       password: parsed.password ? decodeURIComponent(parsed.password) : undefined,
       db: Number.isInteger(dbParsed) && dbParsed >= 0 ? dbParsed : 0,
       tls: parsed.protocol === 'rediss:' ? {} : undefined,
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
     };
   }
 
@@ -39,34 +42,53 @@ export function createBullMqConnectionOptions(config?: RedisConfigInput): Connec
     port: config?.port ?? env.REDIS_PORT,
     password: config?.password ?? env.REDIS_PASSWORD,
     db: config?.db ?? env.REDIS_DB,
+  };
+}
+
+/**
+ * Opções de conexão fail-fast para produtores/`Queue` BullMQ (não bloqueia a API se o Redis cair — RNF-12).
+ */
+export function createBullMqQueueConnectionOptions(config?: RedisConfigInput): ConnectionOptions {
+  return {
+    ...buildBaseRedisOptions(config),
+    maxRetriesPerRequest: 2,
+    enableReadyCheck: false,
+    connectTimeout: 3000,
+    retryStrategy: (times: number) => (times > 3 ? null : Math.min(times * 200, 1000)),
+  };
+}
+
+/**
+ * Opções de conexão dedicadas ao `Worker` BullMQ (exige `maxRetriesPerRequest: null` para comandos bloqueantes).
+ */
+export function createBullMqWorkerConnectionOptions(config?: RedisConfigInput): ConnectionOptions {
+  return {
+    ...buildBaseRedisOptions(config),
     maxRetriesPerRequest: null,
     enableReadyCheck: false,
   };
 }
 
+/** Alias preservado para compatibilidade; aponta para as opções do Worker. */
+export const createBullMqConnectionOptions = createBullMqWorkerConnectionOptions;
+
 /**
  * Cria cliente ioredis dedicado para diagnósticos ou limpeza controlada de testes.
  */
 export function createRedisDiagnosticClient(config?: RedisConfigInput): Redis {
-  const opts = createBullMqConnectionOptions(config) as {
-    host?: string;
-    port?: number;
-    username?: string;
-    password?: string;
-    db?: number;
-    tls?: Record<string, unknown>;
-  };
+  const base = buildBaseRedisOptions(config);
 
   return new Redis({
-    host: opts.host,
-    port: opts.port,
-    username: opts.username,
-    password: opts.password,
-    db: opts.db,
-    tls: opts.tls,
+    host: base.host,
+    port: base.port,
+    username: base.username,
+    password: base.password,
+    db: base.db,
+    tls: base.tls,
     lazyConnect: true,
     maxRetriesPerRequest: 1,
     connectTimeout: 2000,
+    retryStrategy: () => null,
   });
 }
 

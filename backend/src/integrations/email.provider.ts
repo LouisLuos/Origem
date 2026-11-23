@@ -192,6 +192,70 @@ export class HttpEmailProvider implements EmailProvider {
   }
 }
 
+export interface ProviderConfigValidationResult {
+  readonly valido: boolean;
+  readonly provider: string;
+  readonly configurado: boolean;
+  readonly erros: string[];
+}
+
+export function validarConfiguracaoProvedorEmail(
+  config: Partial<{
+    EMAIL_PROVIDER: 'disabled' | 'smtp' | 'http_webhook';
+    EMAIL_FROM: string;
+    SMTP_HOST: string;
+    SMTP_PORT: number;
+    SMTP_SECURE: boolean;
+    SMTP_USER: string;
+    SMTP_PASS: string;
+    EMAIL_HTTP_ENDPOINT: string;
+    EMAIL_HTTP_API_KEY: string;
+  }> = env,
+): ProviderConfigValidationResult {
+  const modo = config.EMAIL_PROVIDER ?? 'disabled';
+  const from = (config.EMAIL_FROM ?? env.EMAIL_FROM).trim();
+  const erros: string[] = [];
+
+  if (modo === 'disabled') {
+    return { valido: true, provider: 'disabled', configurado: false, erros };
+  }
+
+  if (!from || !from.includes('@')) {
+    erros.push('EMAIL_FROM inválido ou ausente.');
+  }
+
+  if (modo === 'smtp') {
+    if (!config.SMTP_HOST?.trim()) {
+      erros.push('SMTP_HOST é obrigatório quando EMAIL_PROVIDER=smtp.');
+    }
+    const temUser = Boolean(config.SMTP_USER?.trim());
+    const temPass = Boolean(config.SMTP_PASS?.trim());
+    if (temUser !== temPass) {
+      erros.push('SMTP_USER e SMTP_PASS devem ser configurados em conjunto quando houver autenticação SMTP.');
+    }
+    return {
+      valido: erros.length === 0,
+      provider: 'smtp',
+      configurado: erros.length === 0,
+      erros,
+    };
+  }
+
+  if (modo === 'http_webhook') {
+    if (!config.EMAIL_HTTP_ENDPOINT?.trim()) {
+      erros.push('EMAIL_HTTP_ENDPOINT é obrigatório quando EMAIL_PROVIDER=http_webhook.');
+    }
+    return {
+      valido: erros.length === 0,
+      provider: 'http_webhook',
+      configurado: erros.length === 0,
+      erros,
+    };
+  }
+
+  return { valido: true, provider: 'disabled', configurado: false, erros };
+}
+
 export function createEmailProviderFromEnv(
   config: Partial<{
     EMAIL_PROVIDER: 'disabled' | 'smtp' | 'http_webhook';
@@ -206,11 +270,11 @@ export function createEmailProviderFromEnv(
     NOTIFICATION_PROVIDER_TIMEOUT_MS: number;
   }> = env,
 ): EmailProvider {
-  const modo = config.EMAIL_PROVIDER ?? 'disabled';
+  const validacao = validarConfiguracaoProvedorEmail(config);
   const from = config.EMAIL_FROM ?? env.EMAIL_FROM;
   const timeoutMs = config.NOTIFICATION_PROVIDER_TIMEOUT_MS ?? env.NOTIFICATION_PROVIDER_TIMEOUT_MS;
 
-  if (modo === 'smtp' && config.SMTP_HOST) {
+  if (validacao.configurado && validacao.provider === 'smtp' && config.SMTP_HOST) {
     return new SmtpEmailProvider({
       host: config.SMTP_HOST,
       port: config.SMTP_PORT ?? env.SMTP_PORT,
@@ -222,7 +286,7 @@ export function createEmailProviderFromEnv(
     });
   }
 
-  if (modo === 'http_webhook' && config.EMAIL_HTTP_ENDPOINT) {
+  if (validacao.configurado && validacao.provider === 'http_webhook' && config.EMAIL_HTTP_ENDPOINT) {
     return new HttpEmailProvider({
       endpoint: config.EMAIL_HTTP_ENDPOINT,
       apiKey: config.EMAIL_HTTP_API_KEY,

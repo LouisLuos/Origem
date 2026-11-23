@@ -1,12 +1,21 @@
+import { prisma } from './config/database.js';
 import { env } from './config/env.js';
-import { createEmailProviderFromEnv } from './integrations/email.provider.js';
-import { createWhatsAppProviderFromEnv } from './integrations/whatsapp.provider.js';
+import {
+  createEmailProviderFromEnv,
+  validarConfiguracaoProvedorEmail,
+} from './integrations/email.provider.js';
+import {
+  createWhatsAppProviderFromEnv,
+  validarConfiguracaoProvedorWhatsapp,
+} from './integrations/whatsapp.provider.js';
 import { iniciarAgendadorSlaPostagem } from './jobs/checkPostageSla.job.js';
 import { createNotificationProducer } from './queues/notification.queue.js';
 import { createNotificationWorker } from './queues/notification.worker.js';
 import { prismaNotificacaoLogRepository } from './repositories/prismaNotificacaoLog.repository.js';
 import { unconfiguredSubpedidoSlaRepository } from './repositories/contracts/slaPostagem.contracts.js';
 
+const validacaoEmail = validarConfiguracaoProvedorEmail();
+const validacaoWhatsapp = validarConfiguracaoProvedorWhatsapp();
 const emailProvider = createEmailProviderFromEnv();
 const whatsappProvider = createWhatsAppProviderFromEnv();
 
@@ -38,8 +47,12 @@ console.info(
     backoffInitialMs: env.NOTIFICATION_BACKOFF_INITIAL_MS,
     emailProvider: emailProvider.nome,
     emailConfigurado: emailProvider.configurado,
+    emailConfigValida: validacaoEmail.valido,
+    emailConfigErros: validacaoEmail.erros,
     whatsappProvider: whatsappProvider.nome,
     whatsappConfigurado: whatsappProvider.configurado,
+    whatsappConfigValida: validacaoWhatsapp.valido,
+    whatsappConfigErros: validacaoWhatsapp.erros,
     slaSubpedidoRepoConfigurado: unconfiguredSubpedidoSlaRepository.configurado,
   }),
 );
@@ -60,7 +73,7 @@ async function handleShutdown(signal: string): Promise<void> {
   );
 
   agendadorSla.parar();
-  await Promise.allSettled([workerHandle.close(), producer.fechar()]);
+  await Promise.allSettled([workerHandle.close(), producer.fechar(), prisma.$disconnect()]);
   process.exit(0);
 }
 
