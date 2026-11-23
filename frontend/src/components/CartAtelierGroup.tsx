@@ -10,7 +10,7 @@ export interface CartAtelierGroupProps {
   atelierName: string
   hub: string
   lines: CartLine[]
-  shipping: number
+  shipping?: number
   onQuantityChange: (productId: string, quantity: number) => void
   onRemoveItem: (productId: string) => void
 }
@@ -83,19 +83,33 @@ export function CartAtelierGroup({
                   </span>
                 )}
                 {typeof product.stock === 'number' && product.stock > 3 && (
-                  <span className="text-xs text-ink-soft">{product.stock} disponíveis em estoque</span>
+                  <span className="text-xs text-ink-soft/70">
+                    Estoque disponível: {product.stock}
+                  </span>
                 )}
+                {product.stock === 0 && (
+                  <span className="text-xs font-medium text-terracota-600">
+                    Esgotado — remova para continuar
+                  </span>
+                )}
+              </div>
 
-                <div className="mt-2 flex h-9 w-fit items-center border border-border">
+              <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-start">
+                {/* Controle de Quantidade */}
+                <div className="flex items-center border border-border">
                   <button
                     type="button"
                     onClick={() => onQuantityChange(product.id, quantity - 1)}
+                    disabled={quantity <= 1}
                     aria-label={`Diminuir quantidade de ${product.title}`}
-                    className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    <Minus className="h-3 w-3" aria-hidden="true" />
+                    <Minus className="h-3.5 w-3.5" aria-hidden="true" />
                   </button>
-                  <span aria-live="polite" className="w-8 text-center text-xs font-semibold text-ink">
+                  <span
+                    aria-label={`Quantidade: ${quantity}`}
+                    className="flex h-8 w-8 select-none items-center justify-center text-center text-xs font-medium text-ink"
+                  >
                     {quantity}
                   </span>
                   <button
@@ -103,32 +117,26 @@ export function CartAtelierGroup({
                     onClick={() => onQuantityChange(product.id, quantity + 1)}
                     disabled={quantity >= availableQuantity(product)}
                     aria-label={`Aumentar quantidade de ${product.title}`}
-                    className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-8 w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    <Plus className="h-3 w-3" aria-hidden="true" />
+                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                   </button>
                 </div>
 
-                {product.stock !== undefined && quantity > product.stock && (
-                  <p role="alert" className="text-xs text-danger">
-                    {product.stock === 0
-                      ? 'Peça esgotada. Remova-a para finalizar a compra.'
-                      : `Restam apenas ${product.stock} em estoque.`}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
-                <span className="font-semibold text-ink">{currency.format(product.price * quantity)}</span>
-                <button
-                  type="button"
-                  onClick={() => onRemoveItem(product.id)}
-                  aria-label={`Remover ${product.title} do carrinho`}
-                  className="flex cursor-pointer items-center gap-1 text-xs text-ink-soft transition-colors hover:text-terracota-600"
-                >
-                  <Trash2 className="h-3 w-3" aria-hidden="true" />
-                  Remover
-                </button>
+                <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
+                  <span className="font-semibold text-ink">
+                    {currency.format(product.price * quantity)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onRemoveItem(product.id)}
+                    aria-label={`Remover ${product.title} do carrinho`}
+                    className="flex cursor-pointer items-center gap-1 text-xs text-ink-soft transition-colors hover:text-terracota-600"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    Remover
+                  </button>
+                </div>
               </div>
             </div>
           </li>
@@ -139,8 +147,10 @@ export function CartAtelierGroup({
       <footer className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-border pt-3 text-xs text-ink-soft">
         <div className="flex items-center gap-1.5">
           <span>Frete de envio ({hub}):</span>
-          <span className={shipping === 0 ? 'font-semibold text-oliva-600' : 'font-semibold text-ink'}>
-            {shipping === 0 ? 'Grátis' : currency.format(shipping)}
+          <span className={typeof shipping === 'number' && shipping === 0 ? 'font-semibold text-oliva-600' : 'font-semibold text-ink'}>
+            {typeof shipping === 'number'
+              ? (shipping === 0 ? 'Grátis' : currency.format(shipping))
+              : 'Calculado no checkout'}
           </span>
         </div>
         <div className="flex items-center gap-1.5">

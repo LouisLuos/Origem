@@ -9,7 +9,6 @@ import { CartAtelierGroup } from '@/components/CartAtelierGroup'
 import { CartReservationTimer } from '@/components/CartReservationTimer'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCart } from '@/context/CartContext'
-import { FREE_SHIPPING_THRESHOLD, calculateShipping } from '@/context/OrderContext'
 import { removeStorage } from '@/services/storage'
 
 export function Cart() {
@@ -50,18 +49,12 @@ export function Cart() {
         (sum, l) => sum + l.product.price * l.quantity,
         0,
       )
-      const groupShipping = calculateShipping(groupSubtotal)
       return {
         ...group,
         subtotal: groupSubtotal,
-        shipping: groupShipping,
       }
     })
   }, [cartLines])
-
-  const totalShipping = atelierGroups.reduce((sum, g) => sum + g.shipping, 0)
-  const grandTotal = subtotal + totalShipping
-  const missingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
 
   return (
     <main id="main-content" className="pb-16 pt-24 sm:pb-24 sm:pt-28">
@@ -112,62 +105,48 @@ export function Cart() {
                     atelierName={group.atelierName}
                     hub={group.hub}
                     lines={group.lines}
-                    shipping={group.shipping}
                     onQuantityChange={setQuantity}
                     onRemoveItem={removeItem}
                   />
                 ))}
               </div>
 
-              {/* Resumo do Pedido com Frete Fracionado e Consolidado */}
+              {/* Resumo do Pedido com Frete Fracionado por Origem e Consolidado */}
               <aside className="flex h-fit flex-col gap-4 bg-aubergine-400/10 border border-border p-6">
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-ink">Resumo do pedido</h2>
 
                 <div className="flex flex-col gap-2 text-sm text-ink-soft">
                   <div className="flex items-center justify-between">
-                    <span>Subtotal das peças</span>
+                    <span>Subtotal</span>
                     <span className="font-medium text-ink">{currency.format(subtotal)}</span>
                   </div>
 
-                  {/* Detalhamento dos fretes por ateliê */}
-                  <div className="border-t border-border pt-2 flex flex-col gap-1.5 text-xs">
-                    <div className="flex items-center justify-between font-medium text-ink">
-                      <span>Frete ({atelierGroups.length} {atelierGroups.length === 1 ? 'ateliê' : 'ateliês'})</span>
-                      <span className={totalShipping === 0 ? 'text-oliva-600' : 'text-ink'}>
-                        {totalShipping === 0 ? 'Grátis' : currency.format(totalShipping)}
-                      </span>
-                    </div>
-
-                    {atelierGroups.length > 1 && (
-                      <ul className="flex flex-col gap-1 pl-2 text-[11px] text-ink-soft border-l border-border">
-                        {atelierGroups.map((g) => (
-                          <li key={g.atelierName} className="flex justify-between">
-                            <span className="truncate pr-2">{g.atelierName} ({g.hub})</span>
-                            <span>{g.shipping === 0 ? 'Grátis' : currency.format(g.shipping)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                  <div className="flex items-center justify-between">
+                    <span>Frete ({atelierGroups.length} {atelierGroups.length === 1 ? 'origem' : 'origens'})</span>
+                    <span className="text-xs font-medium text-ink-soft">
+                      Calculado no checkout por origem
+                    </span>
                   </div>
+
+                  {atelierGroups.length > 1 && (
+                    <ul className="flex flex-col gap-1 pl-2 text-[11px] text-ink-soft border-l border-border">
+                      {atelierGroups.map((g) => (
+                        <li key={g.atelierName} className="flex justify-between">
+                          <span className="truncate pr-2">{g.atelierName}</span>
+                          <span className="text-ink-soft">Polo {g.hub}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
                 <p className="border-t border-border pt-3 text-xs text-ink-soft">
                   Cada ateliê expede diretamente do seu polo cultural; o valor exato do frete é cotado pelo backend após informar o CEP de entrega no checkout.
                 </p>
 
-                {missingForFreeShipping > 0 ? (
-                  <p className="border-t border-border pt-3 text-xs text-ink-soft">
-                    Faltam {currency.format(missingForFreeShipping)} em compras para frete grátis nacional.
-                  </p>
-                ) : (
-                  <p className="border-t border-border pt-3 text-xs text-oliva-600">
-                    Seu pedido tem direito a frete grátis.
-                  </p>
-                )}
-
                 <div className="flex items-center justify-between border-t border-border pt-3 text-base font-semibold text-ink">
-                  <span>Total consolidado</span>
-                  <span>{currency.format(grandTotal)}</span>
+                  <span>Subtotal estimado</span>
+                  <span>{currency.format(subtotal)}</span>
                 </div>
 
                 {hasUnavailableItem ? (
