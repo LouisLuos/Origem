@@ -66,6 +66,7 @@ function criarDubles(opcoes: { falharArmazenamentoNa?: number; falharRepositorio
         larguraCm: dados.larguraCm,
         alturaCm: dados.alturaCm,
         isFragil: dados.isFragil,
+        quantidadeEstoque: dados.quantidadeEstoque,
         status: dados.status,
         fotos: dados.fotos.map((foto, index) => ({ id: `foto-${index + 1}`, url: foto.url, isPrincipal: foto.isPrincipal })),
       };

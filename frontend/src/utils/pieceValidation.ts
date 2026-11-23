@@ -3,6 +3,7 @@ import {
   PIECE_MAX_PHOTOS,
   PIECE_MAX_PHOTO_BYTES,
   PIECE_MIN_PHOTOS,
+  PIECE_MIN_STOCK,
   PIECE_MIN_WEIGHT_GRAMS,
   PIECE_MIN_WEIGHT_MESSAGE,
   PIECE_PHOTO_TYPES,
@@ -15,6 +16,7 @@ export interface PieceDraft {
   description: string
   typology: string
   price: string
+  stock: string
   weight: string
   length: string
   width: string
@@ -28,6 +30,7 @@ export type PieceDraftField =
   | 'description'
   | 'typology'
   | 'price'
+  | 'stock'
   | 'weight'
   | 'length'
   | 'width'
@@ -77,6 +80,11 @@ export function validatePieceDraft(draft: PieceDraft): PieceDraftErrors {
   else if (price <= 0) errors.price = 'O preço deve ser maior que zero.'
   else if (Math.abs(price * 100 - Math.round(price * 100)) > 1e-6)
     errors.price = 'O preço deve ter no máximo duas casas decimais.'
+
+  const stock = parseDecimal(draft.stock)
+  if (!Number.isFinite(stock) || !Number.isInteger(stock) || stock < PIECE_MIN_STOCK) {
+    errors.stock = 'A quantidade em estoque deve ser um número inteiro maior ou igual a 1.'
+  }
 
   const weight = parseDecimal(draft.weight)
   if (!Number.isFinite(weight)) errors.weight = 'Informe o peso embalado em gramas.'

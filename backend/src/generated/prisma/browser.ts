@@ -69,3 +69,14 @@ export type AuthLoginAttempt = Prisma.AuthLoginAttemptModel
  * de recursos inexistentes informados em tentativas negadas.
  */
 export type AuditoriaSeguranca = Prisma.AuditoriaSegurancaModel
+/**
+ * Model ReservaGrupo
+ * Cabeçalho de operação de reserva: agrupa 1 ou N itens reservados atomicamente
+ * e garante idempotência única por comprador + chave de idempotência.
+ */
+export type ReservaGrupo = Prisma.ReservaGrupoModel
+/**
+ * Model Reserva
+ * Reserva temporária de unidades de uma peça (compatível com lotes limitados da HU-06 e peça única da HU-09).
+ */
+export type Reserva = Prisma.ReservaModel

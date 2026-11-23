@@ -27,3 +27,13 @@ export const StatusPeca = {
 } as const
 
 export type StatusPeca = (typeof StatusPeca)[keyof typeof StatusPeca]
+
+
+export const StatusReserva = {
+  ATIVA: 'ATIVA',
+  CONFIRMADA: 'CONFIRMADA',
+  CANCELADA: 'CANCELADA',
+  EXPIRADA: 'EXPIRADA'
+} as const
+
+export type StatusReserva = (typeof StatusReserva)[keyof typeof StatusReserva]

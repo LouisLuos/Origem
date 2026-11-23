@@ -6,6 +6,8 @@ import { cn } from '../cn'
 import { currency } from '../format'
 import { Badge } from './Badge'
 
+const LOW_STOCK_THRESHOLD = 3
+
 export interface Product {
   id: string
   title: string
@@ -33,7 +35,10 @@ export interface ProductCardProps {
 }
 
 export function ProductCard({ product, className, onToggleFavorite, isFavorite, onAddToCart }: ProductCardProps) {
-  const isSoldOut = product.stock === 0
+  const hasStockNumber = typeof product.stock === 'number' && Number.isFinite(product.stock)
+  const stockCount = hasStockNumber ? Math.max(0, Math.floor(product.stock as number)) : undefined
+  const isSoldOut = stockCount === 0
+  const isLowStock = stockCount !== undefined && stockCount > 0 && stockCount <= LOW_STOCK_THRESHOLD
   const hasDiscount = !!product.compareAtPrice && product.compareAtPrice > product.price
 
   return (
@@ -52,7 +57,13 @@ export function ProductCard({ product, className, onToggleFavorite, isFavorite, 
           </Badge>
         )}
 
-        {hasDiscount && !isSoldOut && (
+          {!isSoldOut && isLowStock && (
+        <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-terracota/90 text-[11px] font-medium tracking-wide text-creme-50">
+          Últimas unidades
+        </Badge>
+        )}
+
+        {hasDiscount && !isSoldOut && !isLowStock && (
           <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-terracota-400/90 text-[11px] font-medium tracking-wide text-white">
             Oferta
           </Badge>
@@ -90,6 +101,16 @@ export function ProductCard({ product, className, onToggleFavorite, isFavorite, 
           )}
           <span>{currency.format(product.price)}</span>
         </div>
+
+        {isSoldOut && <span className="text-[11px] font-semibold text-danger">Esgotado</span>}
+        {!isSoldOut && isLowStock && stockCount !== undefined && (
+          <span className="text-[11px] font-medium text-warning">
+            Restam poucas unidades ({stockCount} {stockCount === 1 ? 'disponível' : 'disponíveis'})
+          </span>
+        )}
+        {!isSoldOut && !isLowStock && stockCount !== undefined && (
+          <span className="text-[11px] text-ink-soft">{stockCount} disponíveis</span>
+        )}
       </div>
 
       <Link href={`/produtos/${product.id}`} className="absolute inset-0 z-10" aria-label={`Ver detalhes de ${product.title}`} />

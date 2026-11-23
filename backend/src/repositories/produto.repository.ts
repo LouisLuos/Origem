@@ -14,6 +14,9 @@ export interface ProdutoPublico {
   price: number;
   stock: number;
   active: boolean;
+  /** Identificador do ateliê e status real (presentes nas peças persistidas no PostgreSQL). */
+  atelieId?: string;
+  status?: string;
   ownerEmail?: string | null;
   imageUrl: string;
   imageAlt: string;

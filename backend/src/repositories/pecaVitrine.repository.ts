@@ -15,11 +15,13 @@ export interface FontePecasVitrine {
 
 const selecaoVitrine = {
   id: true,
+  atelieId: true,
   titulo: true,
   descricao: true,
   tipologia: true,
   preco: true,
   quantidadeEstoque: true,
+  status: true,
   atelie: {
     select: {
       poloCultural: true,
@@ -31,11 +33,13 @@ const selecaoVitrine = {
 
 type PecaVitrineRegistro = {
   id: string;
+  atelieId: string;
   titulo: string;
   descricao: string;
   tipologia: string;
   preco: { toNumber(): number };
   quantidadeEstoque: number;
+  status: string;
   atelie: { poloCultural: string; artesao: { usuario: { nome: string } } };
   fotos: { url: string; isPrincipal: boolean }[];
 };
@@ -46,15 +50,18 @@ export function mapPecaParaProdutoPublico(peca: PecaVitrineRegistro): ProdutoPub
   const galeria = principal
     ? [principal.url, ...peca.fotos.filter((foto) => foto !== principal).map((foto) => foto.url)]
     : [];
+  const estoqueVisivel = peca.status === 'DISPONIVEL' ? peca.quantidadeEstoque : 0;
   return {
     id: peca.id,
+    atelieId: peca.atelieId,
+    status: peca.status,
     title: peca.titulo,
     artisan: artesao,
     artisanId: buildArtisanId(artesao),
     hub: peca.atelie.poloCultural,
     technique: peca.tipologia,
     price: peca.preco.toNumber(),
-    stock: peca.quantidadeEstoque,
+    stock: estoqueVisivel,
     active: true,
     imageUrl: principal?.url ?? '',
     imageAlt: peca.titulo,
@@ -66,7 +73,7 @@ export function mapPecaParaProdutoPublico(peca: PecaVitrineRegistro): ProdutoPub
 export const prismaFontePecasVitrine: FontePecasVitrine = {
   async listarPublicadas() {
     const pecas = await prisma.peca.findMany({
-      where: { status: 'DISPONIVEL' },
+      where: { status: { in: ['DISPONIVEL', 'RESERVADA', 'VENDIDA'] } },
       select: selecaoVitrine,
       orderBy: { criadoEm: 'desc' },
     });
@@ -75,7 +82,10 @@ export const prismaFontePecasVitrine: FontePecasVitrine = {
 
   async buscarPublicadaPorId(id) {
     if (!isUuid(id)) return null;
-    const peca = await prisma.peca.findFirst({ where: { id, status: 'DISPONIVEL' }, select: selecaoVitrine });
+    const peca = await prisma.peca.findFirst({
+      where: { id, status: { in: ['DISPONIVEL', 'RESERVADA', 'VENDIDA'] } },
+      select: selecaoVitrine,
+    });
     return peca ? mapPecaParaProdutoPublico(peca) : null;
   },
 };

@@ -9,11 +9,15 @@ import type { CartItem } from '@/services/cartService'
 
 export type { CartItem }
 
+/** Limite fallback usado apenas quando o estoque da peça ainda não foi informado. */
 export const MAX_ITEM_QUANTITY = 10
 
-/** Quantas unidades da peça cabem no carrinho: o limite por item ou o estoque, o que for menor. */
+/** Quantas unidades da peça cabem no carrinho segundo o estoque real disponível. */
 export function availableQuantity(product: { stock?: number }) {
-  return Math.min(MAX_ITEM_QUANTITY, product.stock ?? MAX_ITEM_QUANTITY)
+  if (typeof product.stock === 'number' && Number.isFinite(product.stock)) {
+    return Math.max(0, Math.floor(product.stock))
+  }
+  return MAX_ITEM_QUANTITY
 }
 
 export interface CartLine {
@@ -83,13 +87,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((item) => item.id !== productId))
   }, [])
 
-  const setQuantity = useCallback((productId: string, quantity: number) => {
-    setItems((prev) =>
-      quantity <= 0
-        ? prev.filter((item) => item.id !== productId)
-        : prev.map((item) => (item.id === productId ? { ...item, quantity } : item)),
-    )
-  }, [])
+  const setQuantity = useCallback(
+    (productId: string, quantity: number) => {
+      const product = products.find((candidate) => candidate.id === productId)
+      const limit = product ? availableQuantity(product) : MAX_ITEM_QUANTITY
+      setItems((prev) => {
+        if (quantity <= 0) {
+          return prev.filter((item) => item.id !== productId)
+        }
+        if (limit <= 0) {
+          return prev
+        }
+        const nextQuantity = Math.min(limit, Math.floor(quantity))
+        return prev.map((item) =>
+          item.id === productId ? { ...item, quantity: nextQuantity } : item,
+        )
+      })
+    },
+    [products],
+  )
 
   const clearCart = useCallback(() => setItems([]), [])
 

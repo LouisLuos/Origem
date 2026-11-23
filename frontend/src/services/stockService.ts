@@ -1,28 +1,68 @@
 import { catalogRequest } from './catalogRequest'
-import { catalogService } from './catalogService'
-import type { CatalogItem, StockReservation } from './catalogTypes'
+import type { StockReservation } from './catalogTypes'
 
-interface ProductListResponse {
-  dados: CatalogItem[]
+export type ReservationStatus = 'ATIVA' | 'CONFIRMADA' | 'CANCELADA' | 'EXPIRADA'
+
+export interface ReservedStockItem {
+  readonly id: string
+  readonly grupoId: string
+  readonly usuarioId: string
+  readonly pecaId: string
+  readonly quantidade: number
+  readonly status: ReservationStatus
+  readonly idempotencyKey: string
+  readonly criadoEm: string
+  readonly expiraEm: string
+  readonly atualizadoEm: string
+  readonly finalizadoEm: string | null
+  readonly estoqueDevolvidoEm: string | null
 }
 
-/** Stock adjustments and reservations for catalog and checkout flows. */
-export const stockService = {
-  /** Adds `delta` to the current stock, keeping the existing client-side behavior. */
-  async adjustStock(id: string, delta: number): Promise<CatalogItem> {
-    const current = await catalogService.get(id)
-    return catalogRequest<CatalogItem>(`/produtos/${encodeURIComponent(id)}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ stock: Math.max(0, current.stock + delta) }),
-    })
-  },
+export interface StockReservationGroup {
+  readonly grupoId: string
+  readonly usuarioId: string
+  readonly idempotencyKey: string
+  readonly idempotente: boolean
+  readonly criadoEm: string
+  readonly expiraEm: string
+  readonly ttlMinutos: number
+  readonly itens: readonly ReservedStockItem[]
+}
 
-  /** Reserves stock for an order; atomicity depends on the backend implementation. */
-  async reserveStock(lines: StockReservation[]): Promise<CatalogItem[]> {
-    const response = await catalogRequest<ProductListResponse>('/estoque/reservas', {
-      method: 'POST',
-      body: JSON.stringify({ lines }),
-    })
+export interface StockReservationCancellation {
+  readonly grupoId: string
+  readonly usuarioId: string
+  readonly jaFinalizada: boolean
+  readonly itensCancelados: number
+  readonly unidadesDevolvidas: number
+  readonly itens: readonly ReservedStockItem[]
+}
+
+/** Reservas transacionais de estoque integradas ao backend real (PostgreSQL/Prisma). */
+export const stockService = {
+      /** Reserva unidades no PostgreSQL por 15 minutos com idempotência e proteção ACID contra overselling. */
+      async reserveStock(
+        lines: StockReservation[],
+        idempotencyKey?: string,
+      ): Promise<StockReservationGroup> {
+        return catalogRequest<StockReservationGroup>('/estoque/reservas', {
+          method: 'POST',
+          headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined,
+          body: JSON.stringify({ lines }),
+        })
+      },
+
+  /** Cancela uma reserva ativa do usuário autenticado e devolve as unidades ao estoque. */
+  async cancelReservation(grupoId: string): Promise < StockReservationCancellation > {
+          return catalogRequest<StockReservationCancellation>(
+            `/estoque/reservas/${encodeURIComponent(grupoId)}/cancelar`,
+            { method: 'POST' },
+          )
+        },
+
+          /** Lista as reservas recentes do comprador autenticado. */
+          async listMyReservations(): Promise < StockReservationGroup[] > {
+            const response = await catalogRequest<{ dados: StockReservationGroup[] }>('/estoque/reservas/minhas')
     return response.dados
-  },
+          },
 }

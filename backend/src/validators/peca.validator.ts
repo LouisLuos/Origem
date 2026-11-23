@@ -153,6 +153,8 @@ export const PECA_DADOS_INVALIDOS_CODE = 'PECA_DADOS_INVALIDOS';
 /** Limites técnicos provisórios de texto (não definidos nos documentos normativos). */
 export const TITULO_PECA_MAX = 150;
 export const DESCRICAO_PECA_MAX = 5000;
+export const QUANTIDADE_ESTOQUE_PADRAO = 1;
+export const QUANTIDADE_ESTOQUE_MIN = 1;
 
 export const MENSAGEM_FOTOS_MINIMAS = `A publicação exige no mínimo ${FOTOS_PECA_MIN} fotos da peça.`;
 
@@ -283,6 +285,32 @@ const indiceFotoPrincipalSchema = z.unknown().optional().transform((val, ctx): n
   return val;
 });
 
+const quantidadeEstoqueCriacaoSchema = z.unknown().optional().transform((val, ctx): number => {
+  if (val === undefined) return QUANTIDADE_ESTOQUE_PADRAO;
+  if (typeof val !== 'number' || !Number.isFinite(val)) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'A quantidade em estoque deve ser um número inteiro válido.',
+    });
+    return z.NEVER;
+  }
+  if (!Number.isInteger(val) || val < QUANTIDADE_ESTOQUE_MIN) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'A quantidade em estoque deve ser um número inteiro maior ou igual a 1.',
+    });
+    return z.NEVER;
+  }
+  if (val > INT4_MAX) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'A quantidade em estoque excede o valor máximo permitido.',
+    });
+    return z.NEVER;
+  }
+  return val;
+});
+
 export const criarPecaBodySchema = z
   .object(
     {
@@ -291,6 +319,7 @@ export const criarPecaBodySchema = z
       tipologia: tipologiaSchema,
       ...cubagemPrecoFields,
       isFragil: isFragilSchema,
+      quantidadeEstoque: quantidadeEstoqueCriacaoSchema,
       fotos: fotosSchema,
       indiceFotoPrincipal: indiceFotoPrincipalSchema,
     },
@@ -315,6 +344,80 @@ export type CriarPecaDados = z.infer<typeof criarPecaBodySchema>;
  */
 export function validarCriacaoPeca(input: unknown): CriarPecaDados {
   const resultado = criarPecaBodySchema.safeParse(input);
+  if (!resultado.success) {
+    const mensagem = resultado.error.issues.map((issue) => issue.message).join('; ');
+    throw new AppError(mensagem, 422, PECA_DADOS_INVALIDOS_CODE);
+  }
+  return resultado.data;
+}
+
+export type AtualizarEstoquePecaDados =
+  | { readonly modo: 'ABSOLUTO'; readonly quantidadeEstoque: number }
+  | { readonly modo: 'DELTA'; readonly delta: number };
+
+export const pecaIdParamSchema = z.object({
+  pecaId: textoObrigatorio('Identificador da peça é obrigatório.', 'O identificador da peça', 100),
+});
+
+export const atualizarEstoquePecaBodySchema = z
+  .object(
+    {
+      quantidadeEstoque: z.unknown().optional(),
+      delta: z.unknown().optional(),
+    },
+    { error: 'Os dados de ajuste de estoque devem ser enviados como um objeto JSON.' },
+  )
+  .transform((dados, ctx): AtualizarEstoquePecaDados => {
+    const temQuantidade = dados.quantidadeEstoque !== undefined;
+    const temDelta = dados.delta !== undefined;
+
+    if (temQuantidade === temDelta) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Informe exclusivamente "quantidadeEstoque" ou "delta" para ajustar o estoque.',
+      });
+      return z.NEVER;
+    }
+
+    if (temQuantidade) {
+      const q = dados.quantidadeEstoque;
+      if (typeof q !== 'number' || !Number.isFinite(q) || !Number.isInteger(q) || q < 0) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'A quantidade em estoque deve ser um número inteiro maior ou igual a 0.',
+        });
+        return z.NEVER;
+      }
+      if (q > INT4_MAX) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'A quantidade em estoque excede o valor máximo permitido.',
+        });
+        return z.NEVER;
+      }
+      return { modo: 'ABSOLUTO', quantidadeEstoque: q };
+    }
+
+    const d = dados.delta;
+    if (typeof d !== 'number' || !Number.isFinite(d) || !Number.isInteger(d) || d === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'O ajuste incremental (delta) deve ser um número inteiro diferente de zero.',
+      });
+      return z.NEVER;
+    }
+    if (Math.abs(d) > INT4_MAX) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'O ajuste incremental (delta) excede o limite permitido.',
+      });
+      return z.NEVER;
+    }
+    return { modo: 'DELTA', delta: d };
+  });
+
+export function validarAtualizacaoEstoquePeca(input: unknown): AtualizarEstoquePecaDados {
+  const resultado = atualizarEstoquePecaBodySchema.safeParse(input);
   if (!resultado.success) {
     const mensagem = resultado.error.issues.map((issue) => issue.message).join('; ');
     throw new AppError(mensagem, 422, PECA_DADOS_INVALIDOS_CODE);

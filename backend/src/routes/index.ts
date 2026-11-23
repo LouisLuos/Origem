@@ -6,6 +6,7 @@ import { atelieRoutes } from './atelie.routes.js';
 import { authRoutes } from './auth.routes.js';
 import { PECAS_ROUTE_PATH, pecaRoutes } from './peca.routes.js';
 import { atelieCadastroRoutes } from './atelieCadastro.routes.js';
+import { estoqueRoutes } from './estoque.routes.js';
 
 export const routes = Router();
 
@@ -20,6 +21,9 @@ routes.use('/produtos', produtoRoutes);
 
 // Endpoints de mestres e artesãos
 routes.use('/artesaos', artesaoRoutes);
+
+// Endpoints transacionais de estoque e reservas temporárias (HU-06)
+routes.use('/estoque', estoqueRoutes);
 
 // Cadastro de peças no escopo do ateliê.
 routes.use(PECAS_ROUTE_PATH, pecaRoutes);

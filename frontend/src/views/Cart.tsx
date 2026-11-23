@@ -14,7 +14,10 @@ export function Cart() {
 
   const subtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
   const shipping = calculateShipping(subtotal)
-  const hasUnavailableItem = cartLines.some((line) => line.quantity > (line.product.stock ?? line.quantity))
+  const hasUnavailableItem = cartLines.some(
+    (line) =>
+      line.product.stock === 0 || line.quantity > (line.product.stock ?? line.quantity),
+  )
   const missingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
 
   return (
@@ -68,6 +71,14 @@ export function Cart() {
                         {product.title}
                       </Link>
                       <span className="text-xs text-ink-soft">por {product.artisan}</span>
+                      {typeof product.stock === 'number' && product.stock > 0 && product.stock <= 3 && (
+                        <span className="text-xs font-medium text-warning">
+                          Restam poucas unidades ({product.stock} {product.stock === 1 ? 'disponível' : 'disponíveis'})
+                        </span>
+                      )}
+                      {typeof product.stock === 'number' && product.stock > 3 && (
+                        <span className="text-xs text-ink-soft">{product.stock} disponíveis em estoque</span>
+                      )}
 
                       <div className="mt-2 flex h-10 w-fit items-center border border-border">
                         <button

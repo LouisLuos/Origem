@@ -406,7 +406,9 @@ export const ModelName = {
   FotoPeca: 'FotoPeca',
   UsuarioPapel: 'UsuarioPapel',
   AuthLoginAttempt: 'AuthLoginAttempt',
-  AuditoriaSeguranca: 'AuditoriaSeguranca'
+  AuditoriaSeguranca: 'AuditoriaSeguranca',
+  ReservaGrupo: 'ReservaGrupo',
+  Reserva: 'Reserva'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -422,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "usuario" | "artesao" | "atelie" | "atelieCurador" | "endereco" | "peca" | "fotoPeca" | "usuarioPapel" | "authLoginAttempt" | "auditoriaSeguranca"
+    modelProps: "usuario" | "artesao" | "atelie" | "atelieCurador" | "endereco" | "peca" | "fotoPeca" | "usuarioPapel" | "authLoginAttempt" | "auditoriaSeguranca" | "reservaGrupo" | "reserva"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1166,6 +1168,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReservaGrupo: {
+      payload: Prisma.$ReservaGrupoPayload<ExtArgs>
+      fields: Prisma.ReservaGrupoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReservaGrupoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReservaGrupoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>
+        }
+        findFirst: {
+          args: Prisma.ReservaGrupoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReservaGrupoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>
+        }
+        findMany: {
+          args: Prisma.ReservaGrupoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>[]
+        }
+        create: {
+          args: Prisma.ReservaGrupoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>
+        }
+        createMany: {
+          args: Prisma.ReservaGrupoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReservaGrupoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>[]
+        }
+        delete: {
+          args: Prisma.ReservaGrupoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>
+        }
+        update: {
+          args: Prisma.ReservaGrupoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReservaGrupoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReservaGrupoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReservaGrupoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReservaGrupoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaGrupoPayload>
+        }
+        aggregate: {
+          args: Prisma.ReservaGrupoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReservaGrupo>
+        }
+        groupBy: {
+          args: Prisma.ReservaGrupoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReservaGrupoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReservaGrupoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReservaGrupoCountAggregateOutputType> | number
+        }
+      }
+    }
+    Reserva: {
+      payload: Prisma.$ReservaPayload<ExtArgs>
+      fields: Prisma.ReservaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReservaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReservaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>
+        }
+        findFirst: {
+          args: Prisma.ReservaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReservaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>
+        }
+        findMany: {
+          args: Prisma.ReservaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>[]
+        }
+        create: {
+          args: Prisma.ReservaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>
+        }
+        createMany: {
+          args: Prisma.ReservaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReservaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>[]
+        }
+        delete: {
+          args: Prisma.ReservaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>
+        }
+        update: {
+          args: Prisma.ReservaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReservaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReservaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReservaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReservaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReservaPayload>
+        }
+        aggregate: {
+          args: Prisma.ReservaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReserva>
+        }
+        groupBy: {
+          args: Prisma.ReservaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReservaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReservaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReservaCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1344,6 +1494,35 @@ export const AuditoriaSegurancaScalarFieldEnum = {
 export type AuditoriaSegurancaScalarFieldEnum = (typeof AuditoriaSegurancaScalarFieldEnum)[keyof typeof AuditoriaSegurancaScalarFieldEnum]
 
 
+export const ReservaGrupoScalarFieldEnum = {
+  id: 'id',
+  usuarioId: 'usuarioId',
+  idempotencyKey: 'idempotencyKey',
+  payloadHash: 'payloadHash',
+  criadoEm: 'criadoEm'
+} as const
+
+export type ReservaGrupoScalarFieldEnum = (typeof ReservaGrupoScalarFieldEnum)[keyof typeof ReservaGrupoScalarFieldEnum]
+
+
+export const ReservaScalarFieldEnum = {
+  id: 'id',
+  grupoId: 'grupoId',
+  usuarioId: 'usuarioId',
+  pecaId: 'pecaId',
+  quantidade: 'quantidade',
+  status: 'status',
+  idempotencyKey: 'idempotencyKey',
+  criadoEm: 'criadoEm',
+  expiraEm: 'expiraEm',
+  atualizadoEm: 'atualizadoEm',
+  finalizadoEm: 'finalizadoEm',
+  estoqueDevolvidoEm: 'estoqueDevolvidoEm'
+} as const
+
+export type ReservaScalarFieldEnum = (typeof ReservaScalarFieldEnum)[keyof typeof ReservaScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1462,6 +1641,20 @@ export type EnumPapelUsuarioFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'PapelUsuario[]'
  */
 export type ListEnumPapelUsuarioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PapelUsuario[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusReserva'
+ */
+export type EnumStatusReservaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusReserva'>
+    
+
+
+/**
+ * Reference to a field of type 'StatusReserva[]'
+ */
+export type ListEnumStatusReservaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StatusReserva[]'>
     
 
 
@@ -1639,6 +1832,8 @@ export type GlobalOmitConfig = {
   usuarioPapel?: Prisma.UsuarioPapelOmit
   authLoginAttempt?: Prisma.AuthLoginAttemptOmit
   auditoriaSeguranca?: Prisma.AuditoriaSegurancaOmit
+  reservaGrupo?: Prisma.ReservaGrupoOmit
+  reserva?: Prisma.ReservaOmit
 }
 
 /* Types for Logging */

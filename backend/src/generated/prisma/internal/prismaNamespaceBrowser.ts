@@ -60,7 +60,9 @@ export const ModelName = {
   FotoPeca: 'FotoPeca',
   UsuarioPapel: 'UsuarioPapel',
   AuthLoginAttempt: 'AuthLoginAttempt',
-  AuditoriaSeguranca: 'AuditoriaSeguranca'
+  AuditoriaSeguranca: 'AuditoriaSeguranca',
+  ReservaGrupo: 'ReservaGrupo',
+  Reserva: 'Reserva'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -216,6 +218,35 @@ export const AuditoriaSegurancaScalarFieldEnum = {
 } as const
 
 export type AuditoriaSegurancaScalarFieldEnum = (typeof AuditoriaSegurancaScalarFieldEnum)[keyof typeof AuditoriaSegurancaScalarFieldEnum]
+
+
+export const ReservaGrupoScalarFieldEnum = {
+  id: 'id',
+  usuarioId: 'usuarioId',
+  idempotencyKey: 'idempotencyKey',
+  payloadHash: 'payloadHash',
+  criadoEm: 'criadoEm'
+} as const
+
+export type ReservaGrupoScalarFieldEnum = (typeof ReservaGrupoScalarFieldEnum)[keyof typeof ReservaGrupoScalarFieldEnum]
+
+
+export const ReservaScalarFieldEnum = {
+  id: 'id',
+  grupoId: 'grupoId',
+  usuarioId: 'usuarioId',
+  pecaId: 'pecaId',
+  quantidade: 'quantidade',
+  status: 'status',
+  idempotencyKey: 'idempotencyKey',
+  criadoEm: 'criadoEm',
+  expiraEm: 'expiraEm',
+  atualizadoEm: 'atualizadoEm',
+  finalizadoEm: 'finalizadoEm',
+  estoqueDevolvidoEm: 'estoqueDevolvidoEm'
+} as const
+
+export type ReservaScalarFieldEnum = (typeof ReservaScalarFieldEnum)[keyof typeof ReservaScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -6,11 +6,13 @@ import type {
   ProcessadorImagemPeca,
 } from '../repositories/contracts/pecas.contracts.js';
 import {
+  FOTO_PECA_ERROR_CODES,
   unconfiguredArmazenamentoFotosPeca,
   unconfiguredPecaRepository,
   unconfiguredProcessadorImagemPeca,
 } from '../repositories/unconfiguredPecas.repository.js';
-import type { CriarPecaDados } from '../validators/peca.validator.js';
+import type { AtualizarEstoquePecaDados, CriarPecaDados } from '../validators/peca.validator.js';
+import { AppError } from '../utils/AppError.js';
 import { criarArmazenamentoFotosPeca } from '../config/fotosStorage.js';
 import { prismaPecaRepository } from '../repositories/prismaPeca.repository.js';
 import { sharpProcessadorImagemPeca } from '../utils/sharpImagemPeca.processor.js';
@@ -24,6 +26,14 @@ export interface PecaServiceDeps {
 export interface PecaService {
   /** Publica uma peça validada no ateliê informado. */
   criar(atelieId: string, dados: CriarPecaDados): Promise<PecaPersistida>;
+  /** Lista as peças cadastradas no ateliê com saldo atualizado de estoque. */
+  listarPorAtelie(atelieId: string): Promise<PecaPersistida[]>;
+  /** Ajusta o estoque de uma peça pertencente ao ateliê (absoluto ou incremental). */
+  atualizarEstoque(
+    atelieId: string,
+    pecaId: string,
+    dados: AtualizarEstoquePecaDados,
+  ): Promise<PecaPersistida>;
 }
 
 /**
@@ -89,6 +99,7 @@ export function createPecaService(deps?: PecaServiceDeps): PecaService {
           larguraCm: dados.larguraCm,
           alturaCm: dados.alturaCm,
           isFragil: dados.isFragil,
+          quantidadeEstoque: dados.quantidadeEstoque,
           status: 'DISPONIVEL',
           fotos: armazenadas.map((arquivo, index) => ({
             url: arquivo.url,
@@ -100,6 +111,36 @@ export function createPecaService(deps?: PecaServiceDeps): PecaService {
         await removerSemPropagar(armazenadas);
         throw err;
       }
+    },
+
+    async listarPorAtelie(atelieId) {
+      if (!repository.listarPorAtelie) {
+        throw new AppError(
+          "Persistência indisponível para 'PecaRepository.listarPorAtelie'.",
+          503,
+          FOTO_PECA_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
+        );
+      }
+      return repository.listarPorAtelie(atelieId);
+    },
+
+    async atualizarEstoque(atelieId, pecaId, dados) {
+      if (!repository.atualizarEstoque) {
+        throw new AppError(
+          "Persistência indisponível para 'PecaRepository.atualizarEstoque'.",
+          503,
+          FOTO_PECA_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
+        );
+      }
+      const atualizada = await repository.atualizarEstoque(
+        dados.modo === 'ABSOLUTO'
+          ? { atelieId, pecaId, modo: 'ABSOLUTO', quantidadeEstoque: dados.quantidadeEstoque }
+          : { atelieId, pecaId, modo: 'DELTA', delta: dados.delta },
+      );
+      if (!atualizada) {
+        throw new AppError('Peça não encontrada neste ateliê.', 404);
+      }
+      return atualizada;
     },
   };
 }

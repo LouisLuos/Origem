@@ -12,7 +12,12 @@ import { CuratorManagementSection } from '@/components/CuratorManagementSection'
 import { FinancialPixSection } from '@/components/FinancialPixSection'
 import { PieceCatalogForm } from '@/components/PieceCatalogForm'
 import { AtelierSetupForm } from '@/components/AtelierSetupForm'
-import type { CreatedPiece } from '@/services/pieceService'
+import {
+  classifyPieceError,
+  pieceService,
+  type CreatedPiece,
+  type StudioPiece,
+} from '@/services/pieceService'
 import { useCatalog } from '@/context/CatalogContext'
 import { useCatalogAction } from '@/hooks/useCatalogAction'
 import {
@@ -62,7 +67,7 @@ function stockTone(stock: number) {
 export function ArtisanPanel() {
   const atelierSelectId = useId()
   const { user } = useAuth()
-  const { items, status, error: loadError, reload, addItem, updateItem, adjustStock, removeItem } = useCatalog()
+  const { items, status, error: loadError, reload, addItem, updateItem, removeItem } = useCatalog()
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
   const [error, setError] = useState<string | null>(null)
@@ -82,6 +87,14 @@ export function ArtisanPanel() {
   const [atelierEditData, setAtelierEditData] = useState<AtelierDetails | null>(null)
   const [atelierEditLoading, setAtelierEditLoading] = useState(false)
   const [atelierEditError, setAtelierEditError] = useState<string | null>(null)
+
+  const [studioPieces, setStudioPieces] = useState<StudioPiece[]>([])
+  const [studioPiecesStatus, setStudioPiecesStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle')
+  const [studioPiecesError, setStudioPiecesError] = useState<string | null>(null)
+  const [studioReloadTick, setStudioReloadTick] = useState(0)
+  const [stockAdjustError, setStockAdjustError] = useState<string | null>(null)
+  const [updatingStockPieceId, setUpdatingStockPieceId] = useState<string | null>(null)
+  const [stockInputs, setStockInputs] = useState<Record<string, string>>({})
 
   const userEmail = user?.email ?? null
 
@@ -121,6 +134,49 @@ export function ArtisanPanel() {
     }
   }, [userEmail, governanceReloadTick])
 
+  const selectedAtelierPreview =
+    atelierLinks.find((item) => item.atelieId === selectedAtelieId) ?? atelierLinks[0] ?? null
+  const activeCatalogAtelieId =
+    selectedAtelierPreview?.permissoes.includes('GERENCIAR_CATALOGO') ? selectedAtelierPreview.atelieId : null
+
+  useEffect(() => {
+    if (!activeCatalogAtelieId) {
+      setStudioPieces([])
+      setStudioPiecesStatus('idle')
+      setStudioPiecesError(null)
+      return
+    }
+
+    const atelieId = activeCatalogAtelieId
+    let cancelled = false
+    async function loadStudioPieces() {
+      setStudioPiecesStatus('loading')
+      setStudioPiecesError(null)
+      try {
+        const list = await pieceService.listByAtelier(atelieId)
+        if (cancelled) return
+        setStudioPieces(list)
+        setStockInputs((prev) => {
+          const next = { ...prev }
+          for (const piece of list) {
+            next[piece.id] = String(piece.quantidadeEstoque)
+          }
+          return next
+        })
+        setStudioPiecesStatus('ready')
+      } catch (reason) {
+        if (cancelled) return
+        setStudioPiecesError(classifyPieceError(reason).message)
+        setStudioPiecesStatus('error')
+      }
+    }
+
+    loadStudioPieces()
+    return () => {
+      cancelled = true
+    }
+  }, [activeCatalogAtelieId, studioReloadTick])
+
   if (!user) return <Navigate to="/entrar?from=/painel" />
 
   // Aguarda verificação contextual antes de redirecionar quem não tem papel legado de artesão (ex.: Curador)
@@ -151,8 +207,8 @@ export function ArtisanPanel() {
   const canAccessFinancialTab = canViewFinancial || canUpdatePix
   const isSuspendedForCurator = Boolean(
     selectedAtelier &&
-      selectedAtelier.papelNoAtelie === 'CURADOR' &&
-      selectedAtelier.statusAtelie === 'SUSPENSO',
+    selectedAtelier.papelNoAtelie === 'CURADOR' &&
+    selectedAtelier.statusAtelie === 'SUSPENSO',
   )
 
   const resolvedTab: PanelTab =
@@ -192,14 +248,21 @@ export function ArtisanPanel() {
   }
 
   const myItems = items.filter((item) => item.ownerEmail === user.email)
-  const activeCount = myItems.filter((item) => item.active).length
-  const totalUnits = myItems.reduce((total, item) => total + item.stock, 0)
-  const lowStock = myItems.filter((item) => item.stock > 0 && item.stock <= LOW_STOCK).length
-  const soldOut = myItems.filter((item) => item.stock === 0).length
+  const activeCount = activeCatalogAtelieId
+    ? studioPieces.filter((piece) => piece.status !== 'ARQUIVADA').length
+    : myItems.filter((item) => item.active).length
+  const totalUnits = activeCatalogAtelieId
+    ? studioPieces.reduce((total, piece) => total + piece.quantidadeEstoque, 0)
+    : myItems.reduce((total, item) => total + item.stock, 0)
+  const lowStock = activeCatalogAtelieId
+    ? studioPieces.filter((piece) => piece.quantidadeEstoque > 0 && piece.quantidadeEstoque <= LOW_STOCK).length
+    : myItems.filter((item) => item.stock > 0 && item.stock <= LOW_STOCK).length
+  const soldOut = activeCatalogAtelieId
+    ? studioPieces.filter((piece) => piece.quantidadeEstoque === 0).length
+    : myItems.filter((item) => item.stock === 0).length
 
   // : a publicação exige ateliê confirmado pelo servidor com permissão de catálogo.
-  const catalogAtelieId =
-    selectedAtelier?.permissoes.includes('GERENCIAR_CATALOGO') ? selectedAtelier.atelieId : null
+  const catalogAtelieId = activeCatalogAtelieId
   const catalogUnavailableReason =
     governanceStatus === 'loading'
       ? 'Consultando no servidor os ateliês em que você pode catalogar peças.'
@@ -211,11 +274,31 @@ export function ArtisanPanel() {
 
   const handlePiecePublished = (piece: CreatedPiece) => {
     setEditingId(null)
+    setStudioReloadTick((tick) => tick + 1)
     // A vitrine passa a incluir a peça publicada (GET /produtos lê o banco)
     reload()
     setPublishedNotice(
-      `Peça “${piece.titulo}” publicada com status ${piece.status} e ${piece.fotos.length} fotos.`,
+      `Peça “${piece.titulo}” publicada com estoque de ${piece.quantidadeEstoque} unidade(s), status ${piece.status} e ${piece.fotos.length} fotos.`,
     )
+  }
+
+  const handleAdjustRealStock = async (
+    pieceId: string,
+    payload: { quantidadeEstoque: number } | { delta: number },
+  ) => {
+    if (!catalogAtelieId) return
+    setStockAdjustError(null)
+    setUpdatingStockPieceId(pieceId)
+    try {
+      const updated = await pieceService.updateStock(catalogAtelieId, pieceId, payload)
+      setStudioPieces((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
+      setStockInputs((prev) => ({ ...prev, [updated.id]: String(updated.quantidadeEstoque) }))
+      reload()
+    } catch (reason) {
+      setStockAdjustError(classifyPieceError(reason).message)
+    } finally {
+      setUpdatingStockPieceId(null)
+    }
   }
 
   const openForm = (item?: CatalogItem) => {
@@ -225,14 +308,14 @@ export function ArtisanPanel() {
     setForm(
       item
         ? {
-            title: item.title,
-            technique: item.technique,
-            hub: item.hub,
-            price: String(item.price),
-            stock: String(item.stock),
-            imageUrl: item.imageUrl,
-            description: item.description ?? '',
-          }
+          title: item.title,
+          technique: item.technique,
+          hub: item.hub,
+          price: String(item.price),
+          stock: String(item.stock),
+          imageUrl: item.imageUrl,
+          description: item.description ?? '',
+        }
         : emptyForm,
     )
   }
@@ -334,7 +417,7 @@ export function ArtisanPanel() {
                 <div>
                   <p className="font-semibold text-ink">
                     {governanceIssue.kind === 'unauthenticated' ||
-                    governanceIssue.kind === 'auth_unavailable'
+                      governanceIssue.kind === 'auth_unavailable'
                       ? 'Governança financeira e de curadores aguardando autenticação real'
                       : governanceIssue.kind === 'persistence_unavailable'
                         ? 'Governança financeira e de curadores aguardando banco de dados'
@@ -448,56 +531,56 @@ export function ArtisanPanel() {
                   )}
 
                   <div role="tablist" aria-label="Seções do ateliê" className="flex flex-wrap gap-2 border-t border-border pt-4">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={resolvedTab === 'catalog'}
-                  onClick={() => setActiveTab('catalog')}
-                  className={cn(
-                    'cursor-pointer border px-4 py-2 text-sm font-medium transition-colors',
-                    resolvedTab === 'catalog'
-                      ? 'border-terracota bg-terracota text-creme-50'
-                      : 'border-border text-ink-soft hover:text-ink',
-                  )}
-                >
-                  Catálogo
-                </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={resolvedTab === 'catalog'}
+                      onClick={() => setActiveTab('catalog')}
+                      className={cn(
+                        'cursor-pointer border px-4 py-2 text-sm font-medium transition-colors',
+                        resolvedTab === 'catalog'
+                          ? 'border-terracota bg-terracota text-creme-50'
+                          : 'border-border text-ink-soft hover:text-ink',
+                      )}
+                    >
+                      Catálogo
+                    </button>
 
-                {canManageCurators && (
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={resolvedTab === 'curators'}
-                    onClick={() => setActiveTab('curators')}
-                    className={cn(
-                      'inline-flex cursor-pointer items-center gap-2 border px-4 py-2 text-sm font-medium transition-colors',
-                      resolvedTab === 'curators'
-                        ? 'border-terracota bg-terracota text-creme-50'
-                        : 'border-border text-ink-soft hover:text-ink',
+                    {canManageCurators && (
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={resolvedTab === 'curators'}
+                        onClick={() => setActiveTab('curators')}
+                        className={cn(
+                          'inline-flex cursor-pointer items-center gap-2 border px-4 py-2 text-sm font-medium transition-colors',
+                          resolvedTab === 'curators'
+                            ? 'border-terracota bg-terracota text-creme-50'
+                            : 'border-border text-ink-soft hover:text-ink',
+                        )}
+                      >
+                        <Users className="h-4 w-4" aria-hidden="true" />
+                        Curadores
+                      </button>
                     )}
-                  >
-                    <Users className="h-4 w-4" aria-hidden="true" />
-                    Curadores
-                  </button>
-                )}
 
-                {canAccessFinancialTab && (
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={resolvedTab === 'financial'}
-                    onClick={() => setActiveTab('financial')}
-                    className={cn(
-                      'inline-flex cursor-pointer items-center gap-2 border px-4 py-2 text-sm font-medium transition-colors',
-                      resolvedTab === 'financial'
-                        ? 'border-terracota bg-terracota text-creme-50'
-                        : 'border-border text-ink-soft hover:text-ink',
+                    {canAccessFinancialTab && (
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={resolvedTab === 'financial'}
+                        onClick={() => setActiveTab('financial')}
+                        className={cn(
+                          'inline-flex cursor-pointer items-center gap-2 border px-4 py-2 text-sm font-medium transition-colors',
+                          resolvedTab === 'financial'
+                            ? 'border-terracota bg-terracota text-creme-50'
+                            : 'border-border text-ink-soft hover:text-ink',
+                        )}
+                      >
+                        <Lock className="h-4 w-4" aria-hidden="true" />
+                        Dados financeiros
+                      </button>
                     )}
-                  >
-                    <Lock className="h-4 w-4" aria-hidden="true" />
-                    Dados financeiros
-                  </button>
-                )}
                   </div>
                 </>
               )}
@@ -655,107 +738,246 @@ export function ArtisanPanel() {
 
                 <h2 className="pb-4 text-sm font-semibold uppercase tracking-widest text-ink">Peças e estoque</h2>
 
+                {catalogAtelieId && (
+                  <section aria-label="Acervo persistido do ateliê" className="mb-10 flex flex-col gap-4 border border-border bg-surface p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-sm font-semibold uppercase tracking-widest text-ink">
+                        Peças publicadas no servidor (PostgreSQL)
+                      </h3>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setStudioReloadTick((tick) => tick + 1)}
+                      >
+                        Atualizar estoque
+                      </Button>
+                    </div>
+
+                    {stockAdjustError && (
+                      <p role="alert" className="border border-danger/30 bg-surface-muted px-4 py-2.5 text-sm text-danger">
+                        {stockAdjustError}
+                      </p>
+                    )}
+
+                    {studioPiecesStatus === 'loading' && (
+                      <LoadingBlock label="Carregando acervo persistido do ateliê…" />
+                    )}
+
+                    {studioPiecesStatus === 'error' && studioPiecesError && (
+                      <ErrorBlock
+                        message={studioPiecesError}
+                        onRetry={() => setStudioReloadTick((tick) => tick + 1)}
+                      />
+                    )}
+
+                    {studioPiecesStatus === 'ready' && studioPieces.length === 0 && (
+                      <div className="flex flex-col items-center gap-3 border border-dashed border-border py-10 text-center">
+                        <p className="text-base font-medium text-ink">Nenhuma peça cadastrada neste ateliê</p>
+                        <p className="text-sm text-ink-soft">
+                          Publique uma peça informando preço, cubagem, fotos e quantidade em estoque.
+                        </p>
+                        <Button variant="primary" size="md" onClick={() => openForm()}>
+                          Nova peça
+                        </Button>
+                      </div>
+                    )}
+
+                    {studioPiecesStatus === 'ready' && studioPieces.length > 0 && (
+                      <ul className="flex flex-col divide-y divide-border">
+                        {studioPieces.map((piece) => {
+                          const coverUrl =
+                            piece.fotos.find((foto) => foto.isPrincipal)?.url ?? piece.fotos[0]?.url ?? ''
+                          const isBusy = updatingStockPieceId === piece.id
+                          const rawInput = stockInputs[piece.id] ?? String(piece.quantidadeEstoque)
+                          const isSoldOutPiece = piece.quantidadeEstoque === 0
+                          const isLowStockPiece =
+                            piece.quantidadeEstoque > 0 && piece.quantidadeEstoque <= LOW_STOCK
+
+                          return (
+                            <li
+                              key={piece.id}
+                              className="flex flex-wrap items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
+                            >
+                              <div className="flex min-w-56 flex-1 items-center gap-4">
+                                {coverUrl ? (
+                                  <img src={coverUrl} alt={piece.titulo} className="h-16 w-16 shrink-0 object-cover" />
+                                ) : (
+                                  <div className="h-16 w-16 shrink-0 bg-surface-muted" aria-hidden="true" />
+                                )}
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-medium text-ink">{piece.titulo}</span>
+                                    <Badge tone={piece.status === 'DISPONIVEL' ? 'oliva' : 'neutral'}>
+                                      {piece.status}
+                                    </Badge>
+                                  </div>
+                                  <span className="text-xs text-ink-soft">
+                                    {piece.tipologia ?? 'Artesanato'} ·{' '}
+                                    {piece.preco !== undefined ? currency.format(piece.preco) : ''}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-3">
+                                <div className="flex flex-col items-start gap-1">
+                                  <div className="flex h-9 items-center border border-border">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAdjustRealStock(piece.id, { delta: -1 })}
+                                      disabled={isBusy || isSoldOutPiece}
+                                      aria-label={`Diminuir estoque de ${piece.titulo}`}
+                                      className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                      <Minus className="h-3.5 w-3.5" aria-hidden="true" />
+                                    </button>
+                                    <span
+                                      aria-live="polite"
+                                      className={cn('w-10 text-center text-sm font-semibold', stockTone(piece.quantidadeEstoque))}
+                                    >
+                                      {piece.quantidadeEstoque}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAdjustRealStock(piece.id, { delta: 1 })}
+                                      disabled={isBusy}
+                                      aria-label={`Aumentar estoque de ${piece.titulo}`}
+                                      className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                                    </button>
+                                  </div>
+                                  <span className={cn('text-[11px] uppercase tracking-widest', stockTone(piece.quantidadeEstoque))}>
+                                    {isSoldOutPiece
+                                      ? 'Esgotado'
+                                      : isLowStockPiece
+                                        ? 'Restam poucas unidades · Estoque baixo'
+                                        : 'Em estoque'}
+                                  </span>
+                                </div>
+
+                                <form
+                                  className="flex items-center gap-2"
+                                  onSubmit={(event) => {
+                                    event.preventDefault()
+                                    const parsed = Number(rawInput.trim())
+                                    if (!Number.isInteger(parsed) || parsed < 0) {
+                                      setStockAdjustError(
+                                        'Informe um número inteiro maior ou igual a 0 para definir o saldo.',
+                                      )
+                                      return
+                                    }
+                                    void handleAdjustRealStock(piece.id, { quantidadeEstoque: parsed })
+                                  }}
+                                >
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step={1}
+                                    aria-label={`Definir estoque de ${piece.titulo}`}
+                                    value={rawInput}
+                                    onChange={(event) =>
+                                      setStockInputs((prev) => ({ ...prev, [piece.id]: event.target.value }))
+                                    }
+                                    className="h-9 w-20 border border-border bg-surface px-2 text-center text-sm text-ink focus:border-terracota"
+                                  />
+                                  <Button type="submit" variant="outline" size="sm" disabled={isBusy}>
+                                    Aplicar
+                                  </Button>
+                                </form>
+                              </div>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    )}
+                  </section>
+                )}
+
                 {actionError && (
                   <p role="alert" className="pb-4 text-sm text-danger">
                     {actionError}
                   </p>
                 )}
 
-                {myItems.length === 0 ? (
-                  <div className="flex flex-col items-center gap-4 border border-dashed border-border py-14 text-center">
-                    <p className="text-base font-medium text-ink">Seu catálogo está vazio</p>
-                    <p className="text-sm text-ink-soft">Cadastre sua primeira peça para começar a controlar o estoque.</p>
-                    <Button variant="primary" size="md" onClick={() => openForm()}>
-                      Nova peça
-                    </Button>
-                  </div>
-                ) : (
-                  <ul className="flex flex-col">
-                    {myItems.map((item) => (
-                      <li
-                        key={item.id}
-                        className={cn(
-                          'flex flex-wrap items-center gap-4 border-b border-border py-4 first:pt-0',
-                          !item.active && 'opacity-60',
-                        )}
-                      >
-                        <img src={item.imageUrl} alt="" className="h-16 w-16 shrink-0 object-cover" />
+                  {!catalogAtelieId && myItems.length === 0 ? (
+                <div className="flex flex-col items-center gap-4 border border-dashed border-border py-14 text-center">
+                  <p className="text-base font-medium text-ink">Seu catálogo está vazio</p>
+                  <p className="text-sm text-ink-soft">Cadastre sua primeira peça para começar a controlar o estoque.</p>
+                  <Button variant="primary" size="md" onClick={() => openForm()}>
+                    Nova peça
+                  </Button>
+                </div>
+                ) : myItems.length > 0 ? (
+                <ul className="flex flex-col">
+                  {myItems.map((item) => (
+                    <li
+                      key={item.id}
+                      className={cn(
+                        'flex flex-wrap items-center gap-4 border-b border-border py-4 first:pt-0',
+                        !item.active && 'opacity-60',
+                      )}
+                    >
+                      <img src={item.imageUrl} alt="" className="h-16 w-16 shrink-0 object-cover" />
 
-                        <div className="flex min-w-48 flex-1 flex-col">
-                          <span className="font-medium text-ink">{item.title}</span>
-                          <span className="text-xs text-ink-soft">
-                            {item.technique} · {item.hub}
-                          </span>
-                          <span className="text-xs text-ink-soft">
-                            {currency.format(item.price)}
-                            {!item.active && ' · Pausada'}
-                          </span>
-                        </div>
+                      <div className="flex min-w-48 flex-1 flex-col">
+                        <span className="font-medium text-ink">{item.title}</span>
+                        <span className="text-xs text-ink-soft">
+                          {item.technique} · {item.hub}
+                        </span>
+                        <span className="text-xs text-ink-soft">
+                          {currency.format(item.price)}
+                          {!item.active && ' · Pausada'}
+                        </span>
+                      </div>
 
-                        <div className="flex flex-col items-start gap-1">
-                          <div className="flex h-9 items-center border border-border">
-                            <button
-                              type="button"
-                              onClick={() => run(() => adjustStock(item.id, -1))}
-                              disabled={item.stock === 0}
-                              aria-label={`Diminuir estoque de ${item.title}`}
-                              className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                              <Minus className="h-3.5 w-3.5" aria-hidden="true" />
-                            </button>
-                            <span aria-live="polite" className={cn('w-10 text-center text-sm font-semibold', stockTone(item.stock))}>
-                              {item.stock}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => run(() => adjustStock(item.id, 1))}
-                              aria-label={`Aumentar estoque de ${item.title}`}
-                              className="flex h-full w-8 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
-                            >
-                              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                            </button>
-                          </div>
-                          <span className={cn('text-[11px] uppercase tracking-widest', stockTone(item.stock))}>
-                            {item.stock === 0 ? 'Esgotada' : item.stock <= LOW_STOCK ? 'Estoque baixo' : 'Em estoque'}
-                          </span>
-                        </div>
+                      <div className="flex flex-col items-start gap-1">
+                        <span className={cn('text-sm font-semibold', stockTone(item.stock))}>
+                          {item.stock} unidade(s)
+                        </span>
+                        <span className={cn('text-[11px] uppercase tracking-widest', stockTone(item.stock))}>
+                          {item.stock === 0 ? 'Esgotada' : item.stock <= LOW_STOCK ? 'Estoque baixo' : 'Em estoque'}
+                        </span>
+                      </div>
 
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => run(() => updateItem(item.id, { active: !item.active }))}
-                            aria-label={item.active ? `Pausar ${item.title}` : `Reativar ${item.title}`}
-                            className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
-                          >
-                            {item.active ? <Eye className="h-4 w-4" aria-hidden="true" /> : <EyeOff className="h-4 w-4" aria-hidden="true" />}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => openForm(item)}
-                            aria-label={`Editar ${item.title}`}
-                            className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
-                          >
-                            <Pencil className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (window.confirm(`Remover “${item.title}” do catálogo?`)) run(() => removeItem(item.id))
-                            }}
-                            aria-label={`Remover ${item.title}`}
-                            className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-danger"
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => run(() => updateItem(item.id, { active: !item.active }))}
+                          aria-label={item.active ? `Pausar ${item.title}` : `Reativar ${item.title}`}
+                          className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
+                        >
+                          {item.active ? <Eye className="h-4 w-4" aria-hidden="true" /> : <EyeOff className="h-4 w-4" aria-hidden="true" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openForm(item)}
+                          aria-label={`Editar ${item.title}`}
+                          className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
+                        >
+                          <Pencil className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Remover “${item.title}” do catálogo?`)) run(() => removeItem(item.id))
+                          }}
+                          aria-label={`Remover ${item.title}`}
+                          className="flex h-9 w-9 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-danger"
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                ) : null}
+
+                {!catalogAtelieId && (
+                  <p className="pt-6 text-xs text-ink-soft">
+                    Os dados reais do acervo exigem sessão autenticada com ateliê vinculado no servidor.
+                  </p>
                 )}
-
-                <p className="pt-6 text-xs text-ink-soft">
-                  Simulação: os dados do catálogo legado ainda não possuem persistência de sessão real neste ambiente. Peças ativas aparecem na vitrine pública; peças pausadas ficam ocultas.
-                </p>
               </>
             )}
           </>

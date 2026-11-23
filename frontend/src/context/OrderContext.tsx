@@ -31,7 +31,7 @@ const OrderContext = createContext<OrderContextValue | null>(null)
 
 /** Pedidos feitos neste navegador, carregados e gravados via `orderService`. */
 export function OrderProvider({ children }: { children: ReactNode }) {
-  const { replaceAll } = useCatalog()
+  const { reload: reloadCatalog } = useCatalog()
   const { data: orders, setData, status, error, reload } = useResource(orderService.list, [] as Order[])
 
   const value = useMemo<OrderContextValue>(
@@ -41,14 +41,14 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       error,
       reload,
       placeOrder: async (data) => {
-        const { order, catalog } = await orderService.create(data)
+        const { order } = await orderService.create(data)
         setData((prev) => [order, ...prev])
-        replaceAll(catalog)
+        reloadCatalog()
         return order
       },
       getOrder: (id) => orders.find((order) => order.id === id),
     }),
-    [orders, status, error, reload, setData, replaceAll],
+    [orders, status, error, reload, setData, reloadCatalog],
   )
 
   return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>

@@ -24,6 +24,20 @@ export const unconfiguredPecaRepository: PecaRepository = {
       FOTO_PECA_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
     );
   },
+  async listarPorAtelie() {
+    throw new AppError(
+      "Persistência indisponível para 'PecaRepository.listarPorAtelie': as tabelas ainda não foram implantadas.",
+      503,
+      FOTO_PECA_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
+    );
+  },
+  async atualizarEstoque() {
+    throw new AppError(
+      "Persistência indisponível para 'PecaRepository.atualizarEstoque': as tabelas ainda não foram implantadas.",
+      503,
+      FOTO_PECA_ERROR_CODES.PERSISTENCIA_INDISPONIVEL,
+    );
+  },
 };
 
 export const unconfiguredProcessadorImagemPeca: ProcessadorImagemPeca = {

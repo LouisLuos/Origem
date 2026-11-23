@@ -1,5 +1,8 @@
 import { app } from './app.js';
 import { env } from './config/env.js';
+import { iniciarAgendadorExpiracaoReservas } from './services/reservaExpiracao.scheduler.js';
+
+const agendadorReservas = iniciarAgendadorExpiracaoReservas();
 
 const server = app.listen(env.PORT, () => {
   console.log(`🚀 Servidor backend Origem ativo em http://localhost:${env.PORT}`);
@@ -10,6 +13,7 @@ const server = app.listen(env.PORT, () => {
 // Tratamento de sinais de encerramento gracioso (Graceful Shutdown)
 function handleShutdown(signal: string) {
   console.log(`\n🛑 Sinal ${signal} recebido. Encerrando servidor HTTP graciosamente...`);
+  agendadorReservas.parar();
   server.close(() => {
     console.log('✅ Servidor HTTP encerrado com sucesso.');
     process.exit(0);

@@ -39,13 +39,14 @@ interface SelectedPhoto {
   readonly previewUrl: string
 }
 
-type TextField = 'title' | 'description' | 'typology' | 'price' | 'weight' | 'length' | 'width' | 'height'
+type TextField = 'title' | 'description' | 'typology' | 'price' | 'stock' | 'weight' | 'length' | 'width' | 'height'
 
 const emptyDraft: Record<TextField, string> = {
   title: '',
   description: '',
   typology: pieceTypologies[0],
   price: '',
+  stock: '1',
   weight: '',
   length: '',
   width: '',
@@ -160,6 +161,7 @@ export function PieceCatalogForm({ atelieId, unavailableReason, onCancel, onPubl
         larguraCm: parseDecimal(draft.width),
         alturaCm: parseDecimal(draft.height),
         isFragil: isFragile,
+        quantidadeEstoque: parseDecimal(draft.stock),
         fotos,
         indiceFotoPrincipal: principalIndex,
       })
@@ -173,22 +175,27 @@ export function PieceCatalogForm({ atelieId, unavailableReason, onCancel, onPubl
 
   const describedBy = (field: PieceDraftField) => (fieldErrors[field] ? errorId(field) : undefined)
 
-  const numberField = (field: 'price' | 'weight' | 'length' | 'width' | 'height', label: string, placeholder: string): ReactNode => (
-    <div className="flex flex-col gap-1.5">
-      <Input
-        id={fieldId(field)}
-        label={label}
-        inputMode="decimal"
-        value={draft[field]}
-        onChange={setField(field)}
-        placeholder={placeholder}
-        aria-invalid={Boolean(fieldErrors[field])}
-        aria-describedby={describedBy(field)}
-        className="py-2.5"
-      />
-      <FieldError id={errorId(field)} message={fieldErrors[field]} />
-    </div>
-  )
+  const numberField = (
+    field: 'price' | 'stock' | 'weight' | 'length' | 'width' | 'height',
+    label: string,
+    placeholder: string,
+    inputMode: 'decimal' | 'numeric' = 'decimal',
+  ): ReactNode => (
+      <div className="flex flex-col gap-1.5">
+        <Input
+          id={fieldId(field)}
+          label={label}
+          inputMode={inputMode}
+          value={draft[field]}
+          onChange={setField(field)}
+          placeholder={placeholder}
+          aria-invalid={Boolean(fieldErrors[field])}
+          aria-describedby={describedBy(field)}
+          className="py-2.5"
+        />
+        <FieldError id={errorId(field)} message={fieldErrors[field]} />
+      </div>
+    )
 
   return (
     <form
@@ -246,6 +253,7 @@ export function PieceCatalogForm({ atelieId, unavailableReason, onCancel, onPubl
         </div>
 
         {numberField('price', 'Preço (R$)', '189,00')}
+        {numberField('stock', 'Quantidade em estoque', '1', 'numeric')}
         {numberField('weight', 'Peso embalado (g)', 'mínimo 50')}
         {numberField('length', 'Comprimento (cm)', '30')}
         {numberField('width', 'Largura (cm)', '20')}

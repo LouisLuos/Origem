@@ -1,6 +1,6 @@
 import type { CatalogItem } from './catalogTypes'
 import { stockService } from './stockService'
-import { readStorage, simulateLatency, writeStorage } from './storage'
+import { readStorage, writeStorage } from './storage'
 
 export const FREE_SHIPPING_THRESHOLD = 250
 export const FLAT_SHIPPING = 24.9
@@ -60,21 +60,20 @@ const ORDERS_KEY = 'origem:orders'
 /** Equivalente a `GET /pedidos` e `POST /pedidos`. Ao criar um pedido, baixa o estoque das peças. */
 export const orderService = {
   async list(): Promise<Order[]> {
-    await simulateLatency(300)
     return readStorage<Order[]>(ORDERS_KEY, [])
   },
 
-  /** Devolve o pedido e o catálogo já com o estoque baixado. */
+  /** Devolve o pedido e o catálogo vazio caso não haja integração HU-10 ativa (checkout real usa reserva de estoque). */
   async create(data: NewOrder): Promise<{ order: Order; catalog: CatalogItem[] }> {
-    // Simula a aprovação do pagamento.
-    await simulateLatency(1000)
-    const catalog = await stockService.reserveStock(data.lines.map((line) => ({ productId: line.productId, quantity: line.quantity })))
+    await stockService.reserveStock(
+      data.lines.map((line) => ({ productId: line.productId, quantity: line.quantity })),
+    )
     const order: Order = {
       ...data,
       id: `OR-${Date.now().toString(36).toUpperCase()}`,
       createdAt: new Date().toISOString(),
     }
     writeStorage(ORDERS_KEY, [order, ...readStorage<Order[]>(ORDERS_KEY, [])])
-    return { order, catalog }
+    return { order, catalog: [] }
   },
 }

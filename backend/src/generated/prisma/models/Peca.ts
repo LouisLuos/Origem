@@ -318,6 +318,7 @@ export type PecaWhereInput = {
   atualizadoEm?: Prisma.DateTimeFilter<"Peca"> | Date | string
   atelie?: Prisma.XOR<Prisma.AtelieScalarRelationFilter, Prisma.AtelieWhereInput>
   fotos?: Prisma.FotoPecaListRelationFilter
+  reservas?: Prisma.ReservaListRelationFilter
 }
 
 export type PecaOrderByWithRelationInput = {
@@ -338,6 +339,7 @@ export type PecaOrderByWithRelationInput = {
   atualizadoEm?: Prisma.SortOrder
   atelie?: Prisma.AtelieOrderByWithRelationInput
   fotos?: Prisma.FotoPecaOrderByRelationAggregateInput
+  reservas?: Prisma.ReservaOrderByRelationAggregateInput
 }
 
 export type PecaWhereUniqueInput = Prisma.AtLeast<{
@@ -361,6 +363,7 @@ export type PecaWhereUniqueInput = Prisma.AtLeast<{
   atualizadoEm?: Prisma.DateTimeFilter<"Peca"> | Date | string
   atelie?: Prisma.XOR<Prisma.AtelieScalarRelationFilter, Prisma.AtelieWhereInput>
   fotos?: Prisma.FotoPecaListRelationFilter
+  reservas?: Prisma.ReservaListRelationFilter
 }, "id">
 
 export type PecaOrderByWithAggregationInput = {
@@ -424,6 +427,7 @@ export type PecaCreateInput = {
   atualizadoEm?: Date | string
   atelie: Prisma.AtelieCreateNestedOneWithoutPecasInput
   fotos?: Prisma.FotoPecaCreateNestedManyWithoutPecaInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutPecaInput
 }
 
 export type PecaUncheckedCreateInput = {
@@ -443,6 +447,7 @@ export type PecaUncheckedCreateInput = {
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   fotos?: Prisma.FotoPecaUncheckedCreateNestedManyWithoutPecaInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutPecaInput
 }
 
 export type PecaUpdateInput = {
@@ -462,6 +467,7 @@ export type PecaUpdateInput = {
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atelie?: Prisma.AtelieUpdateOneRequiredWithoutPecasNestedInput
   fotos?: Prisma.FotoPecaUpdateManyWithoutPecaNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutPecaNestedInput
 }
 
 export type PecaUncheckedUpdateInput = {
@@ -481,6 +487,7 @@ export type PecaUncheckedUpdateInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fotos?: Prisma.FotoPecaUncheckedUpdateManyWithoutPecaNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutPecaNestedInput
 }
 
 export type PecaCreateManyInput = {
@@ -703,6 +710,20 @@ export type PecaUpdateOneRequiredWithoutFotosNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PecaUpdateToOneWithWhereWithoutFotosInput, Prisma.PecaUpdateWithoutFotosInput>, Prisma.PecaUncheckedUpdateWithoutFotosInput>
 }
 
+export type PecaCreateNestedOneWithoutReservasInput = {
+  create?: Prisma.XOR<Prisma.PecaCreateWithoutReservasInput, Prisma.PecaUncheckedCreateWithoutReservasInput>
+  connectOrCreate?: Prisma.PecaCreateOrConnectWithoutReservasInput
+  connect?: Prisma.PecaWhereUniqueInput
+}
+
+export type PecaUpdateOneRequiredWithoutReservasNestedInput = {
+  create?: Prisma.XOR<Prisma.PecaCreateWithoutReservasInput, Prisma.PecaUncheckedCreateWithoutReservasInput>
+  connectOrCreate?: Prisma.PecaCreateOrConnectWithoutReservasInput
+  upsert?: Prisma.PecaUpsertWithoutReservasInput
+  connect?: Prisma.PecaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PecaUpdateToOneWithWhereWithoutReservasInput, Prisma.PecaUpdateWithoutReservasInput>, Prisma.PecaUncheckedUpdateWithoutReservasInput>
+}
+
 export type PecaCreateWithoutAtelieInput = {
   id?: string
   titulo: string
@@ -719,6 +740,7 @@ export type PecaCreateWithoutAtelieInput = {
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   fotos?: Prisma.FotoPecaCreateNestedManyWithoutPecaInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutPecaInput
 }
 
 export type PecaUncheckedCreateWithoutAtelieInput = {
@@ -737,6 +759,7 @@ export type PecaUncheckedCreateWithoutAtelieInput = {
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   fotos?: Prisma.FotoPecaUncheckedCreateNestedManyWithoutPecaInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutPecaInput
 }
 
 export type PecaCreateOrConnectWithoutAtelieInput = {
@@ -802,6 +825,7 @@ export type PecaCreateWithoutFotosInput = {
   criadoEm?: Date | string
   atualizadoEm?: Date | string
   atelie: Prisma.AtelieCreateNestedOneWithoutPecasInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutPecaInput
 }
 
 export type PecaUncheckedCreateWithoutFotosInput = {
@@ -820,6 +844,7 @@ export type PecaUncheckedCreateWithoutFotosInput = {
   status?: $Enums.StatusPeca
   criadoEm?: Date | string
   atualizadoEm?: Date | string
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutPecaInput
 }
 
 export type PecaCreateOrConnectWithoutFotosInput = {
@@ -854,6 +879,7 @@ export type PecaUpdateWithoutFotosInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atelie?: Prisma.AtelieUpdateOneRequiredWithoutPecasNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutPecaNestedInput
 }
 
 export type PecaUncheckedUpdateWithoutFotosInput = {
@@ -872,6 +898,99 @@ export type PecaUncheckedUpdateWithoutFotosInput = {
   status?: Prisma.EnumStatusPecaFieldUpdateOperationsInput | $Enums.StatusPeca
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutPecaNestedInput
+}
+
+export type PecaCreateWithoutReservasInput = {
+  id?: string
+  titulo: string
+  descricao: string
+  tipologia: string
+  preco: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pesoGramas: number
+  comprimentoCm: number
+  larguraCm: number
+  alturaCm: number
+  isFragil?: boolean
+  quantidadeEstoque?: number
+  status?: $Enums.StatusPeca
+  criadoEm?: Date | string
+  atualizadoEm?: Date | string
+  atelie: Prisma.AtelieCreateNestedOneWithoutPecasInput
+  fotos?: Prisma.FotoPecaCreateNestedManyWithoutPecaInput
+}
+
+export type PecaUncheckedCreateWithoutReservasInput = {
+  id?: string
+  atelieId: string
+  titulo: string
+  descricao: string
+  tipologia: string
+  preco: runtime.Decimal | runtime.DecimalJsLike | number | string
+  pesoGramas: number
+  comprimentoCm: number
+  larguraCm: number
+  alturaCm: number
+  isFragil?: boolean
+  quantidadeEstoque?: number
+  status?: $Enums.StatusPeca
+  criadoEm?: Date | string
+  atualizadoEm?: Date | string
+  fotos?: Prisma.FotoPecaUncheckedCreateNestedManyWithoutPecaInput
+}
+
+export type PecaCreateOrConnectWithoutReservasInput = {
+  where: Prisma.PecaWhereUniqueInput
+  create: Prisma.XOR<Prisma.PecaCreateWithoutReservasInput, Prisma.PecaUncheckedCreateWithoutReservasInput>
+}
+
+export type PecaUpsertWithoutReservasInput = {
+  update: Prisma.XOR<Prisma.PecaUpdateWithoutReservasInput, Prisma.PecaUncheckedUpdateWithoutReservasInput>
+  create: Prisma.XOR<Prisma.PecaCreateWithoutReservasInput, Prisma.PecaUncheckedCreateWithoutReservasInput>
+  where?: Prisma.PecaWhereInput
+}
+
+export type PecaUpdateToOneWithWhereWithoutReservasInput = {
+  where?: Prisma.PecaWhereInput
+  data: Prisma.XOR<Prisma.PecaUpdateWithoutReservasInput, Prisma.PecaUncheckedUpdateWithoutReservasInput>
+}
+
+export type PecaUpdateWithoutReservasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  descricao?: Prisma.StringFieldUpdateOperationsInput | string
+  tipologia?: Prisma.StringFieldUpdateOperationsInput | string
+  preco?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pesoGramas?: Prisma.IntFieldUpdateOperationsInput | number
+  comprimentoCm?: Prisma.IntFieldUpdateOperationsInput | number
+  larguraCm?: Prisma.IntFieldUpdateOperationsInput | number
+  alturaCm?: Prisma.IntFieldUpdateOperationsInput | number
+  isFragil?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  quantidadeEstoque?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumStatusPecaFieldUpdateOperationsInput | $Enums.StatusPeca
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  atelie?: Prisma.AtelieUpdateOneRequiredWithoutPecasNestedInput
+  fotos?: Prisma.FotoPecaUpdateManyWithoutPecaNestedInput
+}
+
+export type PecaUncheckedUpdateWithoutReservasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  atelieId?: Prisma.StringFieldUpdateOperationsInput | string
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  descricao?: Prisma.StringFieldUpdateOperationsInput | string
+  tipologia?: Prisma.StringFieldUpdateOperationsInput | string
+  preco?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  pesoGramas?: Prisma.IntFieldUpdateOperationsInput | number
+  comprimentoCm?: Prisma.IntFieldUpdateOperationsInput | number
+  larguraCm?: Prisma.IntFieldUpdateOperationsInput | number
+  alturaCm?: Prisma.IntFieldUpdateOperationsInput | number
+  isFragil?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  quantidadeEstoque?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumStatusPecaFieldUpdateOperationsInput | $Enums.StatusPeca
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fotos?: Prisma.FotoPecaUncheckedUpdateManyWithoutPecaNestedInput
 }
 
 export type PecaCreateManyAtelieInput = {
@@ -907,6 +1026,7 @@ export type PecaUpdateWithoutAtelieInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fotos?: Prisma.FotoPecaUpdateManyWithoutPecaNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutPecaNestedInput
 }
 
 export type PecaUncheckedUpdateWithoutAtelieInput = {
@@ -925,6 +1045,7 @@ export type PecaUncheckedUpdateWithoutAtelieInput = {
   criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   atualizadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   fotos?: Prisma.FotoPecaUncheckedUpdateManyWithoutPecaNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutPecaNestedInput
 }
 
 export type PecaUncheckedUpdateManyWithoutAtelieInput = {
@@ -951,10 +1072,12 @@ export type PecaUncheckedUpdateManyWithoutAtelieInput = {
 
 export type PecaCountOutputType = {
   fotos: number
+  reservas: number
 }
 
 export type PecaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   fotos?: boolean | PecaCountOutputTypeCountFotosArgs
+  reservas?: boolean | PecaCountOutputTypeCountReservasArgs
 }
 
 /**
@@ -972,6 +1095,13 @@ export type PecaCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensi
  */
 export type PecaCountOutputTypeCountFotosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.FotoPecaWhereInput
+}
+
+/**
+ * PecaCountOutputType without action
+ */
+export type PecaCountOutputTypeCountReservasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReservaWhereInput
 }
 
 
@@ -993,6 +1123,7 @@ export type PecaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   atualizadoEm?: boolean
   atelie?: boolean | Prisma.AtelieDefaultArgs<ExtArgs>
   fotos?: boolean | Prisma.Peca$fotosArgs<ExtArgs>
+  reservas?: boolean | Prisma.Peca$reservasArgs<ExtArgs>
   _count?: boolean | Prisma.PecaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["peca"]>
 
@@ -1056,6 +1187,7 @@ export type PecaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type PecaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   atelie?: boolean | Prisma.AtelieDefaultArgs<ExtArgs>
   fotos?: boolean | Prisma.Peca$fotosArgs<ExtArgs>
+  reservas?: boolean | Prisma.Peca$reservasArgs<ExtArgs>
   _count?: boolean | Prisma.PecaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PecaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1070,6 +1202,7 @@ export type $PecaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     atelie: Prisma.$AteliePayload<ExtArgs>
     fotos: Prisma.$FotoPecaPayload<ExtArgs>[]
+    reservas: Prisma.$ReservaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1483,6 +1616,7 @@ export interface Prisma__PecaClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   atelie<T extends Prisma.AtelieDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.AtelieDefaultArgs<ExtArgs>>): Prisma.Prisma__AtelieClient<runtime.Types.Result.GetResult<Prisma.$AteliePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   fotos<T extends Prisma.Peca$fotosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Peca$fotosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FotoPecaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reservas<T extends Prisma.Peca$reservasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Peca$reservasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1949,6 +2083,30 @@ export type Peca$fotosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
   take?: number
   skip?: number
   distinct?: Prisma.FotoPecaScalarFieldEnum | Prisma.FotoPecaScalarFieldEnum[]
+}
+
+/**
+ * Peca.reservas
+ */
+export type Peca$reservasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Reserva
+   */
+  select?: Prisma.ReservaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Reserva
+   */
+  omit?: Prisma.ReservaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReservaInclude<ExtArgs> | null
+  where?: Prisma.ReservaWhereInput
+  orderBy?: Prisma.ReservaOrderByWithRelationInput | Prisma.ReservaOrderByWithRelationInput[]
+  cursor?: Prisma.ReservaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReservaScalarFieldEnum | Prisma.ReservaScalarFieldEnum[]
 }
 
 /**

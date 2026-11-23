@@ -37,6 +37,7 @@ export interface CriarPecaPersistenciaInput {
   readonly larguraCm: number;
   readonly alturaCm: number;
   readonly isFragil: boolean;
+  readonly quantidadeEstoque: number;
   readonly status: StatusPeca;
   readonly fotos: readonly FotoPecaParaPersistir[];
 }
@@ -59,9 +60,18 @@ export interface PecaPersistida {
   readonly larguraCm: number;
   readonly alturaCm: number;
   readonly isFragil: boolean;
+  readonly quantidadeEstoque: number;
   readonly status: StatusPeca;
   readonly fotos: readonly FotoPecaPersistida[];
 }
+
+export type AtualizarEstoquePecaPersistidaInput = {
+  readonly atelieId: string;
+  readonly pecaId: string;
+} & (
+  | { readonly modo: 'ABSOLUTO'; readonly quantidadeEstoque: number }
+  | { readonly modo: 'DELTA'; readonly delta: number }
+);
 
 /**
  * Contrato de persistência de peças.
@@ -69,6 +79,8 @@ export interface PecaPersistida {
  */
 export interface PecaRepository {
   criarComFotos(dados: CriarPecaPersistenciaInput): Promise<PecaPersistida>;
+  listarPorAtelie?(atelieId: string): Promise<PecaPersistida[]>;
+  atualizarEstoque?(dados: AtualizarEstoquePecaPersistidaInput): Promise<PecaPersistida | null>;
 }
 
 /** Imagem já otimizada para a web. */

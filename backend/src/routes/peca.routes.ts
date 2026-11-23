@@ -64,8 +64,19 @@ export function createPecaRoutes(deps?: PecaRoutesDeps): Router {
   });
   const controller = createPecaController(deps?.pecaService);
 
+  // GET /api/v1/atelies/:atelieId/pecas
+  router.get('/', authenticate, requireAtelierPermission('GERENCIAR_CATALOGO'), controller.listar);
+
   // POST /api/v1/atelies/:atelieId/pecas
   router.post('/', authenticate, requireAtelierPermission('GERENCIAR_CATALOGO'), controller.criar);
+
+  // PATCH /api/v1/atelies/:atelieId/pecas/:pecaId/estoque
+  router.patch(
+    '/:pecaId/estoque',
+    authenticate,
+    requireAtelierPermission('GERENCIAR_CATALOGO'),
+    controller.atualizarEstoque,
+  );
 
   return router;
 }

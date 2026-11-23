@@ -80,7 +80,15 @@ export function ProductDetail() {
     : 0
   const gallery =
     product.gallery && product.gallery.length > 0 ? product.gallery : getProductGalleryImages(product.imageUrl)
-  const maxQuantity = Math.max(1, availableQuantity(product))
+  const stockCount =
+    typeof product.stock === 'number' && Number.isFinite(product.stock)
+      ? Math.max(0, Math.floor(product.stock))
+      : undefined
+  const isSoldOut = stockCount === 0
+  const isLowStock = stockCount !== undefined && stockCount > 0 && stockCount <= 3
+  const available = availableQuantity(product)
+  const maxQuantity = Math.max(1, available)
+  const safeQuantity = Math.min(quantity, maxQuantity)
   const artisan = findArtisanOf(product, artisans)
   const relatedProducts = products
     .filter((item) => item.technique === product.technique && item.id !== product.id)
@@ -136,9 +144,8 @@ export function ProductDetail() {
                     onClick={() => setActiveImage(index)}
                     aria-label={`Ver imagem ${index + 1} de ${product.title}`}
                     aria-current={activeImage === index}
-                    className={`h-20 w-20 shrink-0 cursor-pointer overflow-hidden bg-surface-muted transition-opacity ${
-                      activeImage === index ? 'opacity-100 ring-2 ring-terracota' : 'opacity-60 hover:opacity-100'
-                    }`}
+                    className={`h-20 w-20 shrink-0 cursor-pointer overflow-hidden bg-surface-muted transition-opacity ${activeImage === index ? 'opacity-100 ring-2 ring-terracota' : 'opacity-60 hover:opacity-100'
+                      }`}
                   >
                     <img src={image} alt="" aria-hidden="true" className="h-full w-full object-cover" />
                   </button>
@@ -184,24 +191,38 @@ export function ProductDetail() {
 
             {product.description && <p className="text-sm leading-relaxed text-ink-soft">{product.description}</p>}
 
+            {isSoldOut ? (
+              <div role="status" className="border border-danger/30 bg-surface-muted px-4 py-2.5 text-sm font-semibold text-danger">
+                Esgotado — sem unidades disponíveis para reserva no momento.
+              </div>
+            ) : isLowStock && stockCount !== undefined ? (
+              <div role="status" className="border border-warning/40 bg-surface-muted px-4 py-2.5 text-sm font-medium text-warning">
+                Restam poucas unidades: apenas {stockCount} {stockCount === 1 ? 'unidade disponível' : 'unidades disponíveis'}.
+              </div>
+            ) : stockCount !== undefined ? (
+              <p className="text-sm text-ink-soft">
+                Estoque disponível: <strong className="text-ink">{stockCount}</strong> unidades
+              </p>
+            ) : null}
+
             <div className="flex flex-col gap-3 sm:flex-row">
               <div className="flex h-14 items-center border border-border">
                 <button
                   type="button"
-                  onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                  disabled={quantity <= 1}
+                  onClick={() => setQuantity(Math.max(1, safeQuantity - 1))}
+                  disabled={isSoldOut || safeQuantity <= 1}
                   aria-label="Diminuir quantidade"
                   className="flex h-full w-12 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Minus className="h-4 w-4" aria-hidden="true" />
                 </button>
                 <span aria-live="polite" className="w-10 text-center text-sm font-semibold text-ink">
-                  {quantity}
+                  {isSoldOut ? 0 : safeQuantity}
                 </span>
                 <button
                   type="button"
-                  onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
-                  disabled={quantity >= maxQuantity}
+                  onClick={() => setQuantity(Math.min(maxQuantity, safeQuantity + 1))}
+                  disabled={isSoldOut || safeQuantity >= maxQuantity}
                   aria-label="Aumentar quantidade"
                   className="flex h-full w-12 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
                 >
@@ -213,11 +234,11 @@ export function ProductDetail() {
                 variant="primary"
                 size="lg"
                 className="h-14 flex-1"
-                onClick={() => addItem(product.id, quantity)}
-                disabled={product.stock === 0}
+                onClick={() => addItem(product.id, safeQuantity)}
+                disabled={isSoldOut}
               >
                 <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-                {product.stock === 0 ? 'Esgotado' : 'Adicionar ao carrinho'}
+                {isSoldOut ? 'Esgotado' : 'Adicionar ao carrinho'}
               </Button>
 
               <button

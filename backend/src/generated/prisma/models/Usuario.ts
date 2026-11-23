@@ -210,6 +210,8 @@ export type UsuarioWhereInput = {
   artesao?: Prisma.XOR<Prisma.ArtesaoNullableScalarRelationFilter, Prisma.ArtesaoWhereInput> | null
   curadorias?: Prisma.AtelieCuradorListRelationFilter
   enderecos?: Prisma.EnderecoListRelationFilter
+  reservasGrupos?: Prisma.ReservaGrupoListRelationFilter
+  reservas?: Prisma.ReservaListRelationFilter
 }
 
 export type UsuarioOrderByWithRelationInput = {
@@ -225,6 +227,8 @@ export type UsuarioOrderByWithRelationInput = {
   artesao?: Prisma.ArtesaoOrderByWithRelationInput
   curadorias?: Prisma.AtelieCuradorOrderByRelationAggregateInput
   enderecos?: Prisma.EnderecoOrderByRelationAggregateInput
+  reservasGrupos?: Prisma.ReservaGrupoOrderByRelationAggregateInput
+  reservas?: Prisma.ReservaOrderByRelationAggregateInput
 }
 
 export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
@@ -243,6 +247,8 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   artesao?: Prisma.XOR<Prisma.ArtesaoNullableScalarRelationFilter, Prisma.ArtesaoWhereInput> | null
   curadorias?: Prisma.AtelieCuradorListRelationFilter
   enderecos?: Prisma.EnderecoListRelationFilter
+  reservasGrupos?: Prisma.ReservaGrupoListRelationFilter
+  reservas?: Prisma.ReservaListRelationFilter
 }, "id" | "email" | "cpfCnpj">
 
 export type UsuarioOrderByWithAggregationInput = {
@@ -286,6 +292,8 @@ export type UsuarioCreateInput = {
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateInput = {
@@ -301,6 +309,8 @@ export type UsuarioUncheckedCreateInput = {
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUpdateInput = {
@@ -316,6 +326,8 @@ export type UsuarioUpdateInput = {
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateInput = {
@@ -331,6 +343,8 @@ export type UsuarioUncheckedUpdateInput = {
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateManyInput = {
@@ -475,6 +489,34 @@ export type UsuarioUpdateOneRequiredWithoutPapeisNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutPapeisInput, Prisma.UsuarioUpdateWithoutPapeisInput>, Prisma.UsuarioUncheckedUpdateWithoutPapeisInput>
 }
 
+export type UsuarioCreateNestedOneWithoutReservasGruposInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutReservasGruposInput, Prisma.UsuarioUncheckedCreateWithoutReservasGruposInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutReservasGruposInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutReservasGruposNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutReservasGruposInput, Prisma.UsuarioUncheckedCreateWithoutReservasGruposInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutReservasGruposInput
+  upsert?: Prisma.UsuarioUpsertWithoutReservasGruposInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutReservasGruposInput, Prisma.UsuarioUpdateWithoutReservasGruposInput>, Prisma.UsuarioUncheckedUpdateWithoutReservasGruposInput>
+}
+
+export type UsuarioCreateNestedOneWithoutReservasInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutReservasInput, Prisma.UsuarioUncheckedCreateWithoutReservasInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutReservasInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutReservasNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutReservasInput, Prisma.UsuarioUncheckedCreateWithoutReservasInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutReservasInput
+  upsert?: Prisma.UsuarioUpsertWithoutReservasInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutReservasInput, Prisma.UsuarioUpdateWithoutReservasInput>, Prisma.UsuarioUncheckedUpdateWithoutReservasInput>
+}
+
 export type UsuarioCreateWithoutArtesaoInput = {
   id?: string
   nome: string
@@ -487,6 +529,8 @@ export type UsuarioCreateWithoutArtesaoInput = {
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutArtesaoInput = {
@@ -501,6 +545,8 @@ export type UsuarioUncheckedCreateWithoutArtesaoInput = {
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutArtesaoInput = {
@@ -531,6 +577,8 @@ export type UsuarioUpdateWithoutArtesaoInput = {
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutArtesaoInput = {
@@ -545,6 +593,8 @@ export type UsuarioUncheckedUpdateWithoutArtesaoInput = {
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutCuradoriasInput = {
@@ -559,6 +609,8 @@ export type UsuarioCreateWithoutCuradoriasInput = {
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutCuradoriasInput = {
@@ -573,6 +625,8 @@ export type UsuarioUncheckedCreateWithoutCuradoriasInput = {
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutCuradoriasInput = {
@@ -603,6 +657,8 @@ export type UsuarioUpdateWithoutCuradoriasInput = {
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutCuradoriasInput = {
@@ -617,6 +673,8 @@ export type UsuarioUncheckedUpdateWithoutCuradoriasInput = {
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutEnderecosInput = {
@@ -631,6 +689,8 @@ export type UsuarioCreateWithoutEnderecosInput = {
   papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutEnderecosInput = {
@@ -645,6 +705,8 @@ export type UsuarioUncheckedCreateWithoutEnderecosInput = {
   papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutEnderecosInput = {
@@ -675,6 +737,8 @@ export type UsuarioUpdateWithoutEnderecosInput = {
   papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutEnderecosInput = {
@@ -689,6 +753,8 @@ export type UsuarioUncheckedUpdateWithoutEnderecosInput = {
   papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutPapeisInput = {
@@ -703,6 +769,8 @@ export type UsuarioCreateWithoutPapeisInput = {
   artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutPapeisInput = {
@@ -717,6 +785,8 @@ export type UsuarioUncheckedCreateWithoutPapeisInput = {
   artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
   curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
   enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutPapeisInput = {
@@ -747,6 +817,8 @@ export type UsuarioUpdateWithoutPapeisInput = {
   artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutPapeisInput = {
@@ -761,6 +833,168 @@ export type UsuarioUncheckedUpdateWithoutPapeisInput = {
   artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
   curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
   enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioCreateWithoutReservasGruposInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioUncheckedCreateWithoutReservasGruposInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservas?: Prisma.ReservaUncheckedCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioCreateOrConnectWithoutReservasGruposInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutReservasGruposInput, Prisma.UsuarioUncheckedCreateWithoutReservasGruposInput>
+}
+
+export type UsuarioUpsertWithoutReservasGruposInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutReservasGruposInput, Prisma.UsuarioUncheckedUpdateWithoutReservasGruposInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutReservasGruposInput, Prisma.UsuarioUncheckedCreateWithoutReservasGruposInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutReservasGruposInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutReservasGruposInput, Prisma.UsuarioUncheckedUpdateWithoutReservasGruposInput>
+}
+
+export type UsuarioUpdateWithoutReservasGruposInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutReservasGruposInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservas?: Prisma.ReservaUncheckedUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioCreateWithoutReservasInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioUncheckedCreateWithoutReservasInput = {
+  id?: string
+  nome: string
+  email: string
+  cpfCnpj: string
+  telefoneWhatsapp: string
+  senhaHash: string
+  status?: string
+  criadoEm?: Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedCreateNestedManyWithoutUsuarioInput
+  artesao?: Prisma.ArtesaoUncheckedCreateNestedOneWithoutUsuarioInput
+  curadorias?: Prisma.AtelieCuradorUncheckedCreateNestedManyWithoutUsuarioInput
+  enderecos?: Prisma.EnderecoUncheckedCreateNestedManyWithoutUsuarioInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioCreateOrConnectWithoutReservasInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutReservasInput, Prisma.UsuarioUncheckedCreateWithoutReservasInput>
+}
+
+export type UsuarioUpsertWithoutReservasInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutReservasInput, Prisma.UsuarioUncheckedUpdateWithoutReservasInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutReservasInput, Prisma.UsuarioUncheckedCreateWithoutReservasInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutReservasInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutReservasInput, Prisma.UsuarioUncheckedUpdateWithoutReservasInput>
+}
+
+export type UsuarioUpdateWithoutReservasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutReservasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nome?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  cpfCnpj?: Prisma.StringFieldUpdateOperationsInput | string
+  telefoneWhatsapp?: Prisma.StringFieldUpdateOperationsInput | string
+  senhaHash?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  criadoEm?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  papeis?: Prisma.UsuarioPapelUncheckedUpdateManyWithoutUsuarioNestedInput
+  artesao?: Prisma.ArtesaoUncheckedUpdateOneWithoutUsuarioNestedInput
+  curadorias?: Prisma.AtelieCuradorUncheckedUpdateManyWithoutUsuarioNestedInput
+  enderecos?: Prisma.EnderecoUncheckedUpdateManyWithoutUsuarioNestedInput
+  reservasGrupos?: Prisma.ReservaGrupoUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 
@@ -772,12 +1006,16 @@ export type UsuarioCountOutputType = {
   papeis: number
   curadorias: number
   enderecos: number
+  reservasGrupos: number
+  reservas: number
 }
 
 export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   papeis?: boolean | UsuarioCountOutputTypeCountPapeisArgs
   curadorias?: boolean | UsuarioCountOutputTypeCountCuradoriasArgs
   enderecos?: boolean | UsuarioCountOutputTypeCountEnderecosArgs
+  reservasGrupos?: boolean | UsuarioCountOutputTypeCountReservasGruposArgs
+  reservas?: boolean | UsuarioCountOutputTypeCountReservasArgs
 }
 
 /**
@@ -811,6 +1049,20 @@ export type UsuarioCountOutputTypeCountEnderecosArgs<ExtArgs extends runtime.Typ
   where?: Prisma.EnderecoWhereInput
 }
 
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountReservasGruposArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReservaGrupoWhereInput
+}
+
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountReservasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReservaWhereInput
+}
+
 
 export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -825,6 +1077,8 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   artesao?: boolean | Prisma.Usuario$artesaoArgs<ExtArgs>
   curadorias?: boolean | Prisma.Usuario$curadoriasArgs<ExtArgs>
   enderecos?: boolean | Prisma.Usuario$enderecosArgs<ExtArgs>
+  reservasGrupos?: boolean | Prisma.Usuario$reservasGruposArgs<ExtArgs>
+  reservas?: boolean | Prisma.Usuario$reservasArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usuario"]>
 
@@ -867,6 +1121,8 @@ export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   artesao?: boolean | Prisma.Usuario$artesaoArgs<ExtArgs>
   curadorias?: boolean | Prisma.Usuario$curadoriasArgs<ExtArgs>
   enderecos?: boolean | Prisma.Usuario$enderecosArgs<ExtArgs>
+  reservasGrupos?: boolean | Prisma.Usuario$reservasGruposArgs<ExtArgs>
+  reservas?: boolean | Prisma.Usuario$reservasArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UsuarioIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -879,6 +1135,8 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     artesao: Prisma.$ArtesaoPayload<ExtArgs> | null
     curadorias: Prisma.$AtelieCuradorPayload<ExtArgs>[]
     enderecos: Prisma.$EnderecoPayload<ExtArgs>[]
+    reservasGrupos: Prisma.$ReservaGrupoPayload<ExtArgs>[]
+    reservas: Prisma.$ReservaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1287,6 +1545,8 @@ export interface Prisma__UsuarioClient<T, Null = never, ExtArgs extends runtime.
   artesao<T extends Prisma.Usuario$artesaoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$artesaoArgs<ExtArgs>>): Prisma.Prisma__ArtesaoClient<runtime.Types.Result.GetResult<Prisma.$ArtesaoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   curadorias<T extends Prisma.Usuario$curadoriasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$curadoriasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AtelieCuradorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   enderecos<T extends Prisma.Usuario$enderecosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$enderecosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EnderecoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reservasGrupos<T extends Prisma.Usuario$reservasGruposArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$reservasGruposArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservaGrupoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reservas<T extends Prisma.Usuario$reservasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$reservasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReservaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1805,6 +2065,54 @@ export type Usuario$enderecosArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.EnderecoScalarFieldEnum | Prisma.EnderecoScalarFieldEnum[]
+}
+
+/**
+ * Usuario.reservasGrupos
+ */
+export type Usuario$reservasGruposArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReservaGrupo
+   */
+  select?: Prisma.ReservaGrupoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReservaGrupo
+   */
+  omit?: Prisma.ReservaGrupoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReservaGrupoInclude<ExtArgs> | null
+  where?: Prisma.ReservaGrupoWhereInput
+  orderBy?: Prisma.ReservaGrupoOrderByWithRelationInput | Prisma.ReservaGrupoOrderByWithRelationInput[]
+  cursor?: Prisma.ReservaGrupoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReservaGrupoScalarFieldEnum | Prisma.ReservaGrupoScalarFieldEnum[]
+}
+
+/**
+ * Usuario.reservas
+ */
+export type Usuario$reservasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Reserva
+   */
+  select?: Prisma.ReservaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Reserva
+   */
+  omit?: Prisma.ReservaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReservaInclude<ExtArgs> | null
+  where?: Prisma.ReservaWhereInput
+  orderBy?: Prisma.ReservaOrderByWithRelationInput | Prisma.ReservaOrderByWithRelationInput[]
+  cursor?: Prisma.ReservaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReservaScalarFieldEnum | Prisma.ReservaScalarFieldEnum[]
 }
 
 /**
