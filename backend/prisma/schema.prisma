@@ -29,6 +29,8 @@ model Usuario {
   artesao         Artesao?
   curadorias      AtelieCurador[]
   enderecos       Endereco[]
+  reservasGrupos  ReservaGrupo[]
+  reservas        Reserva[]
 
   @@map("usuarios")
 }
@@ -127,6 +129,7 @@ model Peca {
   atualizadoEm      DateTime   @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
   atelie            Atelie     @relation(fields: [atelieId], references: [id], onDelete: Restrict, onUpdate: Cascade)
   fotos             FotoPeca[]
+  reservas          Reserva[]
 
   @@index([atelieId])
   @@index([status])
@@ -188,4 +191,55 @@ model AuditoriaSeguranca {
   @@index([atelieId, ocorridoEm])
   @@index([usuarioId, ocorridoEm])
   @@map("auditoria_seguranca")
+}
+
+enum StatusReserva {
+  ATIVA
+  CONFIRMADA
+  CANCELADA
+  EXPIRADA
+
+  @@map("StatusReserva")
+}
+
+/// Cabeçalho de operação de reserva: agrupa 1 ou N itens reservados atomicamente
+/// e garante idempotência única por comprador + chave de idempotência.
+model ReservaGrupo {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  usuarioId      String    @map("usuario_id") @db.Uuid
+  idempotencyKey String    @map("idempotency_key") @db.VarChar(128)
+  payloadHash    String    @map("payload_hash") @db.VarChar(64)
+  criadoEm       DateTime  @default(now()) @map("criado_em") @db.Timestamp(3)
+  usuario        Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  itens          Reserva[]
+
+  @@unique([usuarioId, idempotencyKey])
+  @@index([usuarioId, criadoEm])
+  @@map("reservas_grupos")
+}
+
+/// Reserva temporária de unidades de uma peça (compatível com lotes limitados da HU-06 e peça única da HU-09).
+model Reserva {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  grupoId            String        @map("grupo_id") @db.Uuid
+  usuarioId          String        @map("usuario_id") @db.Uuid
+  pecaId             String        @map("peca_id") @db.Uuid
+  quantidade         Int
+  status             StatusReserva @default(ATIVA)
+  idempotencyKey     String        @map("idempotency_key") @db.VarChar(128)
+  criadoEm           DateTime      @default(now()) @map("criado_em") @db.Timestamp(3)
+  expiraEm           DateTime      @map("expira_em") @db.Timestamp(3)
+  atualizadoEm       DateTime      @default(now()) @updatedAt @map("atualizado_em") @db.Timestamp(3)
+  finalizadoEm       DateTime?     @map("finalizado_em") @db.Timestamp(3)
+  estoqueDevolvidoEm DateTime?     @map("estoque_devolvido_em") @db.Timestamp(3)
+  grupo              ReservaGrupo  @relation(fields: [grupoId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  usuario            Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  peca               Peca          @relation(fields: [pecaId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@unique([grupoId, pecaId])
+  @@unique([usuarioId, idempotencyKey, pecaId])
+  @@index([pecaId, status])
+  @@index([status, expiraEm])
+  @@index([usuarioId, status])
+  @@map("reservas")
 }
