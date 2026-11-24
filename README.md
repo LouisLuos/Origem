@@ -6,6 +6,16 @@
 
 ---
 
+## Integrantes
+
+- Luiz Henrique Souza
+- Cauã dos Santos
+- Pedro Vinícius
+- Marcos Tavares
+- Matheus de Freitas
+- Vinicius Gabriel dos Santos
+- Eduardo Henrique Albuquerque
+
 ## 🧭 Arquitetura Implementada
 
 - **Frontend (`frontend/`, porta `5173`):** Next.js 16 + React 19 + Tailwind CSS v4 com a identidade visual original do Origem preservada, focado nos fluxos públicos de vitrine, busca/filtros, perfil de artesãos, detalhes de produto e recomendações distribuídas com seletor **Sequencial vs Paralelo**.
