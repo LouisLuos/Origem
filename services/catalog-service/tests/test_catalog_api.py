@@ -102,7 +102,8 @@ def test_recommendations_gateway_calls_http_and_never_silently_fallbacks():
         assert ok_resp.status_code == 200
         body = ok_resp.json()
         assert body["items"][0]["id"] == "p02"
-        assert body["items"][0]["imageUrl"].startswith("https://")
+        assert body["items"][0]["imageUrl"] == "/media/peca.webp"
+        assert "ilustração" in body["items"][0]["imageAlt"].lower()
         assert body["metrics"]["mode"] == "parallel"
         assert body["metrics"]["workers"] == 2
 
@@ -113,3 +114,21 @@ def test_recommendations_gateway_calls_http_and_never_silently_fallbacks():
         err_resp = client.get("/api/v1/produtos/p01/recomendacoes?mode=parallel")
         assert err_resp.status_code == 503
         assert "erro" in err_resp.json()
+
+def test_lab_forwards_identical_batch_parameters_and_reports_outage():
+    with TestClient(app) as client:
+        batch = {"input_digest": "input", "result_digest": "result", "metrics": {"processed_targets": 500}}
+        app.state.http_client.post = AsyncMock(return_value=httpx.Response(
+            200, json=batch, request=httpx.Request("POST", "http://recommendation/recommendations/batch")
+        ))
+        for mode, workers in [("sequential", 1), ("parallel", 4)]:
+            resp = client.post("/api/v1/laboratorio/amostra", params={"mode": mode, "workers": workers, "size": 500})
+            assert resp.status_code == 200
+            assert resp.json()["input_digest"] == batch["input_digest"]
+            assert resp.json()["gateway_ms"] >= 0
+            call = app.state.http_client.post.await_args
+            assert call.args[0].endswith("/recommendations/batch")
+            assert call.kwargs["json"] == {"synthetic_size": 500, "limit": 4, "mode": mode, "workers": workers}
+        assert client.post("/api/v1/laboratorio/amostra?mode=parallel&workers=3").status_code == 422
+        app.state.http_client.post = AsyncMock(side_effect=httpx.ConnectError("offline"))
+        assert client.post("/api/v1/laboratorio/amostra?mode=parallel&workers=4").status_code == 503

@@ -18,6 +18,7 @@ const MAX_ARTISAN_SEARCH_RESULTS = 3
 const navLinks = [
   { label: 'Categorias', href: '/#categorias' },
   { label: 'Produtos', href: '/#vitrine' },
+  { label: 'Laboratório de desempenho', href: '/laboratorio-de-desempenho' },
   { label: 'Artesãos', href: '/#artesaos' },
 ]
 

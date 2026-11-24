@@ -4,7 +4,6 @@ import { ChevronRight, MapPin, Package, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Button, ButtonLink, Container, ProductCard } from '@/design-system'
-import { getAvatarUrl } from '@/utils/avatar'
 import { ErrorBlock, ResourceGate } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
@@ -83,7 +82,7 @@ export function ArtisanProfile({ initialArtisan }: ArtisanProfileProps) {
 
         <Container className="absolute inset-x-0 bottom-0 translate-y-1/2">
           <img
-            src={getAvatarUrl(artisan.photoUrl)}
+            src={artisan.photoUrl}
             alt={artisan.photoAlt}
             className="h-32 w-32 border-4 border-creme object-cover sm:h-40 sm:w-40"
           />
@@ -91,7 +90,7 @@ export function ArtisanProfile({ initialArtisan }: ArtisanProfileProps) {
       </div>
 
       <Container className="pt-20 sm:pt-24">
-        <div className="flex flex-col gap-6 border-b border-border pb-10 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-6 border-b border-border pb-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex flex-col gap-1">
             <button
               type="button"
@@ -128,7 +127,7 @@ export function ArtisanProfile({ initialArtisan }: ArtisanProfileProps) {
         </div>
 
         <div className="grid gap-10 pt-10 lg:grid-cols-[2fr_1fr] lg:gap-14">
-          <div className="flex flex-col gap-3">
+          <div className="flex min-w-0 flex-col gap-3">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-ink">Sobre {artisan.name}</h2>
             <p className="text-sm leading-relaxed text-ink-soft">{artisan.bio}</p>
           </div>

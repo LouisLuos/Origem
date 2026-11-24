@@ -6,14 +6,6 @@ import { Container, SectionHeading } from '@/design-system'
 import { techniques } from '@/design-system/tokens'
 import { useProductFilter } from '@/context/ProductFilterContext'
 
-const categoryImages: Record<(typeof techniques)[number], string> = {
-  'Cerâmica Figurativa': 'https://picsum.photos/seed/origem-cat-ceramica/480/560',
-  'Renda Renascença': 'https://picsum.photos/seed/origem-cat-renda/480/560',
-  Xilogravura: 'https://picsum.photos/seed/origem-cat-xilogravura/480/560',
-  Marcenaria: 'https://picsum.photos/seed/origem-cat-marcenaria/480/560',
-  Cordel: 'https://picsum.photos/seed/origem-cat-cordel/480/560',
-  Bordado: 'https://picsum.photos/seed/origem-cat-bordado/480/560',
-}
 
 export function CategoryShowcase() {
   const trackRef = useRef<HTMLDivElement>(null)
@@ -59,7 +51,7 @@ export function CategoryShowcase() {
           ref={trackRef}
           className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth sm:gap-6"
         >
-          {techniques.map((technique) => (
+          {techniques.map((technique, index) => (
             <a
               key={technique}
               href="#vitrine"
@@ -68,13 +60,13 @@ export function CategoryShowcase() {
               className="group relative aspect-4/5 w-[65vw] shrink-0 snap-start overflow-hidden bg-surface-muted shadow-soft sm:w-70"
             >
               <img
-                src={categoryImages[technique]}
-                alt={`Peças de ${technique}`}
+                src={`/media/tecnica-${index % 3}.webp`}
+                alt=""
                 loading="lazy"
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-aubergine-600/60" aria-hidden="true" />
-              <span className="absolute inset-0 flex items-center justify-center px-4 text-center text-base font-semibold text-terracota-50 sm:text-lg uppercase leading-tight tracking-wider" aria-hidden="true">
+              <span className="absolute inset-0 flex items-center justify-center px-4 text-center text-base font-semibold text-terracota-50 sm:text-lg uppercase leading-tight tracking-wider">
                 {technique}
               </span>
             </a>

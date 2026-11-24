@@ -16,6 +16,7 @@ const columns = [
     title: 'Arquitetura (FCCPD U2)',
     links: [
       { label: 'Catálogo distribuído', href: '/#vitrine' },
+      { label: 'Laboratório de desempenho', href: '/laboratorio-de-desempenho' },
       { label: 'Recomendações paralelas', href: '/produtos/p01' },
     ],
   },

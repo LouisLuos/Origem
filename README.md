@@ -40,6 +40,16 @@ Acesse **http://localhost:5173** e abra uma peça (ex.: `http://localhost:5173/p
 
 ---
 
+## Laboratório de desempenho
+
+Com os três serviços ativos, abra o [laboratório no frontend](http://localhost:5173/laboratorio-de-desempenho). Ele também está no cabeçalho e no rodapé.
+
+1. Selecione **Acervo atual**, escolha **4 workers** e execute a comparação. Confira a origem e o número de peças que o serviço efetivamente leu.
+2. Repita com **Sintético · 500 produtos**. Compare os tempos medianos do cálculo e do percurso completo. A escala dos dois gráficos é comum.
+3. Expanda **Resultados equivalentes** para conferir os digests e as amostras. As medições são produzidas a cada clique. Para apresentar, use a interface local; para reproduzir a bateria experimental completa, use o script abaixo.
+
+O acervo funciona em modo local ou híbrido com PostgreSQL somente leitura. Peças e perfis sem foto disponível usam ilustrações locais identificadas. [Metodologia e evidências do laboratório](docs/fccpd-unidade-2/arquitetura-e-benchmark.md#9-laboratório-interativo).
+
 ## 🧪 Testes e Benchmark Reproduzível
 
 ```powershell

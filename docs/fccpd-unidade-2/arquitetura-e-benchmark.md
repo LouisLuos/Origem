@@ -220,3 +220,37 @@ Acesse `http://localhost:5173`, abra qualquer peça (ex.: `http://localhost:5173
 .\.venv\Scripts\python.exe benchmarks\benchmark_recommendations.py --with-http --repeats 5 --warmups 1
 ```
 *(Sem `--with-http`, executa apenas a bateria algorítmica isolada usando o JSON local se o `:3001` estiver desligado.)*
+
+## 9. Laboratório interativo
+
+Acesse `/laboratorio-de-desempenho` no frontend. Cada clique faz 12 chamadas reais e sucessivas a `POST /api/v1/laboratorio/amostra` via rewrite do Next. O Catalog encaminha cada amostra a `POST /recommendations/batch`. O Recommendation busca produtos e cestas no Catalog por HTTP e calcula top-4 para todos os alvos. O PostgreSQL permanece somente leitura. Sem banco configurado o tamanho do acervo atual pode ser diferente do registrado nas evidências.
+
+| Escolha | Efeito |
+|---|---|
+| Acervo atual | Usa os produtos e cestas do serviço, identificando catálogo local ou PostgreSQL + catálogo local. |
+| Sintético | Expande deterministicamente o acervo para 200, 500 ou 1.000 produtos, com seed 42. |
+| Workers | Sequencial usa 1. Paralelo distribui o trabalho em até 2, 4 ou 8 partes no pool persistente. |
+
+O navegador alterna a ordem dos modos a cada rodada. Descarta o primeiro par como aquecimento e resume as cinco amostras seguintes de cada modo pela mediana. O SHA-256 da carga inclui os produtos ordenados, cestas, alvos e limite. O serviço calcula esse digest fora do tempo algorítmico. O navegador exige a mesma carga, origem e digest do resultado nas 12 respostas antes de publicar a comparação. Se o catálogo mudar ou um serviço falhar, a interface descarta a execução incompleta e oferece nova tentativa.
+
+| Medida | Intervalo observado |
+|---|---|
+| Cálculo | Execução do algoritmo no Recommendation, incluindo despacho e espera pelo pool no modo paralelo. |
+| Busca do catálogo | Tempo do Recommendation aguardando o par de consultas HTTP de produtos e cestas. |
+| Chamada entre serviços | Catalog aguarda a resposta completa do Recommendation. Inclui busca e cálculo. |
+| Latência do cliente | `performance.now()` no navegador, da chamada via Next até a leitura e decodificação da resposta. Inclui a chamada entre serviços. |
+
+Cada intervalo tem sua própria mediana. Somá-los duplicaria trabalho já incluído. Throughput de cálculo é o número de alvos dividido pelos segundos medianos de cálculo. Speedup é a razão entre os tempos medianos sequencial e paralelo. Eficiência divide o speedup pelos workers da execução paralela. Em cargas pequenas, a distribuição e a sincronização podem custar mais que o cálculo poupado.
+
+**Evidências da interface em produção local.** As respostas capturadas pelo Playwright estão nos arquivos [acervo atual](evidencias/lote-15.json) e [500 produtos sintéticos](evidencias/lote-500.json). Cada arquivo contém as 12 respostas, começando pelo par de aquecimento, e os valores exibidos na interface. A latência do cliente é medida pelo navegador. Veja a [configuração do laboratório](evidencias/laboratorio.png), o [resultado do acervo](evidencias/resultado-15.png), o [resultado sintético](evidencias/resultado-500.png) e os [filtros móveis](evidencias/catalogo-mobile.png). Os valores históricos das seções 4–7 pertencem à bateria de benchmark de linha de comando.
+
+### Validação pelo navegador em 24 de novembro de 2026
+
+| Carga | Cálculo sequencial | Cálculo paralelo (4 workers) | Speedup | Eficiência | Latência do cliente, sequencial / paralelo |
+|---|---:|---:|---:|---:|---:|
+| 15 peças do acervo ativo | 0,522 ms | 1,742 ms | 0,30× | 7,49% | 19,2 / 21,1 ms |
+| 500 produtos sintéticos | 431,719 ms | 138,261 ms | 3,12× | 78,06% | 464,4 / 175,1 ms |
+
+Playwright conferiu as medianas de cálculo, busca e gateway contra as respostas efetivamente recebidas na mesma execução. Os dois modos produziram o mesmo digest para cada carga. A injeção de um HTTP 503 na requisição do laboratório mostrou o estado de erro; a nova tentativa completou o ensaio com o serviço real. A alteração controlada da assinatura de entrada da segunda chamada interrompeu a comparação.
+
+Foram verificadas as 15 páginas de peças, os 11 perfis, as imagens e os status HTTP das rotas inexistentes. Home, detalhe, perfil e laboratório couberam nas larguras de 390, 768 e 1440 px. Nos percursos normais não houve falha HTTP inesperada ou exceção JavaScript. [Boneco de Barro com imagem ilustrativa](evidencias/boneco-de-barro.png) · [Perfil de artesão](evidencias/perfil-artesao.png) · [Laboratório no celular](evidencias/laboratorio-mobile.png).

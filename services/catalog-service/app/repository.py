@@ -4,6 +4,7 @@ import json
 import logging
 import math
 import time
+from urllib.parse import urlsplit
 import uuid
 from dataclasses import dataclass
 from typing import Any
@@ -67,6 +68,15 @@ ORDER BY art.criado_em DESC;
 """
 
 
+def usable_media(url: str | None) -> bool:
+    if not url:
+        return False
+    parsed = urlsplit(url)
+    host = parsed.hostname or ""
+    legacy_upload = host in {"", "localhost", "127.0.0.1"} and parsed.path.startswith("/uploads/")
+    return not legacy_upload and host not in {"picsum.photos", "i.pravatar.cc"}
+
+
 def _is_uuid(value: str) -> bool:
     try:
         uuid.UUID(value)
@@ -115,8 +125,8 @@ class CatalogRepository:
             price=float(item["preco"]),
             stock=int(item["estoque"]),
             active=True,
-            imageUrl=f"https://picsum.photos/seed/origem-{product_id}/800/800",
-            imageAlt=nome,
+            imageUrl="/media/peca.webp",
+            imageAlt="Ilustração de acervo; fotografia indisponível",
             description=f"{nome}, produzido em {polo} pela técnica tradicional de {tecnica.lower()}.",
         )
 
@@ -157,7 +167,7 @@ class CatalogRepository:
                 artesao_nome,
                 fotos,
             ) = row
-            gallery = [str(url) for url in (fotos or []) if url]
+            gallery = [str(url) for url in (fotos or []) if usable_media(url)]
             stock_visivel = int(qtd_estoque) if status == "DISPONIVEL" else 0
             db_products.append(
                 ProdutoPublico(
@@ -173,8 +183,8 @@ class CatalogRepository:
                     price=float(preco),
                     stock=stock_visivel,
                     active=True,
-                    imageUrl=gallery[0] if gallery else f"https://picsum.photos/seed/origem-{pid}/800/800",
-                    imageAlt=titulo,
+                    imageUrl=gallery[0] if gallery else "/media/peca.webp",
+                    imageAlt=titulo if gallery else "Ilustração de acervo; fotografia indisponível",
                     description=descricao,
                     gallery=gallery or None,
                 )
@@ -195,7 +205,6 @@ class CatalogRepository:
                 cover_url,
                 cover_alt,
             ) = row
-            slug_id = build_artisan_id(nome)
             db_artisans.append(
                 ArtesaoPublico(
                     id=aid,
@@ -204,10 +213,10 @@ class CatalogRepository:
                     technique=tecnica,
                     bio=bio or "",
                     since=ano_inicio,
-                    photoUrl=foto_url or f"https://picsum.photos/seed/{slug_id}/600/700",
-                    photoAlt=foto_alt,
-                    coverUrl=cover_url or f"https://picsum.photos/seed/atelie-{slug_id}/1600/500",
-                    coverAlt=cover_alt,
+                    photoUrl=foto_url if usable_media(foto_url) else "/media/artesao.webp",
+                    photoAlt=foto_alt if usable_media(foto_url) else "Retrato indisponível",
+                    coverUrl=cover_url if usable_media(cover_url) else "/media/capa.webp",
+                    coverAlt=cover_alt if usable_media(cover_url) else "Grafismo ilustrativo",
                     pieces=[],
                 )
             )
@@ -273,10 +282,10 @@ class CatalogRepository:
                     technique=product.technique,
                     bio=f"Mestre artesão de {product.hub}, referência em {product.technique.lower()} no artesanato pernambucano.",
                     since=None,
-                    photoUrl=f"https://picsum.photos/seed/{slug}/600/700",
-                    photoAlt=product.artisan,
-                    coverUrl=f"https://picsum.photos/seed/atelie-{slug}/1600/500",
-                    coverAlt=f"Ateliê de {product.artisan}",
+                    photoUrl="/media/artesao.webp",
+                    photoAlt="Retrato indisponível",
+                    coverUrl="/media/capa.webp",
+                    coverAlt="Grafismo ilustrativo",
                     pieces=[],
                 )
             )

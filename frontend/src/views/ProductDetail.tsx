@@ -1,13 +1,12 @@
 'use client'
 
+import type { CatalogItem } from '@/services/catalogTypes'
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { ChevronRight, Cpu, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
 import { Badge, ButtonLink, Container, ProductCard, cn, currency } from '@/design-system'
-import { getAvatarUrl } from '@/utils/avatar'
-import { getProductGalleryImages } from '@/utils/media'
 import { ErrorBlock, LoadingBlock, ResourceGate } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
@@ -52,7 +51,7 @@ const trustPoints = [
   { icon: ShieldCheck, label: 'Curadoria Origem', description: 'Procedência e técnica preservadas.' },
 ]
 
-export function ProductDetail() {
+export function ProductDetail({ initialProduct }: { initialProduct?: CatalogItem }) {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const { selectTechnique } = useProductFilter()
@@ -60,7 +59,7 @@ export function ProductDetail() {
   const { getProduct, status, error, reload } = useCatalog()
   const { artisans } = useArtisans()
 
-  const product = getProduct(id)
+  const product = initialProduct ?? getProduct(id)
 
   const [activeImage, setActiveImage] = useState(0)
   const [recMode, setRecMode] = useState<RecommendationMode>('parallel')
@@ -129,7 +128,7 @@ export function ProductDetail() {
     ? Math.round(100 - (product.price / (product.compareAtPrice as number)) * 100)
     : 0
   const gallery =
-    product.gallery && product.gallery.length > 0 ? product.gallery : getProductGalleryImages(product.imageUrl)
+    product.gallery && product.gallery.length > 0 ? product.gallery : [product.imageUrl]
   const stockCount = typeof product.stock === 'number' ? Math.max(0, Math.floor(product.stock)) : undefined
   const isSoldOut = stockCount === 0
   const isLowStock = stockCount !== undefined && stockCount > 0 && stockCount <= LOW_STOCK_THRESHOLD
@@ -162,7 +161,7 @@ export function ProductDetail() {
         </nav>
 
         <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
-          <div className="flex flex-col gap-3">
+          <div className="flex min-w-0 flex-col gap-3">
             <div className="relative aspect-square overflow-hidden bg-surface-muted">
               <img
                 src={gallery[activeImage]}
@@ -274,10 +273,10 @@ export function ProductDetail() {
 
                 <DetailSection title="Sobre o artesão" defaultOpen>
                   {artisan ? (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex min-w-0 flex-col gap-3">
                       <div className="flex items-center gap-3">
                         <img
-                          src={getAvatarUrl(artisan.photoUrl)}
+                          src={artisan.photoUrl}
                           alt={artisan.photoAlt}
                           className="h-14 w-14 shrink-0 object-cover"
                         />
@@ -313,7 +312,7 @@ export function ProductDetail() {
               aria-labelledby="recommendations-heading"
               className="mt-16 flex flex-col gap-6 border-t border-border pt-16 sm:mt-20 sm:pt-20"
             >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div className="flex flex-col gap-1">
                   <h2 id="recommendations-heading" className="text-xl font-semibold text-ink sm:text-2xl">
                     Você também pode gostar
@@ -374,7 +373,7 @@ export function ProductDetail() {
               </div>
 
               {recStatus === 'ready' && recResult && (
-                <div className="grid grid-cols-2 gap-3 border border-border/80 bg-surface-muted/70 px-4 py-3 text-xs sm:grid-cols-5">
+                <div className="grid grid-cols-2 gap-3 border border-border/80 bg-surface-muted/70 px-4 py-3 text-xs md:grid-cols-3 xl:grid-cols-5">
                   <div className="flex flex-col gap-0.5">
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">Modo</span>
                     <span className="flex items-center gap-1 font-semibold text-ink">
@@ -397,7 +396,7 @@ export function ProductDetail() {
                   <div className="flex flex-col gap-0.5">
                     <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">Catálogo processado</span>
                     <span className="font-semibold text-ink">
-                      {recResult.metrics.catalogSize} peças ({recResult.metrics.dataSource})
+                      {recResult.metrics.catalogSize} peças ({recResult.metrics.dataSource.includes('postgresql') ? 'PostgreSQL + acervo local' : 'Acervo local'})
                     </span>
                   </div>
                 </div>

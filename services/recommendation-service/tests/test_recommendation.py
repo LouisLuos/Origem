@@ -106,6 +106,7 @@ def test_http_endpoints_and_catalog_service_error_handling(monkeypatch):
         )
         assert batch_seq.status_code == 200
         assert batch_par.status_code == 200
+        assert batch_seq.json()["input_digest"] == batch_par.json()["input_digest"]
         assert batch_seq.json()["result_digest"] == batch_par.json()["result_digest"]
         assert batch_par.json()["metrics"]["is_synthetic"] is True
 

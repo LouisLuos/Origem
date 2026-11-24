@@ -34,6 +34,7 @@ export function FeaturedShowcase() {
     matchesFilters,
   } = useProductFilter()
   const { products, status, error, reload } = useCatalog()
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const [sort, setSort] = useState<SortOption>('relevancia')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
@@ -65,7 +66,14 @@ export function FeaturedShowcase() {
   return (
     <section id="vitrine" className="py-16 sm:py-20">
       <Container className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-        <ProductFilters />
+        <div className="w-full shrink-0 lg:w-64">
+          <button type="button" aria-expanded={filtersOpen} aria-controls="catalog-filters"
+            className="flex w-full items-center justify-between border border-border px-4 py-3 text-sm font-semibold lg:hidden"
+            onClick={() => setFiltersOpen(!filtersOpen)}>
+            Filtrar peças <ChevronDown className={filtersOpen ? 'rotate-180' : ''} size={18} />
+          </button>
+          <div id="catalog-filters" className={filtersOpen ? 'block' : 'hidden lg:block'}><ProductFilters /></div>
+        </div>
 
         <div className="flex flex-1 flex-col gap-6">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">

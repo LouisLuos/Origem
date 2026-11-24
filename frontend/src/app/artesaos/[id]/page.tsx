@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation'
+import { isApiError } from '@/services/api'
 import type { Metadata } from 'next'
 import { artisanService } from '@/services/artisanService'
 import { ArtisanProfile } from '@/views/ArtisanProfile'
@@ -27,7 +29,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   try {
     const artisan = await artisanService.get(id)
     return <ArtisanProfile initialArtisan={artisan} />
-  } catch {
+  } catch (error) {
+    if (isApiError(error) && error.status === 404) notFound()
     return <ArtisanProfile />
   }
 }

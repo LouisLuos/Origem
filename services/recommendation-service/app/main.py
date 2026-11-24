@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 import logging
 import time
 from concurrent.futures import ProcessPoolExecutor
@@ -244,6 +246,9 @@ async def recommend_batch(body: BatchRecommendationRequest, request: Request):
         )
     compute_ms = round((time.perf_counter() - compute_start) * 1000, 3)
 
+    # Fingerprint the actual ordered workload outside the compute timer.
+    workload = json.dumps([produtos, cestas, target_ids, body.limit], sort_keys=True, separators=(",", ":"))
+    input_digest = hashlib.sha256(workload.encode("utf-8")).hexdigest()
     digest = compute_batch_digest(batch_map)
     sample_keys = target_ids[:3]
     sample_results = {
@@ -256,6 +261,7 @@ async def recommend_batch(body: BatchRecommendationRequest, request: Request):
         estrategia=ESTRATEGIA,
         sample_results=sample_results,
         result_digest=digest,
+        input_digest=input_digest,
         metrics=ServiceMetrics(
             mode=body.mode,
             workers=requested_workers,

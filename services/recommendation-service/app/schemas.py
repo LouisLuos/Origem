@@ -64,6 +64,7 @@ class RecommendationResponse(BaseModel):
 class BatchRecommendationResponse(BaseModel):
     estrategia: str
     sample_results: dict[str, list[RecommendationItem]]
+    input_digest: str
     result_digest: str
     metrics: ServiceMetrics
 

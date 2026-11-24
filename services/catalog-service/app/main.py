@@ -247,3 +247,36 @@ async def recomendar_para_produto(
             isSynthetic=rec_metrics.get("is_synthetic", False),
         ),
     )
+
+
+
+@app.post("/api/v1/laboratorio/amostra")
+async def medir_lote(
+    request: Request,
+    mode: Literal["sequential", "parallel"],
+    workers: int = Query(ge=1, le=8),
+    size: int | None = None,
+):
+    if size not in (None, 200, 500, 1000):
+        raise HTTPException(422, "Volume de catálogo inválido.")
+    if workers not in ((1,) if mode == "sequential" else (2, 4, 8)):
+        raise HTTPException(422, "Quantidade de workers inválida para este modo.")
+
+    payload = {"mode": mode, "workers": workers, "limit": 4, "synthetic_size": size}
+    started = time.perf_counter()
+    try:
+        upstream = await request.app.state.http_client.post(
+            f"{RECOMMENDATION_SERVICE_URL}/recommendations/batch", json=payload
+        )
+        upstream.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise HTTPException(503, "O serviço de recomendações não concluiu o lote.") from exc
+
+    gateway_ms = (time.perf_counter() - started) * 1000
+    batch = upstream.json()
+    return {
+        **batch["metrics"],
+        "gateway_ms": gateway_ms,
+        "result_digest": batch["result_digest"],
+        "input_digest": batch["input_digest"],
+    }

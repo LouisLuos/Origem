@@ -1,3 +1,5 @@
+import { notFound } from 'next/navigation'
+import { isApiError } from '@/services/api'
 import type { Metadata } from 'next'
 import { catalogService } from '@/services/catalogService'
 import { ProductDetail } from '@/views/ProductDetail'
@@ -16,6 +18,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
-export default function Page() {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  try {
+    const product = await catalogService.get(id)
+    return <ProductDetail initialProduct={product} />
+  } catch (error) {
+    if (isApiError(error) && error.status === 404) notFound()
+  }
   return <ProductDetail />
 }
