@@ -1,11 +1,17 @@
 # Arquitetura Distribuída e Benchmark — FCCPD (Unidade 2)
 
 > **Projeto:** Origem — Marketplace da Economia Criativa de Pernambuco  
-> **Branch isolada:** `feat/fccpd-u2-fastapi` (derivada de `origin/main`)  
+> **Branch de entrega da FCCPD Unidade 2** — [`feat/fccpd-u2-fastapi`](https://github.com/LouisLuos/Origem/tree/feat/fccpd-u2-fastapi).
 > **Disciplina:** Fundamentos de Computação Concorrente, Paralela e Distribuída (FCCPD) — Unidade 2  
-> **Nota histórica (Unidade 1):** A entrega da Unidade 1 (controle de concorrência no estoque/checkout com lock pessimista `SELECT ... FOR UPDATE`, fila assíncrona e testes) permanece preservada nas branches `main` e `simulacao-fccpd`, documentada em [EVIDENCIAS.md](../../EVIDENCIAS.md) e [docs/03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md](../03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md).
+> **Unidade 1.** A entrega em Spring Boot, com controle de estoque por lock pessimista e notificações assíncronas, está na branch `simulacao-fccpd`, commit `da3fdca`. [Código e evidências dessa revisão](https://github.com/LouisLuos/Origem/tree/da3fdca9e12f6f66b416cd86a61dcdc3938ef8cc).
 
 ---
+
+| Critério da Unidade 2 | Evidência no repositório |
+|---|---|
+| Arquitetura distribuída (2,4 pontos) | Diagrama e responsabilidades nas seções 1 e 2, com [log de comunicação HTTP](../../benchmarks/results/http_communication.log). |
+| Processamento paralelo com ganho (2,1 pontos) | Trecho paralelo na seção 3 e [medições do lote de 500 produtos](evidencias/lote-500.json). |
+| Benchmark e avaliação (1,5 ponto) | Metodologia, resultados e interpretação nas seções 4–6, com [CSV do benchmark](../../benchmarks/results/benchmark_results.csv) e [captura da comparação](evidencias/resultado-500.png). |
 
 ## 1. Arquitetura Distribuída
 
@@ -71,6 +77,8 @@ O motor de recomendação reaproveita a lógica da **HU-24** (features ponderada
 - **Execução:** `1` iteração de aquecimento (*warm-up*) por configuração seguida de `5` repetições medidas com `time.perf_counter()`.
 - **Processos avaliados:** `1` (sequencial), `2`, `4` e `8` workers no `ProcessPoolExecutor` (com pool pré-aquecido para isolar o paralelismo de execução do custo de inicialização de processos no Windows `spawn`).
 - **Métricas calculadas:** Média (ms), Mediana (ms), Desvio-Padrão (ms), Throughput (itens/s), Speedup ($S_p = T_{\text{seq}} / T_p$), Eficiência ($E_p = S_p / p$), separação explícita entre latência HTTP (`catalog_fetch_ms` / `gateway_http_ms`) e processamento algorítmico (`compute_ms`), e verificação criptográfica de equivalência (`result_digest` SHA-256).
+
+A CLI compara o SHA-256 completo de cada lote com a primeira execução sequencial do mesmo cenário, inclusive no aquecimento. No lote HTTP, confere também a assinatura da carga recebida. A primeira divergência interrompe o ensaio. Os tempos de aquecimento e o cálculo local do digest ficam fora das estatísticas de processamento.
 
 ### Especificações da Máquina Utilizada (coletadas automaticamente)
 

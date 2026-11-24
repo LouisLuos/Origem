@@ -146,6 +146,12 @@ def load_base_catalog(catalog_url: str) -> tuple[list[dict[str, Any]], list[list
     return local_payload["produtos"], local_payload["cestas"], "local_json_fallback"
 
 
+def verify_digest(expected: str | None, actual: str, context: str) -> str:
+    if not actual or (expected is not None and actual != expected):
+        raise AssertionError(f"Digest divergente em {context}: esperado {expected}, recebido {actual}")
+    return actual
+
+
 def run_algorithmic_benchmark(
     base_produtos: list[dict[str, Any]],
     base_cestas: list[list[str]],
@@ -195,17 +201,8 @@ def run_algorithmic_benchmark(
             for workers in worker_counts:
                 mode = "sequential" if workers == 1 else "parallel"
 
-                for _ in range(warmups):
-                    if workers == 1:
-                        recommend_batch_sequential(produtos, cestas, limite=4)
-                    else:
-                        recommend_batch_parallel(
-                            produtos, cestas, pools[workers], workers=workers, limite=4
-                        )
-
                 timings_ms: list[float] = []
-                last_digest = ""
-                for _ in range(repeats):
+                for sample in range(warmups + repeats):
                     t0 = time.perf_counter()
                     if workers == 1:
                         res = recommend_batch_sequential(produtos, cestas, limite=4)
@@ -214,16 +211,12 @@ def run_algorithmic_benchmark(
                             produtos, cestas, pools[workers], workers=workers, limite=4
                         )
                     elapsed_ms = (time.perf_counter() - t0) * 1000
-                    timings_ms.append(elapsed_ms)
-                    last_digest = compute_batch_digest(res)
-
-                if baseline_digest is None:
-                    baseline_digest = last_digest
-                equivalent = last_digest == baseline_digest
-                if not equivalent:
-                    raise AssertionError(
-                        f"Divergência de resultado em {dataset_label} com workers={workers}"
+                    baseline_digest = verify_digest(
+                        baseline_digest, compute_batch_digest(res),
+                        f"{dataset_label}, workers={workers}, amostra {sample + 1}",
                     )
+                    if sample >= warmups:
+                        timings_ms.append(elapsed_ms)
 
                 mean_ms = statistics.mean(timings_ms)
                 median_ms = statistics.median(timings_ms)
@@ -253,14 +246,14 @@ def run_algorithmic_benchmark(
                     "throughput_items_per_sec": round(throughput, 2),
                     "speedup": round(speedup, 4),
                     "efficiency": round(efficiency, 4),
-                    "equivalent_to_sequential": equivalent,
-                    "result_digest": last_digest[:16],
+                    "equivalent_to_sequential": True,
+                    "result_digest": baseline_digest[:16],
                 }
                 rows.append(row)
                 print(
                     f"  workers={workers} ({mode:10s}) | mean={row['mean_ms']:8.3f} ms | "
                     f"median={row['median_ms']:8.3f} ms | std={row['stddev_ms']:6.3f} ms | "
-                    f"speedup={row['speedup']:5.2f}x | eff={row['efficiency']*100:5.1f}% | eq={equivalent}"
+                    f"speedup={row['speedup']:5.2f}x | eff={row['efficiency']*100:5.1f}% | eq={row['equivalent_to_sequential']}"
                 )
     finally:
         for pool in pools.values():
@@ -351,6 +344,7 @@ def run_http_e2e_benchmark(
             label = "original" if syn_size is None else f"synthetic_n{syn_size}"
             baseline_compute: float | None = None
             baseline_digest: str | None = None
+            baseline_input: str | None = None
 
             for workers in worker_counts:
                 mode = "sequential" if workers == 1 else "parallel"
@@ -358,33 +352,30 @@ def run_http_e2e_benchmark(
                 if syn_size is not None:
                     payload["synthetic_size"] = syn_size
 
-                for _ in range(warmups):
-                    r = client.post(f"{rec_url}/recommendations/batch", json=payload)
-                    r.raise_for_status()
-
                 e2e_times: list[float] = []
                 fetch_times: list[float] = []
                 compute_times: list[float] = []
-                last_digest = ""
                 last_size = 0
                 last_source = ""
 
-                for _ in range(repeats):
+                for sample in range(warmups + repeats):
                     t0 = time.perf_counter()
                     r = client.post(f"{rec_url}/recommendations/batch", json=payload)
                     e2e_ms = (time.perf_counter() - t0) * 1000
                     r.raise_for_status()
                     body = r.json()
                     m = body["metrics"]
+                    context = f"{label}, workers={workers}, amostra {sample + 1}"
+                    baseline_input = verify_digest(baseline_input, body["input_digest"], f"carga {context}")
+                    baseline_digest = verify_digest(baseline_digest, body["result_digest"], f"resultado {context}")
+                    if sample < warmups:
+                        continue
                     e2e_times.append(e2e_ms)
                     fetch_times.append(float(m["catalog_fetch_ms"]))
                     compute_times.append(float(m["compute_ms"]))
-                    last_digest = body["result_digest"]
                     last_size = int(m["catalog_size"])
                     last_source = m["data_source"]
 
-                if baseline_digest is None:
-                    baseline_digest = last_digest
                 mean_comp = statistics.mean(compute_times)
                 if baseline_compute is None:
                     baseline_compute = mean_comp
@@ -405,8 +396,8 @@ def run_http_e2e_benchmark(
                     "compute_stddev_ms": round(statistics.stdev(compute_times), 3),
                     "compute_speedup": round(speedup_comp, 4),
                     "compute_efficiency": round(speedup_comp / workers, 4),
-                    "equivalent_to_sequential": last_digest == baseline_digest,
-                    "result_digest": last_digest[:16],
+                    "equivalent_to_sequential": True,
+                    "result_digest": baseline_digest[:16],
                 }
                 batch_http_rows.append(row)
                 print(

@@ -1,8 +1,8 @@
 # 🏺 Origem — Marketplace da Economia Criativa de Pernambuco (FCCPD · Unidade 2)
 
-> **Branch acadêmica isolada (`feat/fccpd-u2-fastapi`):** substituição completa do backend Express/Prisma por arquitetura distribuída em **Python + FastAPI**, com comunicação HTTP/REST real entre serviços independentes, processamento paralelo com `ProcessPoolExecutor` nas recomendações (HU-24) e benchmark reproduzível.
+> **Branch de entrega da FCCPD Unidade 2** — [`feat/fccpd-u2-fastapi`](https://github.com/LouisLuos/Origem/tree/feat/fccpd-u2-fastapi). A implementação substitui o backend Express/Prisma por arquitetura distribuída em **Python + FastAPI**, com comunicação HTTP/REST real entre serviços independentes, processamento paralelo com `ProcessPoolExecutor` nas recomendações (HU-24) e benchmark reproduzível.
 >
-> **Unidade 1 (preservada):** As implementações anteriores de controle de concorrência no checkout/estoque (`SELECT ... FOR UPDATE`), fila assíncrona e testes da Unidade 1 permanecem intactas nas branches `main` e `simulacao-fccpd`, com evidências registradas em [EVIDENCIAS.md](./EVIDENCIAS.md) e [docs/03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md](./docs/03-computacao-concorrente-distribuida/01-concorrencia-e-mensageria.md).
+> **Unidade 1.** A entrega em Spring Boot, com controle de estoque por lock pessimista e notificações assíncronas, está na branch `simulacao-fccpd`, commit `da3fdca`. [Código e evidências dessa revisão](https://github.com/LouisLuos/Origem/tree/da3fdca9e12f6f66b416cd86a61dcdc3938ef8cc).
 
 ---
 
@@ -56,6 +56,9 @@ O acervo funciona em modo local ou híbrido com PostgreSQL somente leitura. Peç
 # Testes unitários e de integração (cada microserviço em seu próprio processo)
 .\.venv\Scripts\python.exe -m pytest services\catalog-service\tests -v
 .\.venv\Scripts\python.exe -m pytest services\recommendation-service\tests -v
+
+# Regressão da equivalência por amostra na CLI
+.\.venv\Scripts\python.exe -m pytest benchmarks\test_benchmark_recommendations.py -q
 
 # Benchmark completo (algorítmico + HTTP ponta a ponta com :3001 e :3002 ativos)
 .\.venv\Scripts\python.exe benchmarks\benchmark_recommendations.py --with-http --repeats 5 --warmups 1
