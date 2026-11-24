@@ -1,0 +1,42 @@
+# Logs Reais de Comunicação HTTP entre os Serviços (2026-11-24)
+
+## 1. Catalog Service (porta 3001) — trecho real de `catalog_service.err.log`
+
+2026-11-24 18:29:55,491 [INFO] catalog-service - Catalog Service iniciado | data_source=postgresql_read_only+local_json | products=15 | artisans=11 | recommendation_url=http://localhost:3002
+2026-11-24 18:29:55,742 [INFO] catalog-service - HTTP GET /api/v1/health -> 200 (1.29 ms)
+2026-11-24 18:29:56,179 [INFO] catalog-service - HTTP GET /api/v1/produtos/p01 -> 200 (1.04 ms)
+2026-11-24 18:29:56,244 [INFO] catalog-service - HTTP GET /api/v1/artesaos/art-mestre-severino -> 200 (0.73 ms)
+2026-11-24 18:29:56,354 [INFO] catalog-service - OUTBOUND HTTP POST http://localhost:3002/recommendations | product_id=p01 mode=sequential workers=None
+2026-11-24 18:29:56,899 [INFO] catalog-service - HTTP GET /api/v1/cestas -> 200 (0.60 ms)
+2026-11-24 18:29:56,902 [INFO] catalog-service - HTTP GET /api/v1/produtos -> 200 (2.82 ms)
+2026-11-24 18:29:56,908 [INFO] httpx - HTTP Request: POST http://localhost:3002/recommendations "HTTP/1.1 200 OK"
+2026-11-24 18:29:56,911 [INFO] catalog-service - HTTP GET /api/v1/produtos/p01/recomendacoes -> 200 (557.71 ms)
+2026-11-24 18:29:56,937 [INFO] catalog-service - OUTBOUND HTTP POST http://localhost:3002/recommendations | product_id=p01 mode=parallel workers=4
+2026-11-24 18:29:56,947 [INFO] catalog-service - HTTP GET /api/v1/produtos -> 200 (0.47 ms)
+2026-11-24 18:29:56,949 [INFO] catalog-service - HTTP GET /api/v1/cestas -> 200 (0.29 ms)
+2026-11-24 18:29:57,119 [INFO] httpx - HTTP Request: POST http://localhost:3002/recommendations "HTTP/1.1 200 OK"
+2026-11-24 18:29:57,123 [INFO] catalog-service - HTTP GET /api/v1/produtos/p01/recomendacoes -> 200 (185.95 ms)
+
+## 2. Recommendation Service (porta 3002) — trecho real de `recommendation_service.err.log`
+
+2026-11-24 18:29:53,543 [INFO] recommendation-service - Recommendation Service iniciado | cpu_count=12 | default_workers=4 | max_workers=8 | catalog_url=http://localhost:3001
+2026-11-24 18:29:55,819 [INFO] recommendation-service - HTTP GET /health -> 200 (0.83 ms)
+2026-11-24 18:29:56,621 [INFO] recommendation-service.catalog_client - OUTBOUND HTTP GET http://localhost:3001/api/v1/produtos?limit=2000 & http://localhost:3001/api/v1/cestas
+2026-11-24 18:29:56,901 [INFO] httpx - HTTP Request: GET http://localhost:3001/api/v1/cestas "HTTP/1.1 200 OK"
+2026-11-24 18:29:56,903 [INFO] httpx - HTTP Request: GET http://localhost:3001/api/v1/produtos?limit=2000 "HTTP/1.1 200 OK"
+2026-11-24 18:29:56,905 [INFO] recommendation-service - HTTP POST /recommendations -> 200 (285.69 ms)
+2026-11-24 18:29:56,943 [INFO] recommendation-service.catalog_client - OUTBOUND HTTP GET http://localhost:3001/api/v1/produtos?limit=2000 & http://localhost:3001/api/v1/cestas
+2026-11-24 18:29:56,948 [INFO] httpx - HTTP Request: GET http://localhost:3001/api/v1/produtos?limit=2000 "HTTP/1.1 200 OK"
+2026-11-24 18:29:56,951 [INFO] httpx - HTTP Request: GET http://localhost:3001/api/v1/cestas "HTTP/1.1 200 OK"
+2026-11-24 18:29:57,116 [INFO] recommendation-service - HTTP POST /recommendations -> 200 (174.26 ms)
+
+## Laboratório — chamada real no build de produção
+
+2026-11-24 19:03:05,667 [INFO] recommendation-service.catalog_client - OUTBOUND HTTP GET http://localhost:3001/api/v1/produtos?limit=2000 & http://localhost:3001/api/v1/cestas
+2026-11-24 19:03:05,671 [INFO] catalog-service - HTTP GET /api/v1/produtos -> 200 (0.62 ms)
+2026-11-24 19:03:05,673 [INFO] catalog-service - HTTP GET /api/v1/cestas -> 200 (0.39 ms)
+2026-11-24 19:03:05,673 [INFO] httpx - HTTP Request: GET http://localhost:3001/api/v1/produtos?limit=2000 "HTTP/1.1 200 OK"
+2026-11-24 19:03:05,675 [INFO] httpx - HTTP Request: GET http://localhost:3001/api/v1/cestas "HTTP/1.1 200 OK"
+2026-11-24 19:03:05,880 [INFO] recommendation-service - HTTP POST /recommendations/batch -> 200 (213.30 ms)
+2026-11-24 19:03:05,882 [INFO] httpx - HTTP Request: POST http://localhost:3002/recommendations/batch "HTTP/1.1 200 OK"
+2026-11-24 19:03:05,885 [INFO] catalog-service - HTTP POST /api/v1/laboratorio/amostra -> 200 (219.95 ms)
