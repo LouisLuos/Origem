@@ -1,0 +1,21 @@
+dataset,is_synthetic,data_source,catalog_size,mode,workers,warmups,repeats,mean_ms,median_ms,stddev_ms,min_ms,max_ms,throughput_items_per_sec,speedup,efficiency,equivalent_to_sequential,result_digest
+original_n15,False,http_catalog_service (postgresql_read_only+local_json),15,sequential,1,1,5,1.436,0.582,1.979,0.496,4.975,10446.85,1.0,1.0,True,53e4e55de6f99de0
+original_n15,False,http_catalog_service (postgresql_read_only+local_json),15,parallel,2,1,5,1.341,1.34,0.099,1.231,1.49,11182.35,1.0704,0.5352,True,53e4e55de6f99de0
+original_n15,False,http_catalog_service (postgresql_read_only+local_json),15,parallel,4,1,5,3.608,2.272,3.47,1.582,9.794,4157.13,0.3979,0.0995,True,53e4e55de6f99de0
+original_n15,False,http_catalog_service (postgresql_read_only+local_json),15,parallel,8,1,5,3.908,2.939,2.019,2.71,7.47,3838.14,0.3674,0.0459,True,53e4e55de6f99de0
+synthetic_n200,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),200,sequential,1,1,5,54.967,53.862,5.938,49.46,63.331,3638.57,1.0,1.0,True,00a2436ee0b21199
+synthetic_n200,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),200,parallel,2,1,5,35.6,35.82,2.89,31.367,38.564,5617.93,1.544,0.772,True,00a2436ee0b21199
+synthetic_n200,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),200,parallel,4,1,5,23.199,23.515,2.02,20.031,25.435,8621.21,2.3694,0.5923,True,00a2436ee0b21199
+synthetic_n200,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),200,parallel,8,1,5,17.882,16.888,2.698,15.687,22.476,11184.34,3.0738,0.3842,True,00a2436ee0b21199
+synthetic_n500,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),500,sequential,1,1,5,383.299,396.8,23.43,349.241,401.88,1304.46,1.0,1.0,True,c287c4d9a685743d
+synthetic_n500,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),500,parallel,2,1,5,234.286,230.268,17.702,218.751,264.251,2134.15,1.636,0.818,True,c287c4d9a685743d
+synthetic_n500,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),500,parallel,4,1,5,141.709,139.707,6.269,136.366,152.537,3528.36,2.7048,0.6762,True,c287c4d9a685743d
+synthetic_n500,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),500,parallel,8,1,5,108.58,107.455,12.582,95.844,127.583,4604.9,3.5301,0.4413,True,c287c4d9a685743d
+synthetic_n1000,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),1000,sequential,1,1,5,2517.707,2328.143,989.31,1623.462,3995.545,397.19,1.0,1.0,True,7e4a9f6df632f45b
+synthetic_n1000,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),1000,parallel,2,1,5,1017.277,1021.391,15.922,998.483,1038.407,983.02,2.4749,1.2375,True,7e4a9f6df632f45b
+synthetic_n1000,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),1000,parallel,4,1,5,576.293,572.348,31.242,542.568,624.994,1735.23,4.3688,1.0922,True,7e4a9f6df632f45b
+synthetic_n1000,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),1000,parallel,8,1,5,393.341,394.634,16.432,366.707,410.119,2542.33,6.4008,0.8001,True,7e4a9f6df632f45b
+synthetic_n2000,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),2000,sequential,1,1,5,5177.807,4129.632,1720.585,3881.416,7685.46,386.26,1.0,1.0,True,4bc9a9b104b14643
+synthetic_n2000,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),2000,parallel,2,1,5,2171.544,2138.479,52.862,2128.744,2242.635,921.0,2.3844,1.1922,True,4bc9a9b104b14643
+synthetic_n2000,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),2000,parallel,4,1,5,1974.426,1956.164,276.38,1579.69,2338.039,1012.95,2.6224,0.6556,True,4bc9a9b104b14643
+synthetic_n2000,True,synthetic_seed42_from_http_catalog_service (postgresql_read_only+local_json),2000,parallel,8,1,5,1272.687,1197.158,293.282,1016.502,1776.37,1571.48,4.0684,0.5086,True,4bc9a9b104b14643
