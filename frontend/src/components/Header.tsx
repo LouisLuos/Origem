@@ -4,13 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Heart, Menu, Search, ShoppingBag, Trash2, User, X } from 'lucide-react'
-import { ButtonLink, Container, Input, cn, currency } from '@/design-system'
+import { Menu, Search, X } from 'lucide-react'
+import { Container, Input, cn, currency } from '@/design-system'
 import { matchesSearch } from '@/utils/text'
 import { useProductFilter } from '@/context/ProductFilterContext'
-import { useCart } from '@/context/CartContext'
-import { useAuth } from '@/context/AuthContext'
-import { useFavorites } from '@/context/FavoritesContext'
 import { useCatalog } from '@/context/CatalogContext'
 import { useArtisans } from '@/context/ArtisanContext'
 import logoUrl from '@/assets/logo-origem.png'
@@ -27,31 +24,14 @@ const navLinks = [
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [isCartOpen, setIsCartOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const cartRef = useRef<HTMLDivElement>(null)
   const { query, setQuery } = useProductFilter()
-  const { user } = useAuth()
   const { products } = useCatalog()
   const { artisans } = useArtisans()
-  const { favorites } = useFavorites()
-  const { lines: cartLines, hydrated: cartHydrated, itemCount: cartCount, addItem, removeItem } = useCart()
   const router = useRouter()
   const pathname = usePathname()
   const isHome = pathname === '/'
-
-  // Incrementa a cada item adicionado; usado como `key` para reiniciar a animação.
-  const [cartBumpKey, setCartBumpKey] = useState(0)
-  const previousCartCount = useRef<number | null>(null)
-  useEffect(() => {
-    // A primeira contagem é a leitura do carrinho salvo, não um item adicionado agora.
-    if (!cartHydrated) return
-    if (previousCartCount.current !== null && cartCount > previousCartCount.current) setCartBumpKey((key) => key + 1)
-    previousCartCount.current = cartCount
-  }, [cartCount, cartHydrated])
-
-  const cartSubtotal = cartLines.reduce((total, line) => total + line.product.price * line.quantity, 0)
 
   const hasQuery = query.trim().length > 0
   const searchResults = useMemo(() => {
@@ -60,6 +40,7 @@ export function Header() {
       .filter((product) => matchesSearch(query, [product.title, product.artisan, product.hub, product.technique]))
       .slice(0, MAX_SEARCH_RESULTS)
   }, [hasQuery, query, products])
+
   const artisanSearchResults = useMemo(() => {
     if (!hasQuery) return []
     return artisans
@@ -87,24 +68,6 @@ export function Header() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isSearchOpen])
 
-  useEffect(() => {
-    if (!isCartOpen) return
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsCartOpen(false)
-    }
-    const handleClickOutside = (event: MouseEvent) => {
-      if (cartRef.current && !cartRef.current.contains(event.target as Node)) setIsCartOpen(false)
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isCartOpen])
-
   const isSolid = isScrolled || isMenuOpen || isSearchOpen || !isHome
 
   return (
@@ -125,15 +88,15 @@ export function Header() {
         </Link>
 
         <nav aria-label="Navegação principal" className="hidden lg:block">
-          <ul className={cn('flex items-center gap-8 font-medium', isSolid ? 'text-ink' : 'text-creme-50 ')}>
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <Link href={link.href} className="transition-colors duration-300 hover:text-terracota-400">
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+            <ul className={cn('flex items-center gap-8 font-medium', isSolid ? 'text-ink' : 'text-creme-50')}>
+              {navLinks.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="transition-colors duration-300 hover:text-terracota-400">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
         </nav>
 
         <div className={cn('flex items-center gap-1', isSolid ? 'text-aubergine' : 'text-creme-50')}>
@@ -145,7 +108,6 @@ export function Header() {
             onClick={() => {
               setIsSearchOpen((open) => !open)
               setIsMenuOpen(false)
-              setIsCartOpen(false)
             }}
             className={cn(
               'flex h-11 w-11 items-center justify-center rounded-full transition-colors cursor-pointer',
@@ -154,135 +116,7 @@ export function Header() {
           >
             {isSearchOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Search className="h-5 w-5" aria-hidden="true" />}
           </button>
-          <Link
-            href="/favoritos"
-            aria-label={`Meus favoritos, ${favorites.length} ${favorites.length === 1 ? 'item' : 'itens'}`}
-            className={cn(
-              'relative hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
-              isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
-            )}
-          >
-            <Heart className="h-5 w-5" aria-hidden="true" />
-            {favorites.length > 0 && (
-              <span
-                aria-hidden="true"
-                className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-terracota-500 px-1 text-[10px] font-semibold leading-none text-creme"
-              >
-                {favorites.length > 99 ? '99+' : favorites.length}
-              </span>
-            )}
-          </Link>
-          <Link
-            href={user ? '/conta' : '/entrar'}
-            aria-label={user ? 'Minha conta' : 'Entrar ou criar conta'}
-            className={cn(
-              'hidden h-11 w-11 items-center justify-center rounded-full transition-colors sm:flex cursor-pointer',
-              isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
-            )}
-          >
-            <User className="h-5 w-5" aria-hidden="true" />
-          </Link>
-          <div ref={cartRef} className="relative">
-            <button
-              type="button"
-              aria-label={`Ver carrinho, ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`}
-              aria-expanded={isCartOpen}
-              aria-controls="header-cart-panel"
-              onClick={() => {
-                setIsCartOpen((open) => !open)
-                setIsSearchOpen(false)
-                setIsMenuOpen(false)
-              }}
-              className={cn(
-                'relative flex h-11 w-11 items-center justify-center rounded-full transition-colors cursor-pointer',
-                isSolid ? 'hover:bg-aubergine/5' : 'hover:bg-creme-50/10',
-              )}
-            >
-              <ShoppingBag
-                key={`bag-${cartBumpKey}`}
-                className={cn('h-5 w-5', cartBumpKey > 0 && 'animate-bag-bump')}
-                aria-hidden="true"
-              />
-              {cartCount > 0 && (
-                <span
-                  key={`badge-${cartBumpKey}`}
-                  aria-hidden="true"
-                  className="animate-badge-pop absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-terracota-500 px-1 text-[10px] font-semibold leading-none text-creme"
-                >
-                  {cartCount > 99 ? '99+' : cartCount}
-                </span>
-              )}
-            </button>
 
-            {isCartOpen && (
-              <div
-                id="header-cart-panel"
-                className="absolute right-0 top-full mt-3 w-[90vw] max-w-sm border border-border bg-creme text-ink shadow-lift"
-              >
-                <div className="flex items-center justify-between border-b border-border px-4 py-3">
-                  <span className="text-sm font-semibold uppercase tracking-widest">Carrinho</span>
-                  <span className="text-xs text-ink-soft">
-                    {cartCount} {cartCount === 1 ? 'item' : 'itens'}
-                  </span>
-                </div>
-
-                {cartLines.length > 0 ? (
-                  <>
-                    <ul className="flex max-h-80 flex-col divide-y divide-border/60 overflow-y-auto">
-                      {cartLines.map(({ product, quantity }) => (
-                        <li key={product.id} className="flex items-center gap-3 px-4 py-3">
-                          <Link
-                            href={`/produtos/${product.id}`}
-                            onClick={() => setIsCartOpen(false)}
-                            className="h-14 w-14 shrink-0 bg-surface-muted"
-                          >
-                            <img src={product.imageUrl} alt="" aria-hidden="true" className="h-full w-full object-cover" />
-                          </Link>
-                          <div className="flex min-w-0 flex-1 flex-col">
-                            <Link
-                              href={`/produtos/${product.id}`}
-                              onClick={() => setIsCartOpen(false)}
-                              className="truncate text-sm font-medium text-ink hover:text-terracota-600 hover:underline underline-offset-4"
-                            >
-                              {product.title}
-                            </Link>
-                            <span className="text-xs text-ink-soft">
-                              {quantity} × {currency.format(product.price)}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeItem(product.id)}
-                            aria-label={`Remover ${product.title} do carrinho`}
-                            className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600"
-                          >
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="flex flex-col gap-3 border-t border-border p-4">
-                      <div className="flex items-center justify-between text-sm font-semibold">
-                        <span>Subtotal</span>
-                        <span>{currency.format(cartSubtotal)}</span>
-                      </div>
-                      <ButtonLink href="/carrinho" variant="primary" size="md" onClick={() => setIsCartOpen(false)}>
-                        Ver carrinho
-                      </ButtonLink>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center gap-3 px-4 py-8 text-center">
-                    <p className="text-sm text-ink-soft">Seu carrinho está vazio.</p>
-                    <ButtonLink href="/#vitrine" variant="outline" size="sm" onClick={() => setIsCartOpen(false)}>
-                      Ver vitrine
-                    </ButtonLink>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
           <button
             type="button"
             aria-label={isMenuOpen ? 'Fechar menu' : 'Abrir menu'}
@@ -291,7 +125,6 @@ export function Header() {
             onClick={() => {
               setIsMenuOpen((open) => !open)
               setIsSearchOpen(false)
-              setIsCartOpen(false)
             }}
             className={cn(
               'flex h-11 w-11 items-center justify-center rounded-full transition-colors lg:hidden cursor-pointer',
@@ -356,15 +189,6 @@ export function Header() {
                                   {currency.format(product.price)}
                                 </span>
                               </Link>
-                              <button
-                                type="button"
-                                onClick={() => addItem(product.id)}
-                                disabled={product.stock === 0}
-                                aria-label={product.stock === 0 ? `${product.title} esgotado` : `Adicionar ${product.title} ao carrinho`}
-                                className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:bg-terracota hover:text-creme-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink-soft"
-                              >
-                                <ShoppingBag className="h-4 w-4" aria-hidden="true" />
-                              </button>
                             </li>
                           ))}
                         </ul>
@@ -422,20 +246,6 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/favoritos"
-              onClick={() => setIsMenuOpen(false)}
-              className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
-            >
-              Favoritos{favorites.length > 0 && ` (${favorites.length})`}
-            </Link>
-            <Link
-              href={user ? '/conta' : '/entrar'}
-              onClick={() => setIsMenuOpen(false)}
-              className="px-2 py-3 font-medium text-ink transition-colors hover:bg-aubergine/5 hover:text-terracota-600"
-            >
-              {user ? 'Minha conta' : 'Entrar / Criar conta'}
-            </Link>
           </Container>
         </nav>
       )}

@@ -8,8 +8,6 @@ import { getAvatarUrl } from '@/utils/avatar'
 import { ErrorBlock, ResourceGate } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
-import { useCart } from '@/context/CartContext'
-import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 import { findArtisanOf } from '@/utils/artisanMatch'
 import type { Artisan } from '@/services/artisanService'
@@ -21,8 +19,6 @@ interface ArtisanProfileProps {
 export function ArtisanProfile({ initialArtisan }: ArtisanProfileProps) {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { addItem } = useCart()
-  const { isFavorite, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
 
   const { artisans, status: artisansStatus, error: artisansError, reload: reloadArtisans } = useArtisans()
@@ -177,13 +173,7 @@ export function ArtisanProfile({ initialArtisan }: ArtisanProfileProps) {
           ) : products.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
               {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isFavorite={isFavorite(product.id)}
-                  onToggleFavorite={toggleFavorite}
-                  onAddToCart={addItem}
-                />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (

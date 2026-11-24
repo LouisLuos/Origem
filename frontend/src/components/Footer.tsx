@@ -8,23 +8,15 @@ const columns = [
     title: 'Explorar',
     links: [
       { label: 'Categorias', href: '/#categorias' },
-      { label: 'Produtos', href: '/#vitrine' },
-      { label: 'Artesãos', href: '/#artesaos' },
+      { label: 'Vitrine de peças', href: '/#vitrine' },
+      { label: 'Mestres e artesãos', href: '/#artesaos' },
     ],
   },
   {
-    title: 'Para compradores',
+    title: 'Arquitetura (FCCPD U2)',
     links: [
-      { label: 'Minha conta', href: '/conta' },
-      { label: 'Meus favoritos', href: '/favoritos' },
-      { label: 'Meu carrinho', href: '/carrinho' },
-    ],
-  },
-  {
-    title: 'Para artesãos',
-    links: [
-      { label: 'Vender no Origem', href: '/entrar' },
-      { label: 'Painel do ateliê', href: '/painel' },
+      { label: 'Catálogo distribuído', href: '/#vitrine' },
+      { label: 'Recomendações paralelas', href: '/produtos/p01' },
     ],
   },
 ]
@@ -41,22 +33,22 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
-          {columns.map((column) => (
-            <nav key={column.title} aria-label={column.title}>
-              <h3 className="mb-4 text-sm font-semibold text-creme-50">{column.title}</h3>
-              <ul className="flex flex-col gap-2.5 text-sm text-creme-100/80">
-                {column.links.map((link) => (
-                  <li key={link.href}>
-                    <Link href={link.href} className="transition-colors hover:text-creme-50">
-                      {link.label}
-                    </Link>
-                  </li>
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+            {columns.map((column) => (
+              <nav key={column.title} aria-label={column.title}>
+                <h3 className="mb-4 text-sm font-semibold text-creme-50">{column.title}</h3>
+                <ul className="flex flex-col gap-2.5 text-sm text-creme-100/80">
+                  {column.links.map((link) => (
+                      <li key={link.label}>
+                        <Link href={link.href} className="transition-colors hover:text-creme-50">
+                          {link.label}
+                        </Link>
+                      </li>
                 ))}
-              </ul>
+                    </ul>
             </nav>
-          ))}
-        </div>
+            ))}
+          </div>
       </Container>
 
       <div className="border-t border-creme-100/10 py-6">

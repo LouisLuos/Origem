@@ -1,21 +1,33 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { ChevronRight, Heart, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck } from 'lucide-react'
-import { Badge, Button, ButtonLink, Container, ProductCard, currency } from '@/design-system'
+import { ChevronRight, Cpu, MapPin, ShieldCheck, Sparkles } from 'lucide-react'
+import { Badge, ButtonLink, Container, ProductCard, cn, currency } from '@/design-system'
 import { getAvatarUrl } from '@/utils/avatar'
 import { getProductGalleryImages } from '@/utils/media'
-import { ResourceGate } from '@/components/AsyncState'
+import { ErrorBlock, LoadingBlock, ResourceGate } from '@/components/AsyncState'
 import { useArtisans } from '@/context/ArtisanContext'
 import { useCatalog } from '@/context/CatalogContext'
-import { useCart } from '@/context/CartContext'
-import { useFavorites } from '@/context/FavoritesContext'
 import { useProductFilter } from '@/context/ProductFilterContext'
 import { findArtisanOf } from '@/utils/artisanMatch'
-import { resolveProductDetailStockState } from '@/utils/cartReservation.util'
+import {
+  recommendationService,
+  type RecommendationMode,
+  type RecommendationResult,
+} from '@/services/recommendationService'
+import { errorMessage } from '@/utils/errors'
+
+const LOW_STOCK_THRESHOLD = 3
+const WORKER_OPTIONS = [2, 4, 8] as const
+
+const motivoLabels: Record<string, string> = {
+  mesma_tecnica: 'Mesma técnica',
+  mesmo_polo: 'Mesmo polo',
+  comprados_juntos: 'Comprados juntos',
+}
 
 function DetailSection({ title, children, defaultOpen }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   return (
@@ -35,25 +47,62 @@ function DetailSection({ title, children, defaultOpen }: { title: string; childr
 }
 
 const trustPoints = [
-  { icon: Truck, label: 'Frete calculado no carrinho', description: 'Entrega para todo o Brasil.' },
-  { icon: ShieldCheck, label: 'Compra 100% segura', description: 'Pagamento protegido de ponta a ponta.' },
-  { icon: RotateCcw, label: '7 dias para troca', description: 'Direto com o artesão responsável.' },
+  { icon: Sparkles, label: 'Produção autoral', description: 'Peça feita à mão por mestre artesão.' },
+  { icon: MapPin, label: 'Origem certificada', description: 'Identidade cultural de Pernambuco.' },
+  { icon: ShieldCheck, label: 'Curadoria Origem', description: 'Procedência e técnica preservadas.' },
 ]
 
 export function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const { addItem, items, reservedQtyByProduct } = useCart()
-  const { isFavorite: isFavoriteProduct, toggleFavorite } = useFavorites()
   const { selectTechnique } = useProductFilter()
 
-  const { products, getProduct, status, error, reload } = useCatalog()
+  const { getProduct, status, error, reload } = useCatalog()
   const { artisans } = useArtisans()
 
   const product = getProduct(id)
 
   const [activeImage, setActiveImage] = useState(0)
-  const [quantity, setQuantity] = useState(1)
+  const [recMode, setRecMode] = useState<RecommendationMode>('parallel')
+  const [recWorkers, setRecWorkers] = useState<number>(4)
+  const [recStatus, setRecStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [recResult, setRecResult] = useState<RecommendationResult | null>(null)
+  const [recError, setRecError] = useState<string | null>(null)
+  const [recReloadTick, setRecReloadTick] = useState(0)
+
+  const productId = product?.id ?? null
+
+  useEffect(() => {
+    if (!productId) return
+    const controller = new AbortController()
+    setRecStatus('loading')
+    setRecError(null)
+
+    recommendationService
+      .getForProduct(productId, {
+        limit: 4,
+        mode: recMode,
+        workers: recMode === 'parallel' ? recWorkers : 1,
+        signal: controller.signal,
+      })
+      .then((data) => {
+        if (controller.signal.aborted) return
+        setRecResult(data)
+        setRecStatus('ready')
+      })
+      .catch((reason: unknown) => {
+        if (controller.signal.aborted) return
+        setRecResult(null)
+        setRecError(
+          errorMessage(reason, 'Não foi possível consultar o serviço de recomendações.'),
+        )
+        setRecStatus('error')
+      })
+
+    return () => {
+      controller.abort()
+    }
+  }, [productId, recMode, recWorkers, recReloadTick])
 
   if (status !== 'ready' && !product) {
     return <ResourceGate status={status} label="Carregando peça…" error={error} onRetry={reload} spacing="detail" />
@@ -81,28 +130,10 @@ export function ProductDetail() {
     : 0
   const gallery =
     product.gallery && product.gallery.length > 0 ? product.gallery : getProductGalleryImages(product.imageUrl)
-  const normalizedProductId = product.id.trim().toLowerCase()
-  const reservedByCurrentUser = reservedQtyByProduct.get(normalizedProductId) ?? 0
-  const quantityInCart =
-    items.find((item) => item.id.trim().toLowerCase() === normalizedProductId)?.quantity ?? 0
-
-  const stockState = resolveProductDetailStockState({
-    publicStock: product.stock,
-    reservedByCurrentUser,
-    quantityInCart,
-  })
-  const stockCount = stockState.publicStock
-  const isSoldOut = stockState.isSoldOut
-  const isLowStock = stockState.isLowStock
-  const isFullyReservedByCurrentUser = stockState.isFullyReservedByCurrentUser
-  const maxQuantity = Math.max(1, stockState.remainingAddable)
-  const safeQuantity = isFullyReservedByCurrentUser
-    ? reservedByCurrentUser
-    : Math.min(quantity, maxQuantity)
+  const stockCount = typeof product.stock === 'number' ? Math.max(0, Math.floor(product.stock)) : undefined
+  const isSoldOut = stockCount === 0
+  const isLowStock = stockCount !== undefined && stockCount > 0 && stockCount <= LOW_STOCK_THRESHOLD
   const artisan = findArtisanOf(product, artisans)
-  const relatedProducts = products
-    .filter((item) => item.technique === product.technique && item.id !== product.id)
-    .slice(0, 4)
 
   const goToTechnique = () => {
     selectTechnique(product.technique)
@@ -203,15 +234,7 @@ export function ProductDetail() {
 
             {isSoldOut ? (
               <div role="status" className="border border-danger/30 bg-surface-muted px-4 py-2.5 text-sm font-semibold text-danger">
-                Esgotado — sem unidades disponíveis para reserva no momento.
-              </div>
-            ) : reservedByCurrentUser > 0 ? (
-              <div role="status" className="border border-oliva-500/40 bg-surface-muted px-4 py-2.5 text-sm font-medium text-oliva-600">
-                Reservado em seu nome ({reservedByCurrentUser}{' '}
-                {reservedByCurrentUser === 1 ? 'unidade' : 'unidades'})
-                {stockCount !== undefined && stockCount > 0
-                  ? ` · +${stockCount} ${stockCount === 1 ? 'disponível' : 'disponíveis'} no estoque`
-                  : ''}
+                Esgotado — sem unidades disponíveis no acervo no momento.
               </div>
             ) : isLowStock && stockCount !== undefined ? (
               <div role="status" className="border border-warning/40 bg-surface-muted px-4 py-2.5 text-sm font-medium text-warning">
@@ -222,60 +245,6 @@ export function ProductDetail() {
                 Estoque disponível: <strong className="text-ink">{stockCount}</strong> unidades
               </p>
             ) : null}
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="flex h-14 items-center border border-border">
-                <button
-                  type="button"
-                  onClick={() => setQuantity(Math.max(1, safeQuantity - 1))}
-                  disabled={isSoldOut || isFullyReservedByCurrentUser || safeQuantity <= 1}
-                  aria-label="Diminuir quantidade"
-                  className="flex h-full w-12 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Minus className="h-4 w-4" aria-hidden="true" />
-                </button>
-                <span aria-live="polite" className="w-10 text-center text-sm font-semibold text-ink">
-                  {isSoldOut ? 0 : safeQuantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQuantity(Math.min(maxQuantity, safeQuantity + 1))}
-                  disabled={isSoldOut || isFullyReservedByCurrentUser || safeQuantity >= maxQuantity}
-                  aria-label="Aumentar quantidade"
-                  className="flex h-full w-12 cursor-pointer items-center justify-center text-ink-soft transition-colors hover:text-terracota-600 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Plus className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-
-              {isFullyReservedByCurrentUser ? (
-                <ButtonLink href="/carrinho" variant="primary" size="lg" className="h-14 flex-1">
-                  <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-                  Ver reserva no carrinho
-                </ButtonLink>
-              ) : (
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="h-14 flex-1"
-                  onClick={() => addItem(product.id, safeQuantity)}
-                  disabled={isSoldOut}
-                >
-                  <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-                  {isSoldOut ? 'Esgotado' : 'Adicionar ao carrinho'}
-                </Button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => toggleFavorite(product.id)}
-                aria-pressed={isFavoriteProduct(product.id)}
-                aria-label={isFavoriteProduct(product.id) ? `Remover ${product.title} dos favoritos` : `Favoritar ${product.title}`}
-                className="flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center border border-border text-aubergine transition-colors hover:border-terracota hover:text-terracota-600"
-              >
-                <Heart className="h-5 w-5" fill={isFavoriteProduct(product.id) ? 'currentColor' : 'none'} aria-hidden="true" />
-              </button>
-            </div>
 
             <div className="grid grid-cols-1 gap-3 border-y border-border py-5 sm:grid-cols-3">
               {trustPoints.map(({ icon: Icon, label, description }) => (
@@ -303,60 +272,176 @@ export function ProductDetail() {
                 </DetailSection>
               )}
 
-              <DetailSection title="Sobre o artesão">
-                {artisan ? (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={getAvatarUrl(artisan.photoUrl)}
-                        alt={artisan.photoAlt}
-                        className="h-14 w-14 shrink-0 object-cover"
-                      />
-                      <p>{artisan.bio}</p>
+                <DetailSection title="Sobre o artesão" defaultOpen>
+                  {artisan ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={getAvatarUrl(artisan.photoUrl)}
+                          alt={artisan.photoAlt}
+                          className="h-14 w-14 shrink-0 object-cover"
+                        />
+                        <p>{artisan.bio}</p>
+                      </div>
+                      <Link
+                        href={`/artesaos/${artisan.id}`}
+                        className="w-fit font-medium text-terracota-600 underline-offset-4 hover:underline"
+                      >
+                        Ver perfil completo
+                      </Link>
                     </div>
-                    <Link
-                      href={`/artesaos/${artisan.id}`}
-                      className="w-fit font-medium text-terracota-600 underline-offset-4 hover:underline"
-                    >
-                      Ver perfil completo
-                    </Link>
-                  </div>
-                ) : (
-                  <p>
-                    {product.artisan} é responsável pela técnica de {product.technique.toLowerCase()} em{' '}
-                    {product.hub}, mantendo viva uma tradição do artesanato pernambucano.
-                  </p>
-                )}
-              </DetailSection>
+                  ) : (
+                    <p>
+                      {product.artisan} é responsável pela técnica de {product.technique.toLowerCase()} em{' '}
+                      {product.hub}, mantendo viva uma tradição do artesanato pernambucano.
+                    </p>
+                  )}
+                </DetailSection>
 
-              <DetailSection title="Envio e cuidados">
-                <p>
-                  Peça produzida sob demanda ou em pequenos lotes: o prazo de envio pode variar conforme a
-                  disponibilidade do artesão. Por ser feita à mão, pequenas variações de cor, forma e textura fazem
-                  parte da identidade de cada peça.
-                </p>
-              </DetailSection>
+                <DetailSection title="Envio e cuidados">
+                  <p>
+                    Peça produzida sob demanda ou em pequenos lotes: o prazo de envio pode variar conforme a
+                    disponibilidade do artesão. Por ser feita à mão, pequenas variações de cor, forma e textura fazem
+                    parte da identidade de cada peça.
+                  </p>
+                </DetailSection>
             </div>
           </div>
         </div>
 
-        {relatedProducts.length > 0 && (
-          <div className="mt-16 flex flex-col gap-8 border-t border-border pt-16 sm:mt-20 sm:pt-20">
-            <h2 className="text-xl font-semibold text-ink sm:text-2xl">Você também pode gostar</h2>
-            <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-              {relatedProducts.map((related) => (
-                <ProductCard
-                  key={related.id}
-                  product={related}
-                  isFavorite={isFavoriteProduct(related.id)}
-                  onToggleFavorite={toggleFavorite}
-                  onAddToCart={addItem}
+            <section
+              aria-labelledby="recommendations-heading"
+              className="mt-16 flex flex-col gap-6 border-t border-border pt-16 sm:mt-20 sm:pt-20"
+            >
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex flex-col gap-1">
+                  <h2 id="recommendations-heading" className="text-xl font-semibold text-ink sm:text-2xl">
+                    Você também pode gostar
+                  </h2>
+                  <p className="text-xs text-ink-soft">
+                    Recomendações calculadas via serviço distribuído (Catalog Service → Recommendation Service · HU-24).
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <div role="group" aria-label="Modo de processamento das recomendações" className="inline-flex border border-border bg-surface p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setRecMode('sequential')}
+                      aria-pressed={recMode === 'sequential'}
+                      className={cn(
+                        'cursor-pointer px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors',
+                        recMode === 'sequential'
+                          ? 'bg-aubergine text-creme-50'
+                          : 'text-ink-soft hover:text-ink',
+                      )}
+                    >
+                      Sequencial
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRecMode('parallel')}
+                      aria-pressed={recMode === 'parallel'}
+                      className={cn(
+                        'cursor-pointer px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors',
+                        recMode === 'parallel'
+                          ? 'bg-aubergine text-creme-50'
+                          : 'text-ink-soft hover:text-ink',
+                      )}
+                    >
+                      Paralelo
+                    </button>
+                  </div>
+
+                  {recMode === 'parallel' && (
+                    <label className="flex items-center gap-2 border border-border bg-surface px-2.5 py-1.5 text-xs text-ink-soft">
+                      <span className="font-semibold uppercase tracking-wider">Workers</span>
+                      <select
+                        aria-label="Quantidade de workers paralelos"
+                        value={recWorkers}
+                        onChange={(event) => setRecWorkers(Number(event.target.value))}
+                        className="cursor-pointer bg-transparent font-semibold text-ink focus:outline-none"
+                      >
+                        {WORKER_OPTIONS.map((count) => (
+                          <option key={count} value={count}>
+                            {count}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {recStatus === 'ready' && recResult && (
+                <div className="grid grid-cols-2 gap-3 border border-border/80 bg-surface-muted/70 px-4 py-3 text-xs sm:grid-cols-5">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">Modo</span>
+                    <span className="flex items-center gap-1 font-semibold text-ink">
+                      <Cpu className="h-3.5 w-3.5 text-terracota-500" aria-hidden="true" />
+                      {recResult.metrics.mode === 'parallel' ? 'Paralelo (ProcessPoolExecutor)' : 'Sequencial'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">Algoritmo</span>
+                    <span className="font-semibold text-ink">{recResult.metrics.computeMs.toFixed(2)} ms</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">HTTP entre serviços</span>
+                    <span className="font-semibold text-ink">{recResult.metrics.gatewayHttpMs.toFixed(2)} ms</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">Workers</span>
+                    <span className="font-semibold text-ink">{recResult.metrics.workers}</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-ink-soft">Catálogo processado</span>
+                    <span className="font-semibold text-ink">
+                      {recResult.metrics.catalogSize} peças ({recResult.metrics.dataSource})
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {recStatus === 'loading' && <LoadingBlock label="Calculando recomendações distribuídas…" />}
+
+              {recStatus === 'error' && (
+                <ErrorBlock
+                  message={recError ?? 'Falha ao consultar recomendações no serviço distribuído.'}
+                  onRetry={() => setRecReloadTick((tick) => tick + 1)}
                 />
-              ))}
+              )}
+
+              {recStatus === 'ready' && recResult && recResult.items.length === 0 && (
+                <p className="py-8 text-center text-sm text-ink-soft">
+                  Nenhuma peça afim em estoque encontrada para esta combinação de técnica e polo.
+                </p>
+              )}
+
+              {recStatus === 'ready' && recResult && recResult.items.length > 0 && (
+                <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+              {
+                      recResult.items.map((related) => (
+                        <div key={related.id} className="flex flex-col gap-2">
+                          <ProductCard product={related} />
+                          <div className="flex flex-wrap items-center justify-center gap-1.5 text-[11px] text-ink-soft">
+                            <span className="font-semibold text-terracota-600">Score {related.score.toFixed(2)}</span>
+                            {related.motivos.map((motivo) => (
+                              <span
+                                key={motivo}
+                                className="border border-border bg-surface px-1.5 py-0.5 text-[10px] uppercase tracking-wider"
+                              >
+                                {motivoLabels[motivo] ?? motivo}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))
+                    }
             </div>
-          </div>
-        )}
-      </Container>
-    </main>
+          )}
+      </section>
+    </Container>
+    </main >
   )
 }

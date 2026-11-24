@@ -6,8 +6,6 @@ import { Container, ProductCard } from '@/design-system'
 import { useCatalog } from '@/context/CatalogContext'
 import { ErrorBlock, LoadingBlock } from './AsyncState'
 import { priceRangeOptions, useProductFilter } from '@/context/ProductFilterContext'
-import { useCart } from '@/context/CartContext'
-import { useFavorites } from '@/context/FavoritesContext'
 import { ProductFilters } from './ProductFilters'
 
 const PAGE_SIZE = 9
@@ -36,8 +34,6 @@ export function FeaturedShowcase() {
     matchesFilters,
   } = useProductFilter()
   const { products, status, error, reload } = useCatalog()
-  const { addItem } = useCart()
-  const { isFavorite, toggleFavorite } = useFavorites()
   const [sort, setSort] = useState<SortOption>('relevancia')
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
@@ -127,13 +123,7 @@ export function FeaturedShowcase() {
           ) : visibleProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
               {visibleProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isFavorite={isFavorite(product.id)}
-                  onToggleFavorite={toggleFavorite}
-                  onAddToCart={addItem}
-                />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (

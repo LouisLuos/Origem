@@ -1,17 +1,16 @@
 'use client'
 
-import { createContext, useCallback, useContext, useMemo } from 'react'
+import { createContext, useContext, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { useResource } from '@/hooks/useResource'
 import type { ResourceStatus } from '@/hooks/useResource'
-import { artisanCatalogService } from '@/services/artisanCatalogService'
 import { catalogService } from '@/services/catalogService'
-import type { CatalogItem, CatalogItemInput, Owner } from '@/services/catalogTypes'
+import type { CatalogItem } from '@/services/catalogTypes'
 
-export type { CatalogItem, CatalogItemInput }
+export type { CatalogItem }
 
 export interface CatalogContextValue {
-  /** Todas as peças (inclusive pausadas) — para os painéis do artesão e da administração. */
+  /** Todas as peças carregadas do Catalog Service. */
   items: CatalogItem[]
   /** Somente peças ativas — o que a vitrine pública exibe. */
   products: CatalogItem[]
@@ -19,23 +18,13 @@ export interface CatalogContextValue {
   error: string | null
   reload: () => void
   getProduct: (id: string) => CatalogItem | undefined
-  addItem: (owner: Owner, input: CatalogItemInput) => Promise<void>
-  updateItem: (id: string, patch: Partial<CatalogItemInput>) => Promise<void>
-  removeItem: (id: string) => Promise<void>
-  /** Atualiza o estado local com o catálogo devolvido por outra operação. */
-  replaceAll: (items: CatalogItem[]) => void
 }
 
 const CatalogContext = createContext<CatalogContextValue | null>(null)
 
-/** Estado do catálogo no front-end, alimentado por `catalogService`. Fonte única da vitrine e dos painéis. */
+/** Estado público do catálogo no front-end, alimentado por `catalogService`. */
 export function CatalogProvider({ children }: { children: ReactNode }) {
-  const { data: items, setData, status, error, reload } = useResource(catalogService.list, [] as CatalogItem[])
-
-  const replaceItem = useCallback(
-    (updated: CatalogItem) => setData((prev) => prev.map((item) => (item.id === updated.id ? updated : item))),
-    [setData],
-  )
+  const { data: items, status, error, reload } = useResource(catalogService.list, [] as CatalogItem[])
 
   const value = useMemo<CatalogContextValue>(() => {
     const products = items.filter((item) => item.active)
@@ -46,20 +35,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       error,
       reload,
       getProduct: (id) => products.find((item) => item.id === id),
-      addItem: async (owner, input) => {
-        const created = await artisanCatalogService.create(owner, input)
-        setData((prev) => [created, ...prev])
-      },
-      updateItem: async (id, patch) => replaceItem(await artisanCatalogService.update(id, patch)),
-      removeItem: async (id) => {
-        await artisanCatalogService.remove(id)
-        setData((prev) => prev.filter((item) => item.id !== id))
-      },
-      replaceAll: (next) => setData(next),
     }
-  }, [items, status, error, reload, setData, replaceItem])
+}, [items, status, error, reload])
 
-  return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>
+return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>
 }
 
 export function useCatalog() {

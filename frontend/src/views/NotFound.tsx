@@ -3,9 +3,8 @@ import { ButtonLink, Container } from '@/design-system'
 
 const shortcuts = [
   { label: 'Ver a vitrine', to: '/#vitrine' },
+  { label: 'Explorar categorias', to: '/#categorias' },
   { label: 'Conhecer os artesãos', to: '/#artesaos' },
-  { label: 'Meu carrinho', to: '/carrinho' },
-  { label: 'Meus favoritos', to: '/favoritos' },
 ]
 
 export function NotFound() {
@@ -24,19 +23,19 @@ export function NotFound() {
         </div>
 
         <ButtonLink href="/" variant="primary" size="lg">
-            Voltar para o início
-          </ButtonLink>
+        Voltar para o início
+      </ButtonLink>
 
-        <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 border-t border-border pt-6 text-sm">
-          {shortcuts.map(({ label, to }) => (
-            <li key={to}>
-              <Link href={to} className="text-ink-soft underline-offset-4 hover:text-terracota-600 hover:underline">
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Container>
-    </main>
+      <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 border-t border-border pt-6 text-sm">
+        {shortcuts.map(({ label, to }) => (
+          <li key={to}>
+            <Link href={to} className="text-ink-soft underline-offset-4 hover:text-terracota-600 hover:underline">
+              {label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Container>
+    </main >
   )
 }

@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Heart, ShoppingBag } from 'lucide-react'
 import { cn } from '../cn'
 import { currency } from '../format'
 import { Badge } from './Badge'
@@ -22,98 +21,75 @@ export interface Product {
   details?: string[]
   /** Unidades em estoque. Ausente = sem controle de estoque; 0 = esgotada. */
   stock?: number
-  /** Fotos reais da peça (capa primeiro), presentes nas peças publicadas pelo cadastro. */
+  /** Fotos reais da peça (capa primeiro). */
   gallery?: string[]
 }
 
 export interface ProductCardProps {
   product: Product
   className?: string
-  onToggleFavorite?: (id: string) => void
-  isFavorite?: boolean
-  onAddToCart?: (id: string) => void
 }
 
-export function ProductCard({ product, className, onToggleFavorite, isFavorite, onAddToCart }: ProductCardProps) {
-  const hasStockNumber = typeof product.stock === 'number' && Number.isFinite(product.stock)
-  const stockCount = hasStockNumber ? Math.max(0, Math.floor(product.stock as number)) : undefined
-  const isSoldOut = stockCount === 0
-  const isLowStock = stockCount !== undefined && stockCount > 0 && stockCount <= LOW_STOCK_THRESHOLD
-  const hasDiscount = !!product.compareAtPrice && product.compareAtPrice > product.price
+  export function ProductCard({ product, className }: ProductCardProps) {
+    const hasStockNumber = typeof product.stock === 'number' && Number.isFinite(product.stock)
+    const stockCount = hasStockNumber ? Math.max(0, Math.floor(product.stock as number)) : undefined
+    const isSoldOut = stockCount === 0
+    const isLowStock = stockCount !== undefined && stockCount > 0 && stockCount <= LOW_STOCK_THRESHOLD
+    const hasDiscount = !!product.compareAtPrice && product.compareAtPrice > product.price
 
-  return (
-    <article className={cn('relative flex cursor-pointer flex-col', className)}>
-      <div className="relative aspect-square overflow-hidden bg-surface-muted">
-        <img
-          src={product.imageUrl}
-          alt={product.imageAlt}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-        />
+    return (
+      <article className={cn('relative flex cursor-pointer flex-col', className)}>
+        <div className="relative aspect-square overflow-hidden bg-surface-muted">
+          <img
+            src={product.imageUrl}
+            alt={product.imageAlt}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+          />
 
-        {isSoldOut && (
-          <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-aubergine/90 text-[11px] font-medium tracking-wide text-creme-50">
-            Esgotado
-          </Badge>
-        )}
-
-          {!isSoldOut && isLowStock && (
-        <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-terracota/90 text-[11px] font-medium tracking-wide text-creme-50">
-          Últimas unidades
-        </Badge>
-        )}
-
-        {hasDiscount && !isSoldOut && !isLowStock && (
-          <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-terracota-400/90 text-[11px] font-medium tracking-wide text-white">
-            Oferta
-          </Badge>
-        )}
-
-        <button
-          type="button"
-          onClick={() => onToggleFavorite?.(product.id)}
-          aria-pressed={isFavorite}
-          aria-label={isFavorite ? `Remover ${product.title} dos favoritos` : `Favoritar ${product.title}`}
-          className="absolute right-3 top-3 z-20 flex h-9 w-9 cursor-pointer items-center justify-center bg-surface/90 text-aubergine shadow-soft transition-colors hover:bg-terracota hover:text-creme-50"
-        >
-          <Heart className="h-4 w-4" fill={isFavorite ? 'currentColor' : 'none'} aria-hidden="true" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onAddToCart?.(product.id)}
-          disabled={isSoldOut}
-          aria-label={isSoldOut ? `${product.title} esgotado` : `Adicionar ${product.title} ao carrinho`}
-          className="absolute bottom-3 right-3 z-20 flex h-9 w-9 cursor-pointer items-center justify-center bg-surface/90 text-aubergine shadow-soft transition-colors hover:bg-terracota hover:text-creme-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface/90 disabled:hover:text-aubergine"
-        >
-          <ShoppingBag className="h-4 w-4" aria-hidden="true" />
-        </button>
-      </div>
-
-      <div className="flex flex-col items-center gap-1 pt-4 text-center">
-        <span className="text-[11px] uppercase tracking-widest text-ink-soft/70">{product.technique}</span>
-        <h3 className="text-sm font-medium uppercase tracking-wide text-ink">{product.title}</h3>
-        <p className="text-xs text-ink-soft">por {product.artisan}</p>
-
-        <div className="flex items-baseline gap-2 pt-1 text-xs text-ink-soft">
-          {hasDiscount && (
-            <span className="line-through opacity-70">{currency.format(product.compareAtPrice as number)}</span>
+          {isSoldOut && (
+            <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-aubergine/90 text-[11px] font-medium tracking-wide text-creme-50">
+              Esgotado
+            </Badge>
           )}
-          <span>{currency.format(product.price)}</span>
+
+        {!isSoldOut && isLowStock && (
+            <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-terracota/90 text-[11px] font-medium tracking-wide text-creme-50">
+              Últimas unidades
+            </Badge>
+          )}
+
+          {hasDiscount && !isSoldOut && !isLowStock && (
+            <Badge tone="terracota" className="absolute left-3 top-3 border-none bg-terracota-400/90 text-[11px] font-medium tracking-wide text-white">
+              Oferta
+            </Badge>
+          )}
         </div>
 
-        {isSoldOut && <span className="text-[11px] font-semibold text-danger">Esgotado</span>}
-        {!isSoldOut && isLowStock && stockCount !== undefined && (
-          <span className="text-[11px] font-medium text-warning">
-            Restam poucas unidades ({stockCount} {stockCount === 1 ? 'disponível' : 'disponíveis'})
-          </span>
-        )}
-        {!isSoldOut && !isLowStock && stockCount !== undefined && (
-          <span className="text-[11px] text-ink-soft">{stockCount} disponíveis</span>
-        )}
-      </div>
+        <div className="flex flex-col items-center gap-1 pt-4 text-center">
+          <span className="text-[11px] uppercase tracking-widest text-ink-soft/70">{product.technique}</span>
+          <h3 className="text-sm font-medium uppercase tracking-wide text-ink">{product.title}</h3>
+          <p className="text-xs text-ink-soft">por {product.artisan}</p>
 
-      <Link href={`/produtos/${product.id}`} className="absolute inset-0 z-10" aria-label={`Ver detalhes de ${product.title}`} />
-    </article>
-  )
-}
+          <div className="flex items-baseline gap-2 pt-1 text-xs text-ink-soft">
+            {hasDiscount && (
+              <span className="line-through opacity-70">{currency.format(product.compareAtPrice as number)}</span>
+            )}
+            <span>{currency.format(product.price)}</span>
+          </div>
+
+          {isSoldOut && <span className="text-[11px] font-semibold text-danger">Esgotado</span>}
+          {!isSoldOut && isLowStock && stockCount !== undefined && (
+            <span className="text-[11px] font-medium text-warning">
+              Restam poucas unidades ({stockCount} {stockCount === 1 ? 'disponível' : 'disponíveis'})
+            </span>
+          )}
+          {!isSoldOut && !isLowStock && stockCount !== undefined && (
+            <span className="text-[11px] text-ink-soft">{stockCount} disponíveis</span>
+          )}
+        </div>
+
+        <Link href={`/produtos/${product.id}`} className="absolute inset-0 z-10" aria-label={`Ver detalhes de ${product.title}`} />
+      </article>
+    )
+  }
