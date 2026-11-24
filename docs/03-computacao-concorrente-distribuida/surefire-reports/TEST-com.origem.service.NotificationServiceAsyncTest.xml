@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.origem.service.NotificationServiceAsyncTest" time="4.791" tests="2" errors="0" skipped="0" failures="0" flakes="0">
+  <properties>
+    <property name="java.specification.version" value="25"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="C:\Users\CAUÂ\Documents\GitHub\projetos\Origem\target\test-classes;C:\Users\CAUÂ\Documents\GitHub\projetos\Origem\target\classes;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-data-jpa\4.1.1\spring-boot-starter-data-jpa-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter\4.1.1\spring-boot-starter-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-logging\4.1.1\spring-boot-starter-logging-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\ch\qos\logback\logback-classic\1.5.38\logback-classic-1.5.38.jar;C:\Users\CAUÂ\.m2\repository\ch\qos\logback\logback-core\1.5.38\logback-core-1.5.38.jar;C:\Users\CAUÂ\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.25.5\log4j-to-slf4j-2.25.5.jar;C:\Users\CAUÂ\.m2\repository\org\apache\logging\log4j\log4j-api\2.25.5\log4j-api-2.25.5.jar;C:\Users\CAUÂ\.m2\repository\org\slf4j\jul-to-slf4j\2.0.18\jul-to-slf4j-2.0.18.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\4.1.1\spring-boot-autoconfigure-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\jakarta\annotation\jakarta.annotation-api\3.0.0\jakarta.annotation-api-3.0.0.jar;C:\Users\CAUÂ\.m2\repository\org\yaml\snakeyaml\2.6\snakeyaml-2.6.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-jdbc\4.1.1\spring-boot-starter-jdbc-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\com\zaxxer\HikariCP\7.0.2\HikariCP-7.0.2.jar;C:\Users\CAUÂ\.m2\repository\org\slf4j\slf4j-api\2.0.18\slf4j-api-2.0.18.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-data-jpa\4.1.1\spring-boot-data-jpa-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-data-commons\4.1.1\spring-boot-data-commons-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-persistence\4.1.1\spring-boot-persistence-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\data\spring-data-commons\4.1.1\spring-data-commons-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-hibernate\4.1.1\spring-boot-hibernate-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jpa\4.1.1\spring-boot-jpa-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.2.0\jakarta.persistence-api-3.2.0.jar;C:\Users\CAUÂ\.m2\repository\org\hibernate\orm\hibernate-core\7.4.5.Final\hibernate-core-7.4.5.Final.jar;C:\Users\CAUÂ\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\CAUÂ\.m2\repository\org\jboss\logging\jboss-logging\3.6.3.Final\jboss-logging-3.6.3.Final.jar;C:\Users\CAUÂ\.m2\repository\org\hibernate\models\hibernate-models\1.1.1\hibernate-models-1.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.9\jaxb-runtime-4.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.9\jaxb-core-4.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\eclipse\angus\angus-activation\2.0.3\angus-activation-2.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\glassfish\jaxb\txw2\4.0.9\txw2-4.0.9.jar;C:\Users\CAUÂ\.m2\repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;C:\Users\CAUÂ\.m2\repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-orm\7.0.9\spring-orm-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\data\spring-data-jpa\4.1.1\spring-data-jpa-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-context\7.0.9\spring-context-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-aop\7.0.9\spring-aop-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-tx\7.0.9\spring-tx-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-beans\7.0.9\spring-beans-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\antlr\antlr4-runtime\4.13.2\antlr4-runtime-4.13.2.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-aspects\7.0.9\spring-aspects-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\aspectj\aspectjweaver\1.9.25.1\aspectjweaver-1.9.25.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jdbc\4.1.1\spring-boot-jdbc-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot\4.1.1\spring-boot-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-sql\4.1.1\spring-boot-sql-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-transaction\4.1.1\spring-boot-transaction-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-jdbc\7.0.9\spring-jdbc-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-webmvc\4.1.1\spring-boot-starter-webmvc-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-jackson\4.1.1\spring-boot-starter-jackson-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jackson\4.1.1\spring-boot-jackson-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\tools\jackson\core\jackson-databind\3.1.5\jackson-databind-3.1.5.jar;C:\Users\CAUÂ\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.21\jackson-annotations-2.21.jar;C:\Users\CAUÂ\.m2\repository\tools\jackson\core\jackson-core\3.1.5\jackson-core-3.1.5.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat\4.1.1\spring-boot-starter-tomcat-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat-runtime\4.1.1\spring-boot-starter-tomcat-runtime-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\apache\tomcat\embed\tomcat-embed-core\11.0.24\tomcat-embed-core-11.0.24.jar;C:\Users\CAUÂ\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\11.0.24\tomcat-embed-el-11.0.24.jar;C:\Users\CAUÂ\.m2\repository\org\apache\tomcat\embed\tomcat-embed-websocket\11.0.24\tomcat-embed-websocket-11.0.24.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-tomcat\4.1.1\spring-boot-tomcat-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-http-converter\4.1.1\spring-boot-http-converter-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-web\7.0.9\spring-web-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\io\micrometer\micrometer-observation\1.17.1\micrometer-observation-1.17.1.jar;C:\Users\CAUÂ\.m2\repository\io\micrometer\micrometer-commons\1.17.1\micrometer-commons-1.17.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-webmvc\4.1.1\spring-boot-webmvc-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-servlet\4.1.1\spring-boot-servlet-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-webmvc\7.0.9\spring-webmvc-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-expression\7.0.9\spring-expression-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\postgresql\postgresql\42.7.13\postgresql-42.7.13.jar;C:\Users\CAUÂ\.m2\repository\org\checkerframework\checker-qual\3.55.1\checker-qual-3.55.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-data-jpa-test\4.1.1\spring-boot-starter-data-jpa-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-test\4.1.1\spring-boot-starter-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-test\4.1.1\spring-boot-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\4.1.1\spring-boot-test-autoconfigure-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\com\jayway\jsonpath\json-path\2.10.0\json-path-2.10.0.jar;C:\Users\CAUÂ\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.5\jakarta.xml.bind-api-4.0.5.jar;C:\Users\CAUÂ\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.4\jakarta.activation-api-2.1.4.jar;C:\Users\CAUÂ\.m2\repository\net\minidev\json-smart\2.6.0\json-smart-2.6.0.jar;C:\Users\CAUÂ\.m2\repository\net\minidev\accessors-smart\2.6.0\accessors-smart-2.6.0.jar;C:\Users\CAUÂ\.m2\repository\org\ow2\asm\asm\9.7.1\asm-9.7.1.jar;C:\Users\CAUÂ\.m2\repository\org\assertj\assertj-core\3.27.7\assertj-core-3.27.7.jar;C:\Users\CAUÂ\.m2\repository\net\bytebuddy\byte-buddy\1.18.11\byte-buddy-1.18.11.jar;C:\Users\CAUÂ\.m2\repository\org\awaitility\awaitility\4.3.0\awaitility-4.3.0.jar;C:\Users\CAUÂ\.m2\repository\org\hamcrest\hamcrest\3.0\hamcrest-3.0.jar;C:\Users\CAUÂ\.m2\repository\org\junit\jupiter\junit-jupiter\6.0.3\junit-jupiter-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\junit\jupiter\junit-jupiter-api\6.0.3\junit-jupiter-api-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\CAUÂ\.m2\repository\org\junit\platform\junit-platform-commons\6.0.3\junit-platform-commons-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\CAUÂ\.m2\repository\org\junit\jupiter\junit-jupiter-params\6.0.3\junit-jupiter-params-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\junit\jupiter\junit-jupiter-engine\6.0.3\junit-jupiter-engine-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\junit\platform\junit-platform-engine\6.0.3\junit-platform-engine-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\mockito\mockito-core\5.23.0\mockito-core-5.23.0.jar;C:\Users\CAUÂ\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar;C:\Users\CAUÂ\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\CAUÂ\.m2\repository\org\mockito\mockito-junit-jupiter\5.23.0\mockito-junit-jupiter-5.23.0.jar;C:\Users\CAUÂ\.m2\repository\org\skyscreamer\jsonassert\1.5.3\jsonassert-1.5.3.jar;C:\Users\CAUÂ\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-core\7.0.9\spring-core-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\commons-logging\commons-logging\1.3.6\commons-logging-1.3.6.jar;C:\Users\CAUÂ\.m2\repository\org\jspecify\jspecify\1.0.1\jspecify-1.0.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-test\7.0.9\spring-test-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\xmlunit\xmlunit-core\2.11.0\xmlunit-core-2.11.0.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-jdbc-test\4.1.1\spring-boot-starter-jdbc-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jdbc-test\4.1.1\spring-boot-jdbc-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-data-jpa-test\4.1.1\spring-boot-data-jpa-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jpa-test\4.1.1\spring-boot-jpa-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-webmvc-test\4.1.1\spring-boot-starter-webmvc-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-jackson-test\4.1.1\spring-boot-starter-jackson-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-webmvc-test\4.1.1\spring-boot-webmvc-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-web-server\4.1.1\spring-boot-web-server-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-resttestclient\4.1.1\spring-boot-resttestclient-4.1.1.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="America/Sao_Paulo"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="25"/>
+    <property name="APPLICATION_NAME" value="origem"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="BR"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-25.0.2\bin"/>
+    <property name="sun.java.command" value="C:\Users\CAUÂ\AppData\Local\Temp\surefire15311753969703481349\surefirebooter-20260922100640165_3.jar C:\Users\CAUÂ\AppData\Local\Temp\surefire15311753969703481349 2026-09-22T10-06-40_043-jvmRun1 surefire-20260922100640165_1tmp surefire_0-20260922100640165_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\Users\CAUÂ\Documents\GitHub\projetos\Origem\target\test-classes;C:\Users\CAUÂ\Documents\GitHub\projetos\Origem\target\classes;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-data-jpa\4.1.1\spring-boot-starter-data-jpa-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter\4.1.1\spring-boot-starter-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-logging\4.1.1\spring-boot-starter-logging-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\ch\qos\logback\logback-classic\1.5.38\logback-classic-1.5.38.jar;C:\Users\CAUÂ\.m2\repository\ch\qos\logback\logback-core\1.5.38\logback-core-1.5.38.jar;C:\Users\CAUÂ\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.25.5\log4j-to-slf4j-2.25.5.jar;C:\Users\CAUÂ\.m2\repository\org\apache\logging\log4j\log4j-api\2.25.5\log4j-api-2.25.5.jar;C:\Users\CAUÂ\.m2\repository\org\slf4j\jul-to-slf4j\2.0.18\jul-to-slf4j-2.0.18.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\4.1.1\spring-boot-autoconfigure-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\jakarta\annotation\jakarta.annotation-api\3.0.0\jakarta.annotation-api-3.0.0.jar;C:\Users\CAUÂ\.m2\repository\org\yaml\snakeyaml\2.6\snakeyaml-2.6.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-jdbc\4.1.1\spring-boot-starter-jdbc-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\com\zaxxer\HikariCP\7.0.2\HikariCP-7.0.2.jar;C:\Users\CAUÂ\.m2\repository\org\slf4j\slf4j-api\2.0.18\slf4j-api-2.0.18.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-data-jpa\4.1.1\spring-boot-data-jpa-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-data-commons\4.1.1\spring-boot-data-commons-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-persistence\4.1.1\spring-boot-persistence-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\data\spring-data-commons\4.1.1\spring-data-commons-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-hibernate\4.1.1\spring-boot-hibernate-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jpa\4.1.1\spring-boot-jpa-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.2.0\jakarta.persistence-api-3.2.0.jar;C:\Users\CAUÂ\.m2\repository\org\hibernate\orm\hibernate-core\7.4.5.Final\hibernate-core-7.4.5.Final.jar;C:\Users\CAUÂ\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\CAUÂ\.m2\repository\org\jboss\logging\jboss-logging\3.6.3.Final\jboss-logging-3.6.3.Final.jar;C:\Users\CAUÂ\.m2\repository\org\hibernate\models\hibernate-models\1.1.1\hibernate-models-1.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.9\jaxb-runtime-4.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.9\jaxb-core-4.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\eclipse\angus\angus-activation\2.0.3\angus-activation-2.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\glassfish\jaxb\txw2\4.0.9\txw2-4.0.9.jar;C:\Users\CAUÂ\.m2\repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;C:\Users\CAUÂ\.m2\repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-orm\7.0.9\spring-orm-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\data\spring-data-jpa\4.1.1\spring-data-jpa-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-context\7.0.9\spring-context-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-aop\7.0.9\spring-aop-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-tx\7.0.9\spring-tx-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-beans\7.0.9\spring-beans-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\antlr\antlr4-runtime\4.13.2\antlr4-runtime-4.13.2.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-aspects\7.0.9\spring-aspects-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\aspectj\aspectjweaver\1.9.25.1\aspectjweaver-1.9.25.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jdbc\4.1.1\spring-boot-jdbc-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot\4.1.1\spring-boot-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-sql\4.1.1\spring-boot-sql-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-transaction\4.1.1\spring-boot-transaction-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-jdbc\7.0.9\spring-jdbc-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-webmvc\4.1.1\spring-boot-starter-webmvc-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-jackson\4.1.1\spring-boot-starter-jackson-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jackson\4.1.1\spring-boot-jackson-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\tools\jackson\core\jackson-databind\3.1.5\jackson-databind-3.1.5.jar;C:\Users\CAUÂ\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.21\jackson-annotations-2.21.jar;C:\Users\CAUÂ\.m2\repository\tools\jackson\core\jackson-core\3.1.5\jackson-core-3.1.5.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat\4.1.1\spring-boot-starter-tomcat-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-tomcat-runtime\4.1.1\spring-boot-starter-tomcat-runtime-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\apache\tomcat\embed\tomcat-embed-core\11.0.24\tomcat-embed-core-11.0.24.jar;C:\Users\CAUÂ\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\11.0.24\tomcat-embed-el-11.0.24.jar;C:\Users\CAUÂ\.m2\repository\org\apache\tomcat\embed\tomcat-embed-websocket\11.0.24\tomcat-embed-websocket-11.0.24.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-tomcat\4.1.1\spring-boot-tomcat-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-http-converter\4.1.1\spring-boot-http-converter-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-web\7.0.9\spring-web-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\io\micrometer\micrometer-observation\1.17.1\micrometer-observation-1.17.1.jar;C:\Users\CAUÂ\.m2\repository\io\micrometer\micrometer-commons\1.17.1\micrometer-commons-1.17.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-webmvc\4.1.1\spring-boot-webmvc-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-servlet\4.1.1\spring-boot-servlet-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-webmvc\7.0.9\spring-webmvc-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-expression\7.0.9\spring-expression-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\postgresql\postgresql\42.7.13\postgresql-42.7.13.jar;C:\Users\CAUÂ\.m2\repository\org\checkerframework\checker-qual\3.55.1\checker-qual-3.55.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-data-jpa-test\4.1.1\spring-boot-starter-data-jpa-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-test\4.1.1\spring-boot-starter-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-test\4.1.1\spring-boot-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\4.1.1\spring-boot-test-autoconfigure-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\com\jayway\jsonpath\json-path\2.10.0\json-path-2.10.0.jar;C:\Users\CAUÂ\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.5\jakarta.xml.bind-api-4.0.5.jar;C:\Users\CAUÂ\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.4\jakarta.activation-api-2.1.4.jar;C:\Users\CAUÂ\.m2\repository\net\minidev\json-smart\2.6.0\json-smart-2.6.0.jar;C:\Users\CAUÂ\.m2\repository\net\minidev\accessors-smart\2.6.0\accessors-smart-2.6.0.jar;C:\Users\CAUÂ\.m2\repository\org\ow2\asm\asm\9.7.1\asm-9.7.1.jar;C:\Users\CAUÂ\.m2\repository\org\assertj\assertj-core\3.27.7\assertj-core-3.27.7.jar;C:\Users\CAUÂ\.m2\repository\net\bytebuddy\byte-buddy\1.18.11\byte-buddy-1.18.11.jar;C:\Users\CAUÂ\.m2\repository\org\awaitility\awaitility\4.3.0\awaitility-4.3.0.jar;C:\Users\CAUÂ\.m2\repository\org\hamcrest\hamcrest\3.0\hamcrest-3.0.jar;C:\Users\CAUÂ\.m2\repository\org\junit\jupiter\junit-jupiter\6.0.3\junit-jupiter-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\junit\jupiter\junit-jupiter-api\6.0.3\junit-jupiter-api-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\CAUÂ\.m2\repository\org\junit\platform\junit-platform-commons\6.0.3\junit-platform-commons-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\CAUÂ\.m2\repository\org\junit\jupiter\junit-jupiter-params\6.0.3\junit-jupiter-params-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\junit\jupiter\junit-jupiter-engine\6.0.3\junit-jupiter-engine-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\junit\platform\junit-platform-engine\6.0.3\junit-platform-engine-6.0.3.jar;C:\Users\CAUÂ\.m2\repository\org\mockito\mockito-core\5.23.0\mockito-core-5.23.0.jar;C:\Users\CAUÂ\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.11\byte-buddy-agent-1.18.11.jar;C:\Users\CAUÂ\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\CAUÂ\.m2\repository\org\mockito\mockito-junit-jupiter\5.23.0\mockito-junit-jupiter-5.23.0.jar;C:\Users\CAUÂ\.m2\repository\org\skyscreamer\jsonassert\1.5.3\jsonassert-1.5.3.jar;C:\Users\CAUÂ\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-core\7.0.9\spring-core-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\commons-logging\commons-logging\1.3.6\commons-logging-1.3.6.jar;C:\Users\CAUÂ\.m2\repository\org\jspecify\jspecify\1.0.1\jspecify-1.0.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\spring-test\7.0.9\spring-test-7.0.9.jar;C:\Users\CAUÂ\.m2\repository\org\xmlunit\xmlunit-core\2.11.0\xmlunit-core-2.11.0.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-jdbc-test\4.1.1\spring-boot-starter-jdbc-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jdbc-test\4.1.1\spring-boot-jdbc-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-data-jpa-test\4.1.1\spring-boot-data-jpa-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-jpa-test\4.1.1\spring-boot-jpa-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-webmvc-test\4.1.1\spring-boot-starter-webmvc-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-starter-jackson-test\4.1.1\spring-boot-starter-jackson-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-webmvc-test\4.1.1\spring-boot-webmvc-test-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-web-server\4.1.1\spring-boot-web-server-4.1.1.jar;C:\Users\CAUÂ\.m2\repository\org\springframework\boot\spring-boot-resttestclient\4.1.1\spring-boot-resttestclient-4.1.1.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\CAUÂ"/>
+    <property name="user.language" value="pt"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2026-01-20"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-25.0.2"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\Users\CAUÂ\Documents\GitHub\projetos\Origem"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
+    <property name="surefire.real.class.path" value="C:\Users\CAUÂ\AppData\Local\Temp\surefire15311753969703481349\surefirebooter-20260922100640165_3.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="25.0.2+10-LTS-69"/>
+    <property name="user.name" value="Santos"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\CAUÂ\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\CAU~1\AppData\Local\Temp\"/>
+    <property name="com.zaxxer.hikari.pool_number" value="1"/>
+    <property name="java.version" value="25.0.2"/>
+    <property name="user.dir" value="C:\Users\CAUÂ\Documents\GitHub\projetos\Origem"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="11204"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-25.0.2\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:/Users/CAUÂ/.gemini/antigravity-ide/bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\MinGW\bin;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\dotnet\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\WINDOWS\system32;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\dotnet\;C:\Users\CAUÂ\AppData\Local\Programs\Python\Launcher\;C:\Users\CAUÂ\AppData\Local\Microsoft\WindowsApps;C:\Users\CAUÂ\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\CAUÂ\AppData\Local\GitHubDesktop\bin;C:\Program Files\JetBrains\IntelliJ IDEA 2025.2.1\bin;C:\Users\CAUÂ\AppData\Roaming\npm;C:\Program Files\Java\jdk-25.0.2\bin;C:\apache-maven-3.9.11\bin;C:\Users\CAUÂ\AppData\Local\Programs\Antigravity IDE\bin;C:\Users\CAUÂ\AppData\Local\Programs\Ollama;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="25.0.2+10-LTS-69"/>
+    <property name="stdin.encoding" value="UTF-8"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="69.0"/>
+    <property name="LOGGED_APPLICATION_NAME" value="[origem] "/>
+  </properties>
+  <testcase name="testAsyncNotificationDecouplingAndStatusTransition" classname="com.origem.service.NotificationServiceAsyncTest" time="2.282">
+    <system-out><![CDATA[2026-09-22T10:06:47.639-03:00  INFO 11204 --- [origem] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.origem.service.NotificationServiceAsyncTest]: NotificationServiceAsyncTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-22T10:06:47.651-03:00  INFO 11204 --- [origem] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.origem.OrigemApplication for test class com.origem.service.NotificationServiceAsyncTest
+2026-09-22T10:06:47.652-03:00  INFO 11204 --- [origem] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.origem.service.NotificationServiceAsyncTest]: NotificationServiceAsyncTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-09-22T10:06:47.652-03:00  INFO 11204 --- [origem] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.origem.OrigemApplication for test class com.origem.service.NotificationServiceAsyncTest
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.name,
+        p1_0.stock 
+    from
+        product p1_0 
+    where
+        p1_0.id=?
+Hibernate: 
+    insert 
+    into
+        product
+        (name, stock, id) 
+    values
+        (?, ?, ?)
+2026-09-22T10:06:47.804-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Aguardando lock para produto: poc-async-test-prod
+2026-09-22T10:06:47.804-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Lock adquirido para produto: poc-async-test-prod. Iniciando transação.
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.name,
+        p1_0.stock 
+    from
+        product p1_0 
+    where
+        p1_0.id=?
+2026-09-22T10:06:47.851-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Estoque atual do produto 'Bordado Filé Tradicional': 10, Quantidade solicitada: 1
+2026-09-22T10:06:47.852-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Sucesso: Estoque do produto 'poc-async-test-prod' atualizado para 9
+Hibernate: 
+    update
+        product 
+    set
+        name=?,
+        stock=? 
+    where
+        id=?
+2026-09-22T10:06:47.945-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Lock liberado para produto: poc-async-test-prod
+Hibernate: 
+    insert 
+    into
+        notification
+        (order_id, status, id) 
+    values
+        (?, ?, ?)
+2026-09-22T10:06:48.040-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Notificação registrada com sucesso no BD [ID: c3cf0507-84c8-4800-a2a5-d7817a1e88e7, OrderID: order-async-success-123, Status: 'pending'].
+2026-09-22T10:06:48.041-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Notificação despachada assincronamente. Retornando resposta imediata ao chamador.
+2026-09-22T10:06:48.041-03:00  INFO 11204 --- [origem] [-notification-3] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-3] Início do processamento assíncrono para notificação ID: c3cf0507-84c8-4800-a2a5-d7817a1e88e7
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:48.193-03:00  INFO 11204 --- [origem] [-notification-3] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-3] Tentativa 1/3 de envio da notificação (Order ID: order-async-success-123)
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:48.729-03:00  INFO 11204 --- [origem] [-notification-1] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-1] Mensagem despachada com sucesso pelo gateway na tentativa 1.
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    update
+        notification 
+    set
+        order_id=?,
+        status=? 
+    where
+        id=?
+2026-09-22T10:06:48.919-03:00  INFO 11204 --- [origem] [-notification-1] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-1] SUCESSO: Notificação ID: f47972e3-e846-4b93-a178-11a5f827803c atualizada para status 'sent' na base de dados.
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:49.206-03:00  INFO 11204 --- [origem] [-notification-2] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-2] Mensagem despachada com sucesso pelo gateway na tentativa 1.
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    update
+        notification 
+    set
+        order_id=?,
+        status=? 
+    where
+        id=?
+2026-09-22T10:06:49.361-03:00  INFO 11204 --- [origem] [-notification-2] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-2] SUCESSO: Notificação ID: 0a4f798f-af05-413c-8d5d-8cc48f9ebe59 atualizada para status 'sent' na base de dados.
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:49.694-03:00  INFO 11204 --- [origem] [-notification-3] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-3] Mensagem despachada com sucesso pelo gateway na tentativa 1.
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    update
+        notification 
+    set
+        order_id=?,
+        status=? 
+    where
+        id=?
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:49.847-03:00  INFO 11204 --- [origem] [-notification-3] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-3] SUCESSO: Notificação ID: c3cf0507-84c8-4800-a2a5-d7817a1e88e7 atualizada para status 'sent' na base de dados.
+]]></system-out>
+  </testcase>
+  <testcase name="testAsyncNotificationRetryAndFailureTransition" classname="com.origem.service.NotificationServiceAsyncTest" time="2.488">
+    <system-out><![CDATA[Hibernate: 
+    select
+        p1_0.id,
+        p1_0.name,
+        p1_0.stock 
+    from
+        product p1_0 
+    where
+        p1_0.id=?
+Hibernate: 
+    update
+        product 
+    set
+        name=?,
+        stock=? 
+    where
+        id=?
+2026-09-22T10:06:50.083-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Aguardando lock para produto: poc-async-test-prod
+2026-09-22T10:06:50.083-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Lock adquirido para produto: poc-async-test-prod. Iniciando transação.
+Hibernate: 
+    select
+        p1_0.id,
+        p1_0.name,
+        p1_0.stock 
+    from
+        product p1_0 
+    where
+        p1_0.id=?
+2026-09-22T10:06:50.131-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Estoque atual do produto 'Bordado Filé Tradicional': 10, Quantidade solicitada: 1
+2026-09-22T10:06:50.131-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Sucesso: Estoque do produto 'poc-async-test-prod' atualizado para 9
+Hibernate: 
+    update
+        product 
+    set
+        name=?,
+        stock=? 
+    where
+        id=?
+2026-09-22T10:06:50.225-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Lock liberado para produto: poc-async-test-prod
+Hibernate: 
+    insert 
+    into
+        notification
+        (order_id, status, id) 
+    values
+        (?, ?, ?)
+2026-09-22T10:06:50.321-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Notificação registrada com sucesso no BD [ID: 88bb04ac-77a8-41f9-b8c8-1de2782f1f7f, OrderID: simulated-failure-order-999, Status: 'pending'].
+2026-09-22T10:06:50.321-03:00  INFO 11204 --- [origem] [           main] com.origem.service.OrderService          : [THREAD-main] Notificação despachada assincronamente. Retornando resposta imediata ao chamador.
+2026-09-22T10:06:50.321-03:00  INFO 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Início do processamento assíncrono para notificação ID: 88bb04ac-77a8-41f9-b8c8-1de2782f1f7f
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:50.422-03:00  INFO 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Tentativa 1/3 de envio da notificação (Order ID: simulated-failure-order-999)
+2026-09-22T10:06:50.623-03:00  WARN 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Falha na tentativa 1/3: Falha simulada no gateway de mensageria externa..
+2026-09-22T10:06:50.623-03:00  INFO 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Aguardando backoff antes da próxima tentativa...
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:51.123-03:00  INFO 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Tentativa 2/3 de envio da notificação (Order ID: simulated-failure-order-999)
+2026-09-22T10:06:51.324-03:00  WARN 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Falha na tentativa 2/3: Falha simulada no gateway de mensageria externa..
+2026-09-22T10:06:51.324-03:00  INFO 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Aguardando backoff antes da próxima tentativa...
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:51.825-03:00  INFO 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Tentativa 3/3 de envio da notificação (Order ID: simulated-failure-order-999)
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+2026-09-22T10:06:52.025-03:00  WARN 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] Falha na tentativa 3/3: Falha simulada no gateway de mensageria externa..
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+Hibernate: 
+    update
+        notification 
+    set
+        order_id=?,
+        status=? 
+    where
+        id=?
+2026-09-22T10:06:52.178-03:00 ERROR 11204 --- [origem] [-notification-4] com.origem.service.NotificationService   : [ASYNC-NOTIF] [THREAD: async-notification-4] ERRO: Notificação ID: 88bb04ac-77a8-41f9-b8c8-1de2782f1f7f esgotou todas as 3 tentativas. Atualizada para status 'failed'.
+Hibernate: 
+    select
+        n1_0.id,
+        n1_0.order_id,
+        n1_0.status 
+    from
+        notification n1_0 
+    where
+        n1_0.id=?
+]]></system-out>
+  </testcase>
+</testsuite>

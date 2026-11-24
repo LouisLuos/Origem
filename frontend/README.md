@@ -1,29 +1,51 @@
-# Origem — Frontend
+# Origem: Frontend
 
 Base de front-end do marketplace **Origem** (vitrine/home + Design System), construída com
-**React + TypeScript + Vite + Tailwind CSS v4**.
+**Next.js (App Router) + React + TypeScript + Tailwind CSS v4**.
 
 ## Rodando localmente
+
+Requer **Node.js 20.9 ou superior**. Para apontar para outra API, copie `.env.example` para `.env.local`.
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173
-npm run build    # build de produção em dist/
+npm run build    # build de produção em .next/
+npm run start    # serve o build em http://localhost:5173
 npm run lint
 ```
 
+## Deploy e Fake API
+
+- **Frontend:** https://origem-five.vercel.app (Vercel).
+- **Fake API:** https://origem-bnhv.onrender.com/api/v1 (Render). Serve `/produtos` e `/artesaos`
+  e mantém os dados em memória: peças criadas pelo painel do artesão somem quando o serviço reinicia.
+  No plano gratuito a primeira requisição após um período parado pode levar cerca de 1 minuto.
+- O código da Fake API fica na branch `fake-api` deste repositório (pasta `fake_api/`); foi removido da `main` no commit `0b7e7f9`.
+- O navegador chama a API em `/api/v1` no próprio domínio do front; o rewrite em `next.config.ts` repassa
+  para `BACKEND_API_URL` (padrão: `http://localhost:3001/api/v1`). Assim o cookie de sessão HttpOnly é de
+  primeira parte (SameSite=Lax) mesmo com front e back em domínios diferentes. A variável é lida no build,
+  então alterá-la na Vercel exige um novo deploy.
+
 ## Stack e por quê
 
-- **Vite + React + TypeScript** — build rápido, DX simples, tipagem forte para os contratos de API
-  que virão do backend (produtos, artesãos, pedidos).
-- **Tailwind CSS v4** (`@theme` em `src/styles/globals.css`) — tokens de design (cor, tipografia,
+- **Next.js + React + TypeScript**: rotas por arquivo em `src/app`, otimização de imagens e fontes,
+  tipagem forte para os contratos de API que virão do backend (produtos, artesãos, pedidos). A porta
+  fica em 5173 porque a padrão do Next (3000) é a da Fake API.
+- **Tailwind CSS v4** (`@theme` em `src/styles/globals.css`): tokens de design (cor, tipografia,
   raio, sombra) definidos uma vez e usados tanto em classes utilitárias quanto em JS
   (`src/design-system/tokens.ts`) quando necessário.
-- **lucide-react** — ícones leves em SVG, consistentes com o traço da marca.
+- **lucide-react**: ícones leves em SVG, consistentes com o traço da marca.
 
-Sem framework de estado global por enquanto: a Home é estática (dados mock em `src/data`). Quando a
-API entrar, o ponto de integração é substituir `src/data/mockProducts.ts` / `mockArtisans.ts` por
-chamadas reais (`GET /produtos`, `GET /artesaos`), mantendo os componentes iguais.
+O estado global fica em Context API (`src/context`) e os dados vêm de `src/services`, organizados por
+domínio (catálogo, artesãos, pedidos, autenticação, carrinho, avaliações). Catálogo e artesãos
+consomem a Fake API via `fetch`; os demais ainda usam simulação local (`localStorage`). Para trocar
+pelo backend real, basta ajustar os services, sem mexer nas telas.
+
+Sessão e carrinho vivem no `localStorage`, que não existe no servidor: os providers só os leem depois
+da hidratação (flag `hydrated`). Telas que redirecionam ou preenchem formulários com esses dados ficam
+atrás do `HydrationGate` no `page.tsx`. As telas ficam em `views/` porque `src/pages` é uma pasta
+reservada do Next.
 
 ## Estrutura
 
@@ -34,9 +56,12 @@ src/
 │   ├── cn.ts
 │   └── components/       # Button, Badge, Chip, Input, ProductCard, SectionHeading, Container
 ├── components/           # Componentes de página (Header, Hero, seções da Home, Footer)
-├── pages/
-│   └── Home.tsx           # Vitrine principal
-├── data/                 # Dados mock para desenvolvimento visual
+├── app/                  # Rotas do Next: layout, providers e um page.tsx por URL
+├── views/                # Telas (Home, produto, artesão, carrinho, checkout, conta, painéis)
+├── context/              # Estado global (auth, catálogo, carrinho, pedidos, favoritos, filtros)
+├── services/             # Acesso a dados por domínio (Fake API, ViaCEP e simulações locais)
+├── hooks/                # useResource (loading/erro/retry) e useCatalogAction
+├── utils/                # Funções utilitárias
 ├── styles/globals.css     # Tokens de tema (@theme) + estilos base
 └── assets/                # Logo e referências de identidade visual
 ```
@@ -54,5 +79,4 @@ Documentação completa do Design System (paleta, tipografia, princípios, compo
 
 ## Próximos passos
 
-Ver seção "Próximos passos sugeridos" em [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) — página de
-listagem com filtros, ficha técnica da peça, carrinho/checkout.
+Ver seção "Próximos passos sugeridos" em [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md).
