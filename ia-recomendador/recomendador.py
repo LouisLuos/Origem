@@ -88,9 +88,14 @@ def recomendar(artefato: dict, produto_id: str, limite: int = LIMITE_PADRAO) -> 
     produtos = artefato["produtos"]
     if produto_id not in produtos:
         return {"erro": "produto_inexistente", "produto_id": produto_id, "items": []}
+    return recomendar_peca(artefato, produtos[produto_id], limite)
 
+
+def recomendar_peca(artefato: dict, atual: dict, limite: int) -> dict:
+    """Ranqueia as candidatas para uma peça já localizada no catálogo."""
+    produtos = artefato["produtos"]
+    produto_id = atual["id"]
     limite = max(1, min(int(limite), LIMITE_MAXIMO))
-    atual = produtos[produto_id]
     linha = artefato["similaridade"][artefato["ids"].index(produto_id)]
     cooc = artefato["cooc"].get(produto_id, {})
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -14,8 +15,8 @@ NOME_MODELO = "origem-recomendador"
 ARTEFATO = "artefato.json"
 
 
-def main() -> None:
-    catalogo = json.loads(DADOS.read_text(encoding="utf-8"))
+def main(caminho: Path = DADOS) -> None:
+    catalogo = json.loads(caminho.read_text(encoding="utf-8-sig"))
     artefato = treinar(catalogo)
 
     with bentoml.models.create(
@@ -37,4 +38,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--catalogo", type=Path, default=DADOS)
+    main(parser.parse_args().catalogo)

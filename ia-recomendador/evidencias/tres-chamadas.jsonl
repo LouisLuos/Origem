@@ -1,0 +1,6 @@
+{"data_hora": "2026-11-27T15:54:16.730191+00:00", "funcao": "buscar_peca", "origem": "POST /recomendar", "parametros": {"produto_id": "p01"}, "ids_retornados": ["p01"], "status": "sucesso", "quantidade": 1}
+{"data_hora": "2026-11-27T15:54:16.731196+00:00", "funcao": "buscar_afins", "origem": "POST /recomendar", "parametros": {"produto_id": "p01", "limite": 4}, "ids_retornados": ["p02", "p04", "p06", "p05"], "status": "sucesso", "quantidade": 4}
+{"data_hora": "2026-11-27T15:54:16.801972+00:00", "funcao": "buscar_peca", "origem": "POST /recomendar", "parametros": {"produto_id": "p01"}, "ids_retornados": ["p01"], "status": "sucesso", "quantidade": 1}
+{"data_hora": "2026-11-27T15:54:16.802971+00:00", "funcao": "buscar_afins", "origem": "POST /recomendar", "parametros": {"produto_id": "p01", "limite": 4}, "ids_retornados": ["p02", "p04", "p06", "p05"], "status": "sucesso", "quantidade": 4}
+{"data_hora": "2026-11-27T15:54:16.814621+00:00", "funcao": "buscar_peca", "origem": "POST /recomendar", "parametros": {"produto_id": "p14"}, "ids_retornados": ["p14"], "status": "sucesso", "quantidade": 1}
+{"data_hora": "2026-11-27T15:54:16.816623+00:00", "funcao": "buscar_afins", "origem": "POST /recomendar", "parametros": {"produto_id": "p14", "limite": 4}, "ids_retornados": [], "status": "sucesso", "quantidade": 0}

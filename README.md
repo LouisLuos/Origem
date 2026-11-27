@@ -91,6 +91,7 @@ peça, o módulo devolve outras peças da **mesma técnica ou do mesmo polo**, r
 - **Squad:** Grupo 7 — Eduardo Henrique, Cauã dos Santos, Luiz Henrique, Matheus Freitas, Pedro Vinicius, Vinicius Gabriel e Marcos Antônio.
 - **Trilha:** A — Recomendação / ranqueamento, servido com **BentoML**
   (base: [lgallindo/recomendador-bentoml](https://github.com/lgallindo/recomendador-bentoml)).
+- **AV2:** [roteiro para executar três consultas, conferir o log e reproduzir o resumo](./ia-recomendador/README.md).
 - **Código:** pasta [`ia-recomendador/`](./ia-recomendador/) — algoritmo e arquivos explicados em
   [`ia-recomendador/README.md`](./ia-recomendador/README.md).
 - **Dados:** catálogo **sintético** com 14 peças e 10 compras em
