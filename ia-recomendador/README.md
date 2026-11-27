@@ -1,5 +1,15 @@
 # Recomendador do Origem · AV2
 
+**Integrantes do Grupo 7**
+
+- Cauã dos Santos Nascimento
+- Eduardo Henrique Albuquerque Pessoa de Andrade
+- Luiz Henrique Souza da Conceição
+- Marcos Antônio
+- Matheus de Freitas Oliveira
+- Pedro Vinícius Silva de Souza
+- Vinicius Gabriel dos Santos Braz
+
 ## 1. Instalar e rodar
 
 A HU-24 sugere peças afins à peça que o comprador abriu. O treino transforma 14 peças e 10 cestas sintéticas em um artefato local. O BentoML carrega esse artefato e atende às consultas por HTTP. Para reproduzir a entrega, use Python 3.11 e dois terminais PowerShell na raiz do repositório.
